@@ -217,8 +217,21 @@ function OptionCard({ item, active, onPress }: { item: (typeof REPEAT_OPTIONS)[n
 function EmptyWordsCard() {
   return <View style={styles.emptyCard}>
     <View style={styles.magicBox}>
-      <Text style={[styles.floatChip, styles.floatOne]}>dream</Text><Text style={[styles.floatChip, styles.floatTwo]}>travel</Text><Text style={[styles.floatChip, styles.floatThree]}>sunset</Text>
-      <MaterialCommunityIcons name="cube-outline" size={42} color="#7C3AED" />
+      <View style={styles.boxGlow} />
+      <Text style={[styles.sparkle, styles.sparkleLeft]}>✦</Text>
+      <Text style={[styles.sparkle, styles.sparkleRight]}>✦</Text>
+      <Text style={[styles.sparkle, styles.sparkleTop]}>✧</Text>
+      <Text style={[styles.floatChip, styles.floatOne]}>dream</Text>
+      <Text style={[styles.floatChip, styles.floatTwo]}>travel</Text>
+      <Text style={[styles.floatChip, styles.floatThree]}>sunset</Text>
+      <LinearGradient
+        colors={['rgba(124,58,237,0.95)', 'rgba(91,33,182,0.88)', 'rgba(44,12,94,0.94)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.magicCore}
+      >
+        <MaterialCommunityIcons name="cube-outline" size={34} color="#D8B4FE" />
+      </LinearGradient>
     </View>
     <Text style={styles.emptyTitle}>Henüz kelime eklemedin.</Text>
     <Text style={styles.emptyText}>En az <Text style={styles.hot}>5</Text>, en fazla <Text style={styles.hot}>15</Text> kelime ekleyebilirsin.</Text>
@@ -269,11 +282,17 @@ const styles = StyleSheet.create({
   choiceTitle: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 11, lineHeight: 13, textAlign: 'center' },
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 12, marginTop: 0, textAlign: 'center' },
   check: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
-  emptyCard: { height: 108, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.20)', backgroundColor: 'rgba(6,8,20,0.70)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 8 },
-  magicBox: { width: 152, height: 46, alignItems: 'center', justifyContent: 'flex-end' },
-  floatChip: { position: 'absolute', color: '#F5D0FE', borderWidth: 1, borderColor: '#7C3AED', backgroundColor: 'rgba(60,12,115,0.82)', borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2, fontFamily: 'Inter_500Medium', fontSize: 11, transform: [{ rotate: '-9deg' }] },
-  floatOne: { top: 2, left: 52 }, floatTwo: { top: 16, right: 38, transform: [{ rotate: '12deg' }] }, floatThree: { top: 42, left: 16, color: '#FDE047', borderColor: '#A16207' },
-  emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 14, marginTop: 5 },
+  emptyCard: { height: 142, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(5,7,18,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 10, shadowColor: '#7C3AED', shadowOpacity: 0.16, shadowRadius: 14 },
+  magicBox: { width: 190, height: 82, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
+  boxGlow: { position: 'absolute', bottom: 4, width: 150, height: 56, borderRadius: 75, backgroundColor: '#7C3AED', opacity: 0.22, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 28 },
+  magicCore: { width: 66, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-1deg' }], shadowColor: '#8B5CF6', shadowOpacity: 0.78, shadowRadius: 18, elevation: 10 },
+  sparkle: { position: 'absolute', color: '#F5D0FE', fontFamily: 'Inter_700Bold', fontSize: 12, textShadowColor: '#E879F9', textShadowRadius: 8 },
+  sparkleLeft: { left: 42, bottom: 24 },
+  sparkleRight: { right: 44, bottom: 32 },
+  sparkleTop: { top: 22, right: 72 },
+  floatChip: { position: 'absolute', color: '#F5D0FE', borderWidth: 1, borderColor: 'rgba(124,58,237,0.92)', backgroundColor: 'rgba(43,13,87,0.88)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, fontFamily: 'Inter_500Medium', fontSize: 12, letterSpacing: 0.2, transform: [{ rotate: '-9deg' }], shadowColor: '#7C3AED', shadowOpacity: 0.5, shadowRadius: 8 },
+  floatOne: { top: 8, left: 42 }, floatTwo: { top: 18, right: 32, transform: [{ rotate: '12deg' }] }, floatThree: { top: 38, left: 18, color: '#FDE047', borderColor: '#A16207', backgroundColor: 'rgba(68,35,9,0.86)' },
+  emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 2 },
   emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
   hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },
   wordWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, borderRadius: 18, borderWidth: 1, borderColor: '#201246', backgroundColor: 'rgba(6,8,20,0.78)', padding: 14 },
