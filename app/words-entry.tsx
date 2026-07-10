@@ -94,8 +94,8 @@ export default function WordsEntryScreen() {
             <Feather name="arrow-left" size={24} color={colors.foreground} />
           </Pressable>
           <View style={styles.headingBlock}>
-            <Text style={[styles.screenTitle, { color: colors.foreground }]}>Kelimelerini Gir</Text>
-            <Text style={[styles.screenSubtitle, { color: colors.mutedForeground }]}>Senin kelimelerin, senin hikayen.</Text>
+            <Text style={[styles.screenTitle, { color: colors.foreground }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>Kelimelerini Gir</Text>
+            <Text style={[styles.screenSubtitle, { color: colors.mutedForeground }]} numberOfLines={1}>Senin kelimelerin, senin hikayen.</Text>
           </View>
           <Pressable style={styles.howButton}>
             <MaterialCommunityIcons name="help-circle-outline" size={18} color="#F15DFF" />
@@ -106,7 +106,7 @@ export default function WordsEntryScreen() {
         <LinearGradient colors={['#1C0A3C', '#070711', '#12091F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.aiBanner}>
           <View style={styles.aiArt}>
             <View style={styles.aiOrb}>
-              <MaterialCommunityIcons name="brain" size={48} color="#E879F9" />
+              <MaterialCommunityIcons name="brain" size={34} color="#E879F9" />
               <Text style={styles.aiLabel}>AI</Text>
             </View>
           </View>
@@ -122,7 +122,7 @@ export default function WordsEntryScreen() {
         </View>
 
         <View style={styles.neonInputWrap}>
-          <View style={styles.inputIconCircle}><Feather name="edit-3" size={30} color="#EC5DFF" /></View>
+          <View style={styles.inputIconCircle}><Feather name="edit-3" size={22} color="#EC5DFF" /></View>
           <TextInput
             value={input}
             onChangeText={(value) => {
@@ -138,7 +138,7 @@ export default function WordsEntryScreen() {
             editable={!reachedMax}
           />
           <Pressable onPress={() => addWord(input)} disabled={!input.trim() || reachedMax} style={({ pressed }) => [styles.addCircle, { opacity: !input.trim() || reachedMax ? 0.55 : pressed ? 0.8 : 1 }]}>
-            <Feather name="plus" size={34} color="#F6EEFF" />
+            <Feather name="plus" size={28} color="#F6EEFF" />
           </Pressable>
         </View>
         {notice ? <Text style={[styles.notice, { color: colors.warning }]}>{notice}</Text> : null}
@@ -160,7 +160,7 @@ export default function WordsEntryScreen() {
             <Text style={styles.reasonTitle}>Neden 5–15 kelime?</Text>
             <Text style={[styles.reasonText, { color: colors.foreground }]}>Bu aralık, kelimelerin hikâyede doğal ve etkili bir şekilde tekrar etmesini sağlar.</Text>
           </View>
-          <MaterialCommunityIcons name="target" size={58} color="#C76BFF" />
+          <MaterialCommunityIcons name="target" size={46} color="#C76BFF" />
         </View>
 
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Kelime Geçiş Sayısı</Text>
@@ -193,15 +193,15 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 function ThemeCard({ item, active, onPress }: { item: (typeof THEMES)[number]; active: boolean; onPress: () => void }) {
   return <Pressable onPress={onPress} style={[styles.themeCard, active && styles.activeCard]}>
-    <MaterialCommunityIcons name={item.icon} size={30} color={active ? '#ED5BFF' : '#DDD6FE'} />
-    <View style={styles.themeTextBlock}><Text style={styles.choiceTitle}>{item.title}</Text><Text style={styles.choiceSub}>{item.subtitle}</Text></View>
+    <MaterialCommunityIcons name={item.icon} size={22} color={active ? '#ED5BFF' : '#DDD6FE'} />
+    <View style={styles.themeTextBlock}><Text style={styles.choiceTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{item.title}</Text><Text style={styles.choiceSub} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{item.subtitle}</Text></View>
     {active ? <View style={styles.check}><Feather name="check" size={13} color="#230433" /></View> : null}
   </Pressable>;
 }
 
 function OptionCard({ item, active, onPress }: { item: (typeof REPEAT_OPTIONS)[number]; active: boolean; onPress: () => void }) {
   return <Pressable onPress={onPress} style={[styles.optionCard, active && styles.activeCard]}>
-    <Text style={styles.choiceTitle}>{item.title}</Text><Text style={styles.choiceSub}>{item.subtitle}</Text>{active ? <View style={styles.optionCheck}><Feather name="check" size={12} color="#230433" /></View> : null}
+    <Text style={styles.choiceTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{item.title}</Text><Text style={styles.choiceSub} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{item.subtitle}</Text>{active ? <View style={styles.optionCheck}><Feather name="check" size={12} color="#230433" /></View> : null}
   </Pressable>;
 }
 
@@ -221,62 +221,62 @@ function WordChip({ word, onRemove }: { word: string; onRemove: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 22, gap: 14 },
-  topBar: { minHeight: 76, justifyContent: 'center' },
-  circleButton: { width: 48, height: 48, borderRadius: 24, borderWidth: 1, borderColor: '#6D28D9', backgroundColor: 'rgba(17,10,31,0.8)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.4, shadowRadius: 14 },
+  content: { paddingHorizontal: 20, gap: 12 },
+  topBar: { minHeight: 68, justifyContent: 'center' },
+  circleButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(139,92,246,0.7)', backgroundColor: 'rgba(17,10,31,0.72)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.32, shadowRadius: 12 },
   backButton: { position: 'absolute', left: 0, top: 4 },
-  headingBlock: { alignItems: 'center', paddingHorizontal: 86 },
-  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 31, lineHeight: 38, textAlign: 'center' },
-  screenSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 17, textAlign: 'center', marginTop: 3 },
-  howButton: { position: 'absolute', right: 0, top: 4, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#6D28D9', borderRadius: 16, paddingHorizontal: 12, height: 48, backgroundColor: 'rgba(13,8,22,0.85)' },
-  howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 15 },
-  aiBanner: { minHeight: 154, borderRadius: 18, borderWidth: 1, borderColor: '#3B1974', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', padding: 18, shadowColor: '#7C3AED', shadowOpacity: 0.35, shadowRadius: 26 },
-  aiArt: { width: '34%', alignItems: 'center', justifyContent: 'center' },
-  aiOrb: { width: 112, height: 112, borderRadius: 56, borderWidth: 2, borderColor: '#7C3AED', backgroundColor: 'rgba(91,0,255,0.22)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 26 },
-  aiLabel: { color: '#F0ABFC', fontFamily: 'Inter_700Bold', fontSize: 28, marginTop: -4 },
-  aiCopy: { flex: 1, gap: 10, paddingLeft: 14 },
-  aiTitle: { color: '#F05DFF', fontFamily: 'Inter_700Bold', fontSize: 24 },
-  aiDescription: { fontFamily: 'Inter_400Regular', fontSize: 17, lineHeight: 28 },
+  headingBlock: { alignItems: 'center', paddingHorizontal: 70 },
+  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 25, lineHeight: 31, textAlign: 'center' },
+  screenSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 19, textAlign: 'center', marginTop: 3 },
+  howButton: { position: 'absolute', right: 0, top: 7, flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(139,92,246,0.65)', borderRadius: 14, paddingHorizontal: 10, height: 36, backgroundColor: 'rgba(13,8,22,0.78)' },
+  howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 12 },
+  aiBanner: { minHeight: 128, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,92,246,0.32)', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', padding: 16, shadowColor: '#7C3AED', shadowOpacity: 0.22, shadowRadius: 18 },
+  aiArt: { width: 104, alignItems: 'center', justifyContent: 'center' },
+  aiOrb: { width: 88, height: 88, borderRadius: 44, borderWidth: 1.5, borderColor: '#7C3AED', backgroundColor: 'rgba(91,0,255,0.20)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.65, shadowRadius: 20 },
+  aiLabel: { color: '#F0ABFC', fontFamily: 'Inter_700Bold', fontSize: 22, marginTop: -5 },
+  aiCopy: { flex: 1, gap: 7, paddingLeft: 12 },
+  aiTitle: { color: '#F05DFF', fontFamily: 'Inter_700Bold', fontSize: 20, lineHeight: 25 },
+  aiDescription: { fontFamily: 'Inter_500Medium', fontSize: 14, lineHeight: 22 },
   rowTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
-  sectionTitle: { fontFamily: 'Inter_500Medium', fontSize: 21 },
-  pinkCounter: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 18 },
-  neonInputWrap: { height: 92, borderRadius: 20, borderWidth: 1.5, borderColor: '#8B5CF6', backgroundColor: 'rgba(8,7,18,0.92)', flexDirection: 'row', alignItems: 'center', gap: 18, paddingHorizontal: 24, shadowColor: '#8B5CF6', shadowOpacity: 0.95, shadowRadius: 18, elevation: 12 },
-  inputIconCircle: { width: 58, height: 58, borderRadius: 29, borderWidth: 1, borderColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.18)' },
-  input: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 20, height: 70 },
-  addCircle: { width: 58, height: 58, borderRadius: 29, borderWidth: 1.5, borderColor: '#9E72FF', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.22)', shadowColor: '#9E72FF', shadowOpacity: 0.8, shadowRadius: 14 },
+  sectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 17, lineHeight: 22 },
+  pinkCounter: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 15 },
+  neonInputWrap: { height: 74, borderRadius: 20, borderWidth: 1.2, borderColor: '#8B5CF6', backgroundColor: 'rgba(8,7,18,0.90)', flexDirection: 'row', alignItems: 'center', gap: 13, paddingHorizontal: 16, shadowColor: '#8B5CF6', shadowOpacity: 0.46, shadowRadius: 16, elevation: 9 },
+  inputIconCircle: { width: 46, height: 46, borderRadius: 23, borderWidth: 1, borderColor: 'rgba(139,92,246,0.72)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.16)' },
+  input: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 16, height: 56 },
+  addCircle: { width: 46, height: 46, borderRadius: 23, borderWidth: 1.2, borderColor: '#9E72FF', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.20)', shadowColor: '#9E72FF', shadowOpacity: 0.48, shadowRadius: 12 },
   notice: { fontFamily: 'Inter_500Medium', fontSize: 13, marginTop: -4 },
-  panel: { borderRadius: 18, borderWidth: 1, borderColor: '#261449', backgroundColor: 'rgba(7,7,18,0.75)', padding: 14, gap: 12 },
-  panelTitle: { fontFamily: 'Inter_500Medium', fontSize: 19 },
-  themeGrid: { flexDirection: 'row', gap: 12 },
-  themeCard: { flex: 1, minHeight: 72, borderRadius: 16, borderWidth: 1, borderColor: '#19172B', backgroundColor: '#0B0D1C', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 },
-  activeCard: { borderColor: '#8B5CF6', backgroundColor: 'rgba(74,22,150,0.76)', shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 16, elevation: 10 },
+  panel: { borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(7,7,18,0.72)', padding: 14, gap: 12 },
+  panelTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 17 },
+  themeGrid: { flexDirection: 'row', gap: 8 },
+  themeCard: { flex: 1, minHeight: 68, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(42,35,66,0.78)', backgroundColor: 'rgba(11,13,28,0.92)', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: 5, paddingVertical: 8 },
+  activeCard: { borderColor: '#8B5CF6', backgroundColor: 'rgba(74,22,150,0.64)', shadowColor: '#8B5CF6', shadowOpacity: 0.48, shadowRadius: 14, elevation: 8 },
   themeTextBlock: { minWidth: 0 },
-  choiceTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 16, textAlign: 'center' },
-  choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 14, marginTop: 4, textAlign: 'center' },
+  choiceTitle: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 13, lineHeight: 16, textAlign: 'center' },
+  choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 14, marginTop: 2, textAlign: 'center' },
   check: { position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center' },
-  emptyCard: { minHeight: 188, borderRadius: 18, borderWidth: 1, borderColor: '#201246', backgroundColor: 'rgba(6,8,20,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  magicBox: { width: 210, height: 96, alignItems: 'center', justifyContent: 'flex-end' },
+  emptyCard: { minHeight: 170, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(6,8,20,0.76)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 16 },
+  magicBox: { width: 188, height: 86, alignItems: 'center', justifyContent: 'flex-end' },
   floatChip: { position: 'absolute', color: '#F5D0FE', borderWidth: 1, borderColor: '#7C3AED', backgroundColor: 'rgba(60,12,115,0.85)', borderRadius: 5, paddingHorizontal: 9, paddingVertical: 4, fontFamily: 'Inter_500Medium', fontSize: 14, transform: [{ rotate: '-9deg' }] },
   floatOne: { top: 2, left: 52 }, floatTwo: { top: 16, right: 38, transform: [{ rotate: '12deg' }] }, floatThree: { top: 42, left: 16, color: '#FDE047', borderColor: '#A16207' },
-  emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 21, marginTop: 10 },
-  emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 16, marginTop: 5 },
+  emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 18, marginTop: 8 },
+  emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 14, marginTop: 4 },
   hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },
   wordWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, borderRadius: 18, borderWidth: 1, borderColor: '#201246', backgroundColor: 'rgba(6,8,20,0.78)', padding: 14 },
   wordChip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 999, borderWidth: 1, borderColor: '#7C3AED', backgroundColor: 'rgba(46,16,101,0.9)', paddingHorizontal: 14, paddingVertical: 10 },
   wordText: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 15 },
-  reasonCard: { borderRadius: 18, borderWidth: 1, borderColor: '#6D28D9', backgroundColor: 'rgba(13,8,25,0.82)', padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  reasonCard: { borderRadius: 20, borderWidth: 1, borderColor: 'rgba(139,92,246,0.62)', backgroundColor: 'rgba(13,8,25,0.78)', padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   reasonCopy: { flex: 1, paddingRight: 18 },
-  reasonTitle: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 21, marginBottom: 8 },
-  reasonText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 24 },
-  repeatGrid: { flexDirection: 'row', gap: 12 },
-  optionCard: { flex: 1, minHeight: 70, borderRadius: 15, borderWidth: 1, borderColor: '#19172B', backgroundColor: '#0B0D1C', alignItems: 'center', justifyContent: 'center' },
+  reasonTitle: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 17, marginBottom: 7 },
+  reasonText: { fontFamily: 'Inter_500Medium', fontSize: 13, lineHeight: 21 },
+  repeatGrid: { flexDirection: 'row', gap: 8 },
+  optionCard: { flex: 1, minHeight: 58, borderRadius: 15, borderWidth: 1, borderColor: 'rgba(42,35,66,0.78)', backgroundColor: 'rgba(11,13,28,0.92)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   optionCheck: { position: 'absolute', top: 9, right: 9, width: 19, height: 19, borderRadius: 9.5, backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center' },
-  tipCard: { borderRadius: 15, borderWidth: 1, borderColor: '#1B1B38', backgroundColor: 'rgba(13,17,39,0.86)', paddingHorizontal: 18, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 14 },
+  tipCard: { borderRadius: 16, borderWidth: 1, borderColor: 'rgba(42,35,66,0.70)', backgroundColor: 'rgba(13,17,39,0.74)', paddingHorizontal: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 10 },
   star: { fontSize: 27 },
-  tipText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 22 },
+  tipText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19 },
   tipLead: { color: '#FACC15', fontFamily: 'Inter_600SemiBold' },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 22, paddingTop: 12, backgroundColor: 'rgba(5,5,10,0.72)' },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 10, backgroundColor: 'rgba(5,5,10,0.72)' },
   cta: { borderRadius: 16, shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 20, elevation: 12 },
-  ctaGradient: { minHeight: 62, borderRadius: 16, borderWidth: 1, borderColor: '#A855F7', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 80 },
-  ctaText: { color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 24 },
+  ctaGradient: { minHeight: 56, borderRadius: 18, borderWidth: 1, borderColor: '#A855F7', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 60 },
+  ctaText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 18 },
 });
