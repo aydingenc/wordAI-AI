@@ -91,14 +91,14 @@ export default function WordsEntryScreen() {
       >
         <View style={styles.topBar}>
           <Pressable onPress={() => router.replace('/home')} style={[styles.circleButton, styles.backButton]}>
-            <Feather name="arrow-left" size={21} color={colors.foreground} />
+            <Feather name="arrow-left" size={19} color={colors.foreground} />
           </Pressable>
           <View style={styles.headingBlock}>
             <Text style={[styles.screenTitle, { color: colors.foreground }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>Kelimelerini Gir</Text>
             <Text style={[styles.screenSubtitle, { color: colors.mutedForeground }]} numberOfLines={1}>Senin kelimelerin, senin hikayen.</Text>
           </View>
           <Pressable style={styles.howButton}>
-            <MaterialCommunityIcons name="help-circle-outline" size={14} color="#F15DFF" />
+            <MaterialCommunityIcons name="help-circle-outline" size={13} color="#F15DFF" />
             <Text style={styles.howText}>Nasıl çalışır?</Text>
           </Pressable>
         </View>
@@ -225,14 +225,14 @@ function WordChip({ word, onRemove }: { word: string; onRemove: () => void }) {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, gap: 11 },
-  topBar: { minHeight: 58, justifyContent: 'center' },
-  circleButton: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(139,92,246,0.72)', backgroundColor: 'rgba(13,8,22,0.68)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.28, shadowRadius: 10, zIndex: 2 },
+  topBar: { minHeight: 54, justifyContent: 'center' },
+  circleButton: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.68)', backgroundColor: 'rgba(13,8,22,0.62)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.24, shadowRadius: 9, zIndex: 2 },
   backButton: { position: 'absolute', left: 0, top: 4 },
-  headingBlock: { position: 'absolute', left: 54, right: 54, top: 1, alignItems: 'center' },
-  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 24, lineHeight: 29, textAlign: 'center', letterSpacing: -0.4 },
-  screenSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 18, textAlign: 'center', marginTop: 1 },
-  howButton: { position: 'absolute', right: 0, top: 7, flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderColor: 'rgba(139,92,246,0.58)', borderRadius: 13, paddingHorizontal: 9, height: 32, backgroundColor: 'rgba(13,8,22,0.74)', zIndex: 2 },
-  howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 11 },
+  headingBlock: { position: 'absolute', left: 0, right: 0, top: 3, alignItems: 'center', paddingHorizontal: 104 },
+  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 22, lineHeight: 27, textAlign: 'center', letterSpacing: -0.35 },
+  screenSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, textAlign: 'center', marginTop: 0 },
+  howButton: { position: 'absolute', right: 0, top: 7, flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(139,92,246,0.54)', borderRadius: 12, paddingHorizontal: 8, height: 30, backgroundColor: 'rgba(13,8,22,0.70)', zIndex: 2 },
+  howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 10.5 },
   aiBanner: { minHeight: 108, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.26)', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 14, shadowColor: '#7C3AED', shadowOpacity: 0.18, shadowRadius: 14 },
   aiArt: { width: 118, alignItems: 'center', justifyContent: 'center' },
   aiOrb: { width: 78, height: 78, borderRadius: 39, borderWidth: 1.2, borderColor: 'rgba(139,92,246,0.82)', backgroundColor: 'rgba(91,0,255,0.18)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.56, shadowRadius: 18 },
