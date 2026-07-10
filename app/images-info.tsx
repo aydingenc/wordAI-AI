@@ -69,7 +69,7 @@ export default function ImagesInfoScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: Math.max(insets.top, 34) + 10, paddingBottom: insets.bottom + 28 },
+          { paddingTop: Math.max(insets.top, 30) + 6, paddingBottom: insets.bottom + 24 },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -144,7 +144,7 @@ export default function ImagesInfoScreen() {
         <GlowCard style={styles.flowCard}>{FLOW.map((item, index) => <React.Fragment key={item.label}><View style={styles.flowStep}><IconOrb mcIcon={item.icon} size={30} /><Text style={styles.flowLabel}>{item.label}</Text></View>{index < FLOW.length - 1 ? <Feather name="arrow-right" size={26} color={colors.accent} style={styles.flowArrow} /> : null}</React.Fragment>)}</GlowCard>
 
         <GlowCard style={styles.securityCard}>
-          <Feather name="shield" size={44} color={colors.accent} />
+          <View style={styles.shieldCheck}><Feather name="shield" size={46} color={colors.accent} /><Feather name="check" size={20} color={colors.accent} style={styles.shieldTick} /></View>
           <View style={styles.securityText}><Text style={styles.securityTitle}>Güvenli Görsel Analizi</Text><Text style={[styles.securityDesc, { color: colors.mutedForeground }]}>Uygunsuz içerikler analizden geçmez. Güvenli görsel kontrolünü aşamayan yüklemeler işlenmez.</Text></View>
           <View style={[styles.lockBox, { borderColor: colors.primary }]}><Feather name="lock" size={24} color={colors.accent} /></View>
         </GlowCard>
@@ -168,7 +168,7 @@ export default function ImagesInfoScreen() {
 }
 
 function RobotIllustration() {
-  return <View style={styles.robotWrap}><Text style={styles.sparkleA}>✦</Text><Text style={styles.sparkleB}>✧</Text><LinearGradient colors={['#F5E8FF', '#8B5CF6', '#2E1065']} style={styles.robotHead}><View style={styles.robotFace}><Text style={styles.robotEyes}>⌒  ⌒</Text><Text style={styles.robotMouth}>ᴗ</Text></View></LinearGradient><View style={styles.robotBody}><Feather name="image" size={18} color="#FFFFFF" /></View><View style={[styles.photoMock, styles.photoOne]} /><View style={[styles.photoMock, styles.photoTwo]} /></View>;
+  return <View style={styles.robotWrap}><Text style={styles.sparkleA}>✦</Text><Text style={styles.sparkleB}>✧</Text><LinearGradient colors={['#F5E8FF', '#8B5CF6', '#2E1065']} style={styles.robotHead}><View style={styles.robotFace}><Text style={styles.robotEyes}>⌒  ⌒</Text><Text style={styles.robotMouth}>ᴗ</Text></View></LinearGradient><View style={styles.robotBody}><Feather name="image" size={18} color="#FFFFFF" /></View><View style={[styles.photoMock, styles.photoOne]} /><View style={[styles.photoMock, styles.photoTwo]} /><View style={[styles.photoMock, styles.photoThree]} /></View>;
 }
 
 function IconOrb({ icon, mcIcon, size, large }: { icon?: keyof typeof Feather.glyphMap; mcIcon?: keyof typeof MaterialCommunityIcons.glyphMap; size: number; large?: boolean }) {
@@ -184,25 +184,25 @@ function BenefitCard({ title, text, icon }: { title: string; text: string; icon:
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 18, gap: 14 },
-  heroHead: { flexDirection: 'row', alignItems: 'flex-start', minHeight: 160 },
-  heroTextBlock: { flex: 1, paddingRight: 8, gap: 10 },
+  content: { paddingHorizontal: 18, gap: 10 },
+  heroHead: { flexDirection: 'row', alignItems: 'flex-start', minHeight: 130 },
+  heroTextBlock: { flex: 1, paddingRight: 8, gap: 7 },
   backButton: { width: 43, height: 43, borderRadius: 22, borderWidth: 1.2, alignItems: 'center', justifyContent: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 7, flexWrap: 'wrap' },
   title: { fontFamily: 'Inter_700Bold', fontSize: 31, letterSpacing: -0.7 },
   subtitle: { fontFamily: 'Inter_400Regular', fontSize: 15.5, lineHeight: 23, maxWidth: 360 },
-  robotWrap: { width: 145, height: 140, alignItems: 'center', justifyContent: 'center' },
+  robotWrap: { width: 132, height: 124, alignItems: 'center', justifyContent: 'center' },
   sparkleA: { position: 'absolute', top: 8, right: 14, color: '#C084FC', fontSize: 18 }, sparkleB: { position: 'absolute', top: 28, left: 8, color: '#E9D5FF', fontSize: 18 },
-  robotHead: { width: 74, height: 66, borderRadius: 28, padding: 8, alignItems: 'center', justifyContent: 'center' },
-  robotFace: { width: 54, height: 36, borderRadius: 17, backgroundColor: '#160824', alignItems: 'center', justifyContent: 'center' },
+  robotHead: { width: 66, height: 58, borderRadius: 24, padding: 7, alignItems: 'center', justifyContent: 'center' },
+  robotFace: { width: 48, height: 31, borderRadius: 15, backgroundColor: '#160824', alignItems: 'center', justifyContent: 'center' },
   robotEyes: { color: '#FFFFFF', fontSize: 15, lineHeight: 15 }, robotMouth: { color: '#FFFFFF', fontSize: 17, lineHeight: 17 },
-  robotBody: { width: 54, height: 44, borderRadius: 19, backgroundColor: 'rgba(139,92,246,0.58)', alignItems: 'center', justifyContent: 'center', marginTop: -3 },
-  photoMock: { position: 'absolute', width: 44, height: 34, borderRadius: 5, borderWidth: 1, borderColor: '#E9D5FF', backgroundColor: 'rgba(124,58,237,0.62)' }, photoOne: { left: 14, top: 58, transform: [{ rotate: '-13deg' }] }, photoTwo: { right: 8, top: 74, transform: [{ rotate: '14deg' }] },
-  tabs: { flexDirection: 'row', borderRadius: 18, borderWidth: 1, padding: 3, gap: 3 }, tabButton: { flex: 1 }, activeTab: { minHeight: 58, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 }, activeTabText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14.5 }, stepNo: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 16 }, inactiveTab: { minHeight: 58, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 }, inactiveTabText: { fontFamily: 'Inter_600SemiBold', fontSize: 14.5 }, tabCircle: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, tabCircleText: { fontFamily: 'Inter_700Bold', fontSize: 13 },
-  uploadCard: { minHeight: 330, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', padding: 20, borderStyle: 'dashed' }, balloon: { position: 'absolute', right: 35, top: 62 }, iconOrb: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(216,180,254,0.55)' }, iconOrbLarge: { width: 92, height: 92, borderRadius: 46, marginBottom: 13 }, uploadTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 25 }, uploadDesc: { color: '#DDD6FE', fontFamily: 'Inter_400Regular', fontSize: 14.5, lineHeight: 21, textAlign: 'center', marginTop: 5 }, actionRow: { flexDirection: 'row', gap: 14, marginTop: 22, width: '100%' }, uploadAction: { flex: 1, minHeight: 92, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(168,85,247,0.42)', backgroundColor: 'rgba(9,6,20,0.72)', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 12 }, actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 16 }, actionSubtitle: { color: '#BDB4D8', fontFamily: 'Inter_400Regular', fontSize: 13, marginTop: 4 },
-  benefitRow: { flexDirection: 'row', gap: 10 }, benefitCard: { flex: 1, minHeight: 150, padding: 12 }, benefitTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14, lineHeight: 19, marginTop: 10 }, benefitText: { color: '#BDB4D8', fontFamily: 'Inter_400Regular', fontSize: 12.5, lineHeight: 18, marginTop: 6 },
+  robotBody: { width: 50, height: 38, borderRadius: 17, backgroundColor: 'rgba(139,92,246,0.44)', borderWidth: 1, borderColor: 'rgba(216,180,254,0.45)', alignItems: 'center', justifyContent: 'center', marginTop: -2 },
+  photoMock: { position: 'absolute', width: 40, height: 31, borderRadius: 5, borderWidth: 1, borderColor: '#E9D5FF', backgroundColor: 'rgba(124,58,237,0.58)' }, photoOne: { left: 9, top: 51, transform: [{ rotate: '-15deg' }] }, photoTwo: { right: 7, top: 68, transform: [{ rotate: '14deg' }] }, photoThree: { left: 38, bottom: 5, transform: [{ rotate: '4deg' }] },
+  tabs: { flexDirection: 'row', borderRadius: 18, borderWidth: 1, padding: 3, gap: 3 }, tabButton: { flex: 1 }, activeTab: { minHeight: 52, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 }, activeTabText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14.5 }, stepNo: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 16 }, inactiveTab: { minHeight: 52, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 }, inactiveTabText: { fontFamily: 'Inter_600SemiBold', fontSize: 14.5 }, tabCircle: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, tabCircleText: { fontFamily: 'Inter_700Bold', fontSize: 13 },
+  uploadCard: { minHeight: 300, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', padding: 18, borderWidth: 1.4, borderColor: 'rgba(192,132,252,0.78)', borderStyle: 'dashed' }, balloon: { position: 'absolute', right: 35, top: 62 }, iconOrb: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(216,180,254,0.55)' }, iconOrbLarge: { width: 84, height: 84, borderRadius: 42, marginBottom: 10 }, uploadTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 25 }, uploadDesc: { color: '#DDD6FE', fontFamily: 'Inter_400Regular', fontSize: 14.5, lineHeight: 21, textAlign: 'center', marginTop: 5 }, actionRow: { flexDirection: 'row', gap: 14, marginTop: 16, width: '100%' }, uploadAction: { flex: 1, minHeight: 84, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(168,85,247,0.42)', backgroundColor: 'rgba(9,6,20,0.72)', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 12 }, actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 16 }, actionSubtitle: { color: '#BDB4D8', fontFamily: 'Inter_400Regular', fontSize: 13, marginTop: 4 },
+  benefitRow: { flexDirection: 'row', gap: 10 }, benefitCard: { flex: 1, minHeight: 142, padding: 12 }, benefitTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14, lineHeight: 19, marginTop: 10 }, benefitText: { color: '#BDB4D8', fontFamily: 'Inter_400Regular', fontSize: 12.5, lineHeight: 18, marginTop: 6 },
   flowCard: { minHeight: 116, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12 }, flowStep: { flex: 1, alignItems: 'center', gap: 9 }, flowLabel: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12.5, textAlign: 'center' }, flowArrow: { marginHorizontal: -2 },
-  securityCard: { minHeight: 98, flexDirection: 'row', alignItems: 'center', gap: 14 }, securityText: { flex: 1 }, securityTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 17, marginBottom: 4 }, securityDesc: { fontFamily: 'Inter_400Regular', fontSize: 13.5, lineHeight: 19 }, lockBox: { width: 62, height: 58, borderRadius: 17, borderWidth: 1, backgroundColor: 'rgba(139,92,246,0.18)', alignItems: 'center', justifyContent: 'center' },
+  securityCard: { minHeight: 92, flexDirection: 'row', alignItems: 'center', gap: 14 }, shieldCheck: { width: 50, height: 50, alignItems: 'center', justifyContent: 'center' }, shieldTick: { position: 'absolute' }, securityText: { flex: 1 }, securityTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 17, marginBottom: 4 }, securityDesc: { fontFamily: 'Inter_400Regular', fontSize: 13.5, lineHeight: 19 }, lockBox: { width: 62, height: 58, borderRadius: 17, borderWidth: 1.2, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
   motivationCard: { minHeight: 90, flexDirection: 'row', alignItems: 'center', gap: 13 }, motivationText: { color: '#FFFFFF', flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 16, lineHeight: 23 }, highlight: { color: '#C084FC' },
   cta: { minHeight: 76, borderRadius: 17, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 22, marginTop: 3, marginBottom: 8 }, ctaText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 23 },
 });
