@@ -7,17 +7,16 @@
       "@/*": [
         "./*"
       ]
-    }
+    },
+    "ignoreDeprecations": "6.0",
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-  ],
-  "references": [
-    {
-      "path": "../../lib/api-client-react"
-    }
   ]
 }
