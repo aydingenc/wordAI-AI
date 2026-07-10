@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -84,11 +83,7 @@ export default function WordsEntryScreen() {
 
   return (
     <GradientBackground>
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 18, paddingBottom: insets.bottom + 112 }]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 74 }]}>
         <View style={styles.topBar}>
           <Pressable onPress={() => router.replace('/home')} style={[styles.circleButton, styles.backButton]}>
             <Feather name="arrow-left" size={19} color={colors.foreground} />
@@ -106,13 +101,13 @@ export default function WordsEntryScreen() {
         <LinearGradient colors={['#1C0A3C', '#070711', '#12091F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.aiBanner}>
           <View style={styles.aiArt}>
             <View style={styles.aiOrb}>
-              <MaterialCommunityIcons name="brain" size={28} color="#E879F9" />
+              <MaterialCommunityIcons name="brain" size={22} color="#E879F9" />
               <Text style={styles.aiLabel}>AI</Text>
             </View>
           </View>
           <View style={styles.aiCopy}>
-            <Text style={styles.aiTitle}>AI Learning Engine</Text>
-            <Text style={[styles.aiDescription, { color: colors.foreground }]}>Girdiğin kelimeleri seviyene ve akışına göre hikayelere dönüştürüyoruz.</Text>
+            <Text style={styles.aiTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>AI Learning Engine</Text>
+            <Text style={[styles.aiDescription, { color: colors.foreground }]} numberOfLines={2}>Girdiğin kelimeleri seviyene göre hikayelere dönüştürüyoruz.</Text>
           </View>
           <View pointerEvents="none" style={styles.aiBook}>
             <MaterialCommunityIcons name="book-open-page-variant" size={42} color="rgba(139,92,246,0.28)" />
@@ -125,7 +120,7 @@ export default function WordsEntryScreen() {
         </View>
 
         <View style={styles.neonInputWrap}>
-          <View style={styles.inputIconCircle}><Feather name="edit-3" size={20} color="#EC5DFF" /></View>
+          <View style={styles.inputIconCircle}><Feather name="edit-3" size={18} color="#EC5DFF" /></View>
           <TextInput
             value={input}
             onChangeText={(value) => {
@@ -141,7 +136,7 @@ export default function WordsEntryScreen() {
             editable={!reachedMax}
           />
           <Pressable onPress={() => addWord(input)} disabled={!input.trim() || reachedMax} style={({ pressed }) => [styles.addCircle, { opacity: !input.trim() || reachedMax ? 0.55 : pressed ? 0.8 : 1 }]}>
-            <Feather name="plus" size={24} color="#F6EEFF" />
+            <Feather name="plus" size={22} color="#F6EEFF" />
           </Pressable>
         </View>
         {notice ? <Text style={[styles.notice, { color: colors.warning }]}>{notice}</Text> : null}
@@ -175,7 +170,7 @@ export default function WordsEntryScreen() {
           <Text style={styles.star}>⭐</Text>
           <Text style={[styles.tipText, { color: colors.mutedForeground }]}><Text style={styles.tipLead}>Tavsiye:</Text> Otomatik modda kelime geçişleri senin öğrenme hızına göre en verimli şekilde ayarlanır.</Text>
         </View>
-      </ScrollView>
+      </View>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <Pressable onPress={createStory} disabled={!canCreate} style={({ pressed }) => [styles.cta, { opacity: canCreate ? (pressed ? 0.86 : 1) : 0.45 }]}>
@@ -224,42 +219,42 @@ function WordChip({ word, onRemove }: { word: string; onRemove: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 20, gap: 11 },
-  topBar: { minHeight: 54, justifyContent: 'center' },
+  content: { flex: 1, paddingHorizontal: 20, gap: 8 },
+  topBar: { minHeight: 50, justifyContent: 'center' },
   circleButton: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.68)', backgroundColor: 'rgba(13,8,22,0.62)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.24, shadowRadius: 9, zIndex: 2 },
   backButton: { position: 'absolute', left: 0, top: 4 },
-  headingBlock: { position: 'absolute', left: 0, right: 0, top: 3, alignItems: 'center', paddingHorizontal: 104 },
-  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 22, lineHeight: 27, textAlign: 'center', letterSpacing: -0.35 },
-  screenSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16, textAlign: 'center', marginTop: 0 },
+  headingBlock: { position: 'absolute', left: 0, right: 0, top: 4, alignItems: 'center', paddingHorizontal: 90 },
+  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 20, lineHeight: 24, textAlign: 'center', letterSpacing: -0.25 },
+  screenSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 15, textAlign: 'center', marginTop: 0 },
   howButton: { position: 'absolute', right: 0, top: 7, flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(139,92,246,0.54)', borderRadius: 12, paddingHorizontal: 8, height: 30, backgroundColor: 'rgba(13,8,22,0.70)', zIndex: 2 },
   howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 10.5 },
-  aiBanner: { minHeight: 108, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.26)', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 14, shadowColor: '#7C3AED', shadowOpacity: 0.18, shadowRadius: 14 },
-  aiArt: { width: 118, alignItems: 'center', justifyContent: 'center' },
-  aiOrb: { width: 78, height: 78, borderRadius: 39, borderWidth: 1.2, borderColor: 'rgba(139,92,246,0.82)', backgroundColor: 'rgba(91,0,255,0.18)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.56, shadowRadius: 18 },
+  aiBanner: { height: 104, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.26)', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 14, shadowColor: '#7C3AED', shadowOpacity: 0.18, shadowRadius: 14 },
+  aiArt: { width: 112, alignItems: 'center', justifyContent: 'center' },
+  aiOrb: { width: 72, height: 72, borderRadius: 36, borderWidth: 1.2, borderColor: 'rgba(139,92,246,0.82)', backgroundColor: 'rgba(91,0,255,0.18)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.5, shadowRadius: 16 },
   aiLabel: { color: '#F0ABFC', fontFamily: 'Inter_700Bold', fontSize: 18, marginTop: -5 },
-  aiCopy: { flex: 1, gap: 6, paddingLeft: 8, paddingRight: 34, zIndex: 1 },
-  aiTitle: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 18, lineHeight: 23 },
-  aiDescription: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 20 },
+  aiCopy: { flex: 1, gap: 5, paddingLeft: 8, paddingRight: 28, zIndex: 1 },
+  aiTitle: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 16, lineHeight: 20 },
+  aiDescription: { fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 18 },
   aiBook: { position: 'absolute', right: 16, bottom: 14, opacity: 0.9 },
-  rowTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 5 },
+  rowTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 3 },
   sectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 16, lineHeight: 21 },
   pinkCounter: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 14 },
-  neonInputWrap: { height: 68, borderRadius: 19, borderWidth: 1.1, borderColor: '#8B5CF6', backgroundColor: 'rgba(8,7,18,0.90)', flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 15, shadowColor: '#8B5CF6', shadowOpacity: 0.38, shadowRadius: 14, elevation: 8 },
-  inputIconCircle: { width: 42, height: 42, borderRadius: 21, borderWidth: 1, borderColor: 'rgba(139,92,246,0.70)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.14)' },
+  neonInputWrap: { height: 62, borderRadius: 18, borderWidth: 1.1, borderColor: '#8B5CF6', backgroundColor: 'rgba(8,7,18,0.90)', flexDirection: 'row', alignItems: 'center', gap: 11, paddingHorizontal: 14, shadowColor: '#8B5CF6', shadowOpacity: 0.34, shadowRadius: 13, elevation: 8 },
+  inputIconCircle: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(139,92,246,0.70)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.14)' },
   input: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, height: 52 },
-  addCircle: { width: 42, height: 42, borderRadius: 21, borderWidth: 1.1, borderColor: '#9E72FF', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.18)', shadowColor: '#9E72FF', shadowOpacity: 0.42, shadowRadius: 10 },
+  addCircle: { width: 38, height: 38, borderRadius: 19, borderWidth: 1.1, borderColor: '#9E72FF', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.18)', shadowColor: '#9E72FF', shadowOpacity: 0.38, shadowRadius: 9 },
   notice: { fontFamily: 'Inter_500Medium', fontSize: 13, marginTop: -4 },
-  panel: { borderRadius: 19, borderWidth: 1, borderColor: 'rgba(139,92,246,0.20)', backgroundColor: 'rgba(7,7,18,0.68)', padding: 13, gap: 11 },
+  panel: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.20)', backgroundColor: 'rgba(7,7,18,0.68)', padding: 10, gap: 8 },
   panelTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 16 },
   themeGrid: { flexDirection: 'row', gap: 7 },
-  themeCard: { flex: 1, minHeight: 62, borderRadius: 15, borderWidth: 1, borderColor: 'rgba(42,35,66,0.74)', backgroundColor: 'rgba(11,13,28,0.88)', alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 4, paddingVertical: 7 },
+  themeCard: { flex: 1, minHeight: 52, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(42,35,66,0.74)', backgroundColor: 'rgba(11,13,28,0.88)', alignItems: 'center', justifyContent: 'center', gap: 2, paddingHorizontal: 4, paddingVertical: 5 },
   activeCard: { borderColor: 'rgba(139,92,246,0.92)', backgroundColor: 'rgba(74,22,150,0.58)', shadowColor: '#8B5CF6', shadowOpacity: 0.36, shadowRadius: 12, elevation: 7 },
   themeTextBlock: { minWidth: 0 },
   choiceTitle: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 15, textAlign: 'center' },
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10.5, lineHeight: 13, marginTop: 1, textAlign: 'center' },
   check: { position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center' },
-  emptyCard: { minHeight: 158, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(139,92,246,0.20)', backgroundColor: 'rgba(6,8,20,0.72)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 14 },
-  magicBox: { width: 188, height: 86, alignItems: 'center', justifyContent: 'flex-end' },
+  emptyCard: { minHeight: 122, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.20)', backgroundColor: 'rgba(6,8,20,0.72)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 10 },
+  magicBox: { width: 170, height: 56, alignItems: 'center', justifyContent: 'flex-end' },
   floatChip: { position: 'absolute', color: '#F5D0FE', borderWidth: 1, borderColor: '#7C3AED', backgroundColor: 'rgba(60,12,115,0.85)', borderRadius: 5, paddingHorizontal: 9, paddingVertical: 4, fontFamily: 'Inter_500Medium', fontSize: 14, transform: [{ rotate: '-9deg' }] },
   floatOne: { top: 2, left: 52 }, floatTwo: { top: 16, right: 38, transform: [{ rotate: '12deg' }] }, floatThree: { top: 42, left: 16, color: '#FDE047', borderColor: '#A16207' },
   emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 16, marginTop: 7 },
@@ -268,14 +263,14 @@ const styles = StyleSheet.create({
   wordWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, borderRadius: 18, borderWidth: 1, borderColor: '#201246', backgroundColor: 'rgba(6,8,20,0.78)', padding: 14 },
   wordChip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 999, borderWidth: 1, borderColor: '#7C3AED', backgroundColor: 'rgba(46,16,101,0.9)', paddingHorizontal: 14, paddingVertical: 10 },
   wordText: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 15 },
-  reasonCard: { borderRadius: 19, borderWidth: 1, borderColor: 'rgba(139,92,246,0.46)', backgroundColor: 'rgba(13,8,25,0.72)', padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  reasonCard: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.46)', backgroundColor: 'rgba(13,8,25,0.72)', padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   reasonCopy: { flex: 1, paddingRight: 18 },
   reasonTitle: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 16, marginBottom: 6 },
   reasonText: { fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 20 },
   repeatGrid: { flexDirection: 'row', gap: 8 },
-  optionCard: { flex: 1, minHeight: 54, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(42,35,66,0.74)', backgroundColor: 'rgba(11,13,28,0.88)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  optionCard: { flex: 1, minHeight: 48, borderRadius: 13, borderWidth: 1, borderColor: 'rgba(42,35,66,0.74)', backgroundColor: 'rgba(11,13,28,0.88)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   optionCheck: { position: 'absolute', top: 9, right: 9, width: 19, height: 19, borderRadius: 9.5, backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center' },
-  tipCard: { borderRadius: 16, borderWidth: 1, borderColor: 'rgba(42,35,66,0.70)', backgroundColor: 'rgba(13,17,39,0.74)', paddingHorizontal: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  tipCard: { borderRadius: 15, borderWidth: 1, borderColor: 'rgba(42,35,66,0.70)', backgroundColor: 'rgba(13,17,39,0.74)', paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 9 },
   star: { fontSize: 27 },
   tipText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19 },
   tipLead: { color: '#FACC15', fontFamily: 'Inter_600SemiBold' },
