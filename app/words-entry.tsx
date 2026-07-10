@@ -15,8 +15,8 @@ import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
 import { buildSessionFromWords, LEVEL_NAMES, makeWord } from '@/data/mock';
 
-const MIN_WORDS = 5;
-const MAX_WORDS = 15;
+const MIN_WORDS = 3;
+const MAX_WORDS = 10;
 
 const THEMES = [
   { id: 'travel', title: 'Travel', subtitle: 'Seyahat', icon: 'airplane' as const },
@@ -58,14 +58,14 @@ export default function WordsEntryScreen() {
     }
 
     if (reachedMax) {
-      setNotice('En fazla 15 kelime ekleyebilirsin.');
+      setNotice('En fazla 10 kelime ekleyebilirsin.');
       setInput('');
       return;
     }
 
     setWords((prev) => [...prev, nextWord]);
     setInput('');
-    setNotice(words.length + 1 >= MAX_WORDS ? '15 kelime sınırına ulaştın.' : '');
+    setNotice(words.length + 1 >= MAX_WORDS ? '10 kelime sınırına ulaştın.' : '');
   };
 
   const removeWord = (word: string) => {
@@ -163,7 +163,7 @@ export default function WordsEntryScreen() {
 
         <View style={styles.reasonCard}>
           <View style={styles.reasonCopy}>
-            <Text style={styles.reasonTitle}>Neden 5–15 kelime?</Text>
+            <Text style={styles.reasonTitle}>Neden 3–10 kelime?</Text>
             <Text style={[styles.reasonText, { color: colors.foreground }]}>Bu aralık, kelimelerin hikâyede doğal ve etkili bir şekilde tekrar etmesini sağlar.</Text>
           </View>
           <MaterialCommunityIcons name="target" size={32} color="#C76BFF" />
@@ -252,7 +252,7 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
     </View>
     <Text style={styles.emptyTitle}>{hasWords ? `${words.length} kelime eklendi.` : 'Henüz kelime eklemedin.'}</Text>
     <Text style={styles.emptyText}>
-      {hasWords ? 'Kelimeye dokunarak kaldırabilirsin.' : <>En az <Text style={styles.hot}>5</Text>, en fazla <Text style={styles.hot}>15</Text> kelime ekleyebilirsin.</>}
+      {hasWords ? 'Kelimeye dokunarak kaldırabilirsin.' : <>En az <Text style={styles.hot}>3</Text>, en fazla <Text style={styles.hot}>10</Text> kelime ekleyebilirsin.</>}
     </Text>
   </View>;
 }
@@ -302,11 +302,11 @@ const styles = StyleSheet.create({
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 12, marginTop: 0, textAlign: 'center' },
   check: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
   emptyCard: { height: 142, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(5,7,18,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 10, shadowColor: '#7C3AED', shadowOpacity: 0.16, shadowRadius: 14 },
-  filledCard: { height: 168, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
-  magicBox: { width: '100%', height: 102, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
+  filledCard: { height: 148, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
+  magicBox: { width: '100%', height: 84, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
   boxGlow: { position: 'absolute', bottom: 4, width: 150, height: 56, borderRadius: 75, backgroundColor: '#7C3AED', opacity: 0.22, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 28 },
   magicCore: { width: 66, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-1deg' }], shadowColor: '#8B5CF6', shadowOpacity: 0.78, shadowRadius: 18, elevation: 10 },
-  magicCoreFilled: { position: 'absolute', top: 30, opacity: 0.72, width: 52, height: 38, borderRadius: 12 },
+  magicCoreFilled: { position: 'absolute', top: 24, opacity: 0.58, width: 48, height: 34, borderRadius: 11 },
   sparkle: { position: 'absolute', color: '#F5D0FE', fontFamily: 'Inter_700Bold', fontSize: 12, textShadowColor: '#E879F9', textShadowRadius: 8 },
   sparkleLeft: { left: 42, bottom: 24 },
   sparkleRight: { right: 44, bottom: 32 },
@@ -317,9 +317,9 @@ const styles = StyleSheet.create({
   floatFive: { top: 2, right: 70, transform: [{ rotate: '8deg' }] },
   floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
   realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
-  realWordsCloud: { position: 'absolute', left: 12, right: 12, top: 6, minHeight: 88, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 4, paddingVertical: 6 },
-  realWordChip: { maxWidth: 76, borderWidth: 1, borderColor: 'rgba(216,180,254,0.72)', backgroundColor: 'rgba(67,24,126,0.88)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, shadowColor: '#8B5CF6', shadowOpacity: 0.26, shadowRadius: 7 },
-  realWordText: { color: '#F8F4FF', fontFamily: 'Inter_600SemiBold', fontSize: 10.5, lineHeight: 12 },
+  realWordsCloud: { position: 'absolute', left: 12, right: 12, top: 5, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 4, paddingVertical: 5 },
+  realWordChip: { maxWidth: 76, borderWidth: 1, borderColor: 'rgba(216,180,254,0.72)', backgroundColor: 'rgba(67,24,126,0.88)', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, shadowColor: '#8B5CF6', shadowOpacity: 0.26, shadowRadius: 7 },
+  realWordText: { color: '#F8F4FF', fontFamily: 'Inter_600SemiBold', fontSize: 10, lineHeight: 12 },
   emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 2 },
   emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
   hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },
