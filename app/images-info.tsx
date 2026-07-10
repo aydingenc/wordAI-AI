@@ -12,7 +12,6 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GradientBackground } from '@/components/GradientBackground';
 import { GlowCard } from '@/components/GlowCard';
 import { useColors } from '@/hooks/useColors';
 import { IMAGES } from '@/data/mock';
@@ -65,11 +64,11 @@ export default function ImagesInfoScreen() {
   };
 
   return (
-    <GradientBackground>
+    <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={[
           styles.content,
-          { paddingTop: Math.max(insets.top, 30) + 6, paddingBottom: insets.bottom + 24 },
+          { paddingTop: Math.max(insets.top, 28) + 2, paddingBottom: insets.bottom + 22 },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -128,6 +127,7 @@ export default function ImagesInfoScreen() {
         </View>
 
         <GlowCard padded={false} style={styles.uploadCard}>
+          <View pointerEvents="none" style={styles.uploadDash} />
           <Image source={IMAGES.nature} style={StyleSheet.absoluteFill} resizeMode="cover" />
           <LinearGradient colors={['rgba(46,16,101,0.18)', 'rgba(11,7,19,0.58)', 'rgba(11,7,19,0.92)']} style={StyleSheet.absoluteFill} />
           <View style={styles.balloon}><MaterialCommunityIcons name="airballoon" size={42} color="rgba(251,146,60,0.48)" /></View>
@@ -163,7 +163,7 @@ export default function ImagesInfoScreen() {
           </LinearGradient>
         </Pressable>
       </ScrollView>
-    </GradientBackground>
+    </View>
   );
 }
 
@@ -184,22 +184,23 @@ function BenefitCard({ title, text, icon }: { title: string; text: string; icon:
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 18, gap: 10 },
-  heroHead: { flexDirection: 'row', alignItems: 'flex-start', minHeight: 130 },
-  heroTextBlock: { flex: 1, paddingRight: 8, gap: 7 },
+  screen: { flex: 1 },
+  content: { paddingHorizontal: 18, gap: 7 },
+  heroHead: { flexDirection: 'row', alignItems: 'flex-start', minHeight: 112 },
+  heroTextBlock: { flex: 1, paddingRight: 8, gap: 5 },
   backButton: { width: 43, height: 43, borderRadius: 22, borderWidth: 1.2, alignItems: 'center', justifyContent: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 7, flexWrap: 'wrap' },
   title: { fontFamily: 'Inter_700Bold', fontSize: 31, letterSpacing: -0.7 },
-  subtitle: { fontFamily: 'Inter_400Regular', fontSize: 15.5, lineHeight: 23, maxWidth: 360 },
-  robotWrap: { width: 132, height: 124, alignItems: 'center', justifyContent: 'center' },
-  sparkleA: { position: 'absolute', top: 8, right: 14, color: '#C084FC', fontSize: 18 }, sparkleB: { position: 'absolute', top: 28, left: 8, color: '#E9D5FF', fontSize: 18 },
+  subtitle: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 21, maxWidth: 360 },
+  robotWrap: { width: 126, height: 112, alignItems: 'center', justifyContent: 'center' },
+  sparkleA: { position: 'absolute', top: 2, right: 14, color: '#C084FC', fontSize: 18 }, sparkleB: { position: 'absolute', top: 18, left: 8, color: '#E9D5FF', fontSize: 18 },
   robotHead: { width: 66, height: 58, borderRadius: 24, padding: 7, alignItems: 'center', justifyContent: 'center' },
   robotFace: { width: 48, height: 31, borderRadius: 15, backgroundColor: '#160824', alignItems: 'center', justifyContent: 'center' },
   robotEyes: { color: '#FFFFFF', fontSize: 15, lineHeight: 15 }, robotMouth: { color: '#FFFFFF', fontSize: 17, lineHeight: 17 },
   robotBody: { width: 50, height: 38, borderRadius: 17, backgroundColor: 'rgba(139,92,246,0.44)', borderWidth: 1, borderColor: 'rgba(216,180,254,0.45)', alignItems: 'center', justifyContent: 'center', marginTop: -2 },
-  photoMock: { position: 'absolute', width: 40, height: 31, borderRadius: 5, borderWidth: 1, borderColor: '#E9D5FF', backgroundColor: 'rgba(124,58,237,0.58)' }, photoOne: { left: 9, top: 51, transform: [{ rotate: '-15deg' }] }, photoTwo: { right: 7, top: 68, transform: [{ rotate: '14deg' }] }, photoThree: { left: 38, bottom: 5, transform: [{ rotate: '4deg' }] },
-  tabs: { flexDirection: 'row', borderRadius: 18, borderWidth: 1, padding: 3, gap: 3 }, tabButton: { flex: 1 }, activeTab: { minHeight: 52, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 }, activeTabText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14.5 }, stepNo: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 16 }, inactiveTab: { minHeight: 52, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 }, inactiveTabText: { fontFamily: 'Inter_600SemiBold', fontSize: 14.5 }, tabCircle: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, tabCircleText: { fontFamily: 'Inter_700Bold', fontSize: 13 },
-  uploadCard: { minHeight: 300, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', padding: 18, borderWidth: 1.4, borderColor: 'rgba(192,132,252,0.78)', borderStyle: 'dashed' }, balloon: { position: 'absolute', right: 35, top: 62 }, iconOrb: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(216,180,254,0.55)' }, iconOrbLarge: { width: 84, height: 84, borderRadius: 42, marginBottom: 10 }, uploadTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 25 }, uploadDesc: { color: '#DDD6FE', fontFamily: 'Inter_400Regular', fontSize: 14.5, lineHeight: 21, textAlign: 'center', marginTop: 5 }, actionRow: { flexDirection: 'row', gap: 14, marginTop: 16, width: '100%' }, uploadAction: { flex: 1, minHeight: 84, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(168,85,247,0.42)', backgroundColor: 'rgba(9,6,20,0.72)', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 12 }, actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 16 }, actionSubtitle: { color: '#BDB4D8', fontFamily: 'Inter_400Regular', fontSize: 13, marginTop: 4 },
+  photoMock: { position: 'absolute', width: 40, height: 31, borderRadius: 5, borderWidth: 1, borderColor: '#E9D5FF', backgroundColor: 'rgba(124,58,237,0.58)' }, photoOne: { left: 9, top: 45, transform: [{ rotate: '-15deg' }] }, photoTwo: { right: 7, top: 59, transform: [{ rotate: '14deg' }] }, photoThree: { left: 38, bottom: 5, transform: [{ rotate: '4deg' }] },
+  tabs: { flexDirection: 'row', borderRadius: 18, borderWidth: 1, padding: 3, gap: 3 }, tabButton: { flex: 1 }, activeTab: { minHeight: 47, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 }, activeTabText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14.5 }, stepNo: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 16 }, inactiveTab: { minHeight: 47, borderRadius: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 }, inactiveTabText: { fontFamily: 'Inter_600SemiBold', fontSize: 14.5 }, tabCircle: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center' }, tabCircleText: { fontFamily: 'Inter_700Bold', fontSize: 13 },
+  uploadCard: { minHeight: 276, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', padding: 16, borderWidth: 0, borderColor: 'transparent' }, uploadDash: { ...StyleSheet.absoluteFillObject, borderWidth: 1.6, borderColor: 'rgba(192,132,252,0.88)', borderStyle: 'dashed', borderRadius: 22, zIndex: 5 }, balloon: { position: 'absolute', right: 35, top: 62 }, iconOrb: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(216,180,254,0.55)' }, iconOrbLarge: { width: 78, height: 78, borderRadius: 39, marginBottom: 8 }, uploadTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 24 }, uploadDesc: { color: '#DDD6FE', fontFamily: 'Inter_400Regular', fontSize: 14.5, lineHeight: 21, textAlign: 'center', marginTop: 5 }, actionRow: { flexDirection: 'row', gap: 14, marginTop: 12, width: '100%' }, uploadAction: { flex: 1, minHeight: 78, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(168,85,247,0.42)', backgroundColor: 'rgba(9,6,20,0.72)', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 12 }, actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 16 }, actionSubtitle: { color: '#BDB4D8', fontFamily: 'Inter_400Regular', fontSize: 13, marginTop: 4 },
   benefitRow: { flexDirection: 'row', gap: 10 }, benefitCard: { flex: 1, minHeight: 142, padding: 12 }, benefitTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14, lineHeight: 19, marginTop: 10 }, benefitText: { color: '#BDB4D8', fontFamily: 'Inter_400Regular', fontSize: 12.5, lineHeight: 18, marginTop: 6 },
   flowCard: { minHeight: 116, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12 }, flowStep: { flex: 1, alignItems: 'center', gap: 9 }, flowLabel: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12.5, textAlign: 'center' }, flowArrow: { marginHorizontal: -2 },
   securityCard: { minHeight: 92, flexDirection: 'row', alignItems: 'center', gap: 14 }, shieldCheck: { width: 50, height: 50, alignItems: 'center', justifyContent: 'center' }, shieldTick: { position: 'absolute' }, securityText: { flex: 1 }, securityTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 17, marginBottom: 4 }, securityDesc: { fontFamily: 'Inter_400Regular', fontSize: 13.5, lineHeight: 19 }, lockBox: { width: 62, height: 58, borderRadius: 17, borderWidth: 1.2, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
