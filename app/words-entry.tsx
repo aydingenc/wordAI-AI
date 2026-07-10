@@ -83,7 +83,7 @@ export default function WordsEntryScreen() {
 
   return (
     <GradientBackground>
-      <View style={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 74 }]}>
+      <View style={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 90 }]}>
         <View style={styles.topBar}>
           <Pressable onPress={() => router.replace('/home')} style={[styles.circleButton, styles.backButton]}>
             <Feather name="arrow-left" size={19} color={colors.foreground} />
@@ -337,8 +337,8 @@ const styles = StyleSheet.create({
   star: { fontSize: 24, textShadowColor: 'rgba(251,191,36,0.55)', textShadowRadius: 8 },
   tipText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 11.5, lineHeight: 16, textAlign: 'center' },
   tipLead: { color: '#FACC15', fontFamily: 'Inter_600SemiBold' },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 8, backgroundColor: 'rgba(5,5,10,0.58)' },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 12, backgroundColor: 'rgba(5,5,10,0.58)' },
   cta: { borderRadius: 18, shadowColor: '#A855F7', shadowOpacity: 0.78, shadowRadius: 22, elevation: 14 },
-  ctaGradient: { minHeight: 56, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(216,180,254,0.72)', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 56 },
+  ctaGradient: { minHeight: 56, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(216,180,254,0.72)', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 28 },
   ctaText: { color: '#F8F4FF', fontFamily: 'Inter_700Bold', fontSize: 18, letterSpacing: -0.2 },
 });
