@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -83,7 +84,11 @@ export default function WordsEntryScreen() {
 
   return (
     <GradientBackground>
-      <View style={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 150 }]}>
+      <ScrollView
+        style={styles.scroller}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 158 }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.topBar}>
           <Pressable onPress={() => router.replace('/home')} style={[styles.circleButton, styles.backButton]}>
             <Feather name="arrow-left" size={19} color={colors.foreground} />
@@ -174,7 +179,7 @@ export default function WordsEntryScreen() {
           {REPEAT_OPTIONS.map((item) => <OptionCard key={item.id} item={item} active={repeatCount === item.id} onPress={() => setRepeatCount(item.id)} />)}
         </View>
 
-      </View>
+      </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <View style={styles.tipCard}>
@@ -308,7 +313,8 @@ function WordChip({ word, onRemove }: { word: string; onRemove: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  content: { flex: 1, paddingHorizontal: 20, gap: 7 },
+  scroller: { flex: 1 },
+  content: { paddingHorizontal: 20, gap: 7 },
   topBar: { minHeight: 48, justifyContent: 'center' },
   circleButton: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(168,85,247,0.72)', backgroundColor: 'rgba(18,12,31,0.74)', alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOpacity: 0.36, shadowRadius: 12, elevation: 7, zIndex: 2 },
   backButton: { position: 'absolute', left: 0, top: 4 },
@@ -348,9 +354,9 @@ const styles = StyleSheet.create({
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 12, marginTop: 0, textAlign: 'center' },
   check: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
   emptyCard: { height: 142, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(5,7,18,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 10, shadowColor: '#7C3AED', shadowOpacity: 0.16, shadowRadius: 14 },
-  filledCard: { height: 158, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
+  filledCard: { height: 176, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
   magicBox: { width: '100%', height: 84, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
-  magicBoxFilled: { height: 96 },
+  magicBoxFilled: { height: 116 },
   boxGlow: { position: 'absolute', bottom: 4, width: 150, height: 56, borderRadius: 75, backgroundColor: '#7C3AED', opacity: 0.22, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 28 },
   magicCore: { width: 66, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-1deg' }], shadowColor: '#8B5CF6', shadowOpacity: 0.78, shadowRadius: 18, elevation: 10 },
   magicCoreFilled: { position: 'absolute', top: 24, opacity: 0.58, width: 48, height: 34, borderRadius: 11 },
@@ -371,9 +377,9 @@ const styles = StyleSheet.create({
   floatFive: { top: 2, right: 70, transform: [{ rotate: '8deg' }] },
   floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
   realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
-  realWordsCloud: { position: 'absolute', left: 8, right: 8, top: 8, minHeight: 78, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 2, paddingVertical: 4 },
-  realBalloonHit: { position: 'relative', width: 66, alignItems: 'center', justifyContent: 'center', paddingBottom: 6 },
-  realBalloon: { width: 64, minHeight: 25, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 4, shadowOpacity: 0.42, shadowRadius: 10, elevation: 7 },
+  realWordsCloud: { position: 'absolute', left: 7, right: 7, top: 8, minHeight: 96, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 2, paddingVertical: 4 },
+  realBalloonHit: { position: 'relative', width: 58, alignItems: 'center', justifyContent: 'center', paddingBottom: 6 },
+  realBalloon: { width: 56, minHeight: 25, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 4, shadowOpacity: 0.42, shadowRadius: 10, elevation: 7 },
   levelABalloon: { borderColor: 'rgba(187,247,208,0.72)', shadowColor: '#4ADE80' },
   levelBBalloon: { borderColor: 'rgba(254,240,138,0.78)', shadowColor: '#FACC15' },
   levelCBalloon: { borderColor: 'rgba(191,219,254,0.8)', shadowColor: '#38BDF8' },
@@ -383,13 +389,13 @@ const styles = StyleSheet.create({
   levelAKnot: { backgroundColor: 'rgba(34,197,94,0.9)' },
   levelBKnot: { backgroundColor: 'rgba(234,179,8,0.92)' },
   levelCKnot: { backgroundColor: 'rgba(14,165,233,0.92)' },
-  realWordText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 9.5, lineHeight: 12, maxWidth: 52, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.34)', textShadowRadius: 2 },
+  realWordText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 9.5, lineHeight: 12, maxWidth: 44, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.34)', textShadowRadius: 2 },
   levelBadge: { position: 'absolute', top: -5, right: -4, minWidth: 20, height: 12, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, backgroundColor: 'rgba(4,7,18,0.72)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
   realLevelText: { fontFamily: 'Inter_700Bold', fontSize: 6.5, lineHeight: 8, opacity: 0.96, textShadowColor: 'rgba(0,0,0,0.26)', textShadowRadius: 2 },
   levelAText: { color: '#BBF7D0' },
   levelBText: { color: '#FEF08A' },
   levelCText: { color: '#BFDBFE' },
-  emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 2 },
+  emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 0 },
   emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
   hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },
   wordWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, borderRadius: 18, borderWidth: 1, borderColor: '#201246', backgroundColor: 'rgba(6,8,20,0.78)', padding: 14 },
