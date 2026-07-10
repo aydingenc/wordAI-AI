@@ -16,9 +16,11 @@ function findWorkspaceRoot(startDir) {
     }
     dir = path.dirname(dir);
   }
-  throw new Error(
-    'Could not find workspace root (no pnpm-workspace.yaml found)',
-  );
+  // This repository can run either inside a larger Replit workspace or as a
+  // standalone checkout. If no pnpm workspace file exists, use the app root so
+  // production build path calculations still work without adding backend/API
+  // dependencies.
+  return startDir;
 }
 
 const workspaceRoot = findWorkspaceRoot(projectRoot);

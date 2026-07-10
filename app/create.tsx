@@ -212,7 +212,7 @@ export default function CreateScreen() {
               colors={colors}
               icon="edit-3"
               label="Öğren"
-              onPress={() => router.push('/words-info')}
+              onPress={() => router.push('/words-entry')}
               testID="create-words"
             />
           </View>
