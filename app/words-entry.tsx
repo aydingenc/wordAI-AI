@@ -159,7 +159,7 @@ export default function WordsEntryScreen() {
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Eklediğin Kelimeler</Text>
           <Text style={styles.pinkCounter}>{words.length} kelime</Text>
         </View>
-        {words.length === 0 ? <EmptyWordsCard /> : <View style={styles.wordWrap}>{words.map((word) => <WordChip key={word} word={word} onRemove={() => removeWord(word)} />)}</View>}
+        <MagicWordsCard words={words} onRemove={removeWord} />
 
         <View style={styles.reasonCard}>
           <View style={styles.reasonCopy}>
@@ -214,16 +214,32 @@ function OptionCard({ item, active, onPress }: { item: (typeof REPEAT_OPTIONS)[n
   </Pressable>;
 }
 
-function EmptyWordsCard() {
-  return <View style={styles.emptyCard}>
+const PREVIEW_WORDS = ['dream', 'travel', 'sunset'];
+const FLOAT_STYLE_KEYS = ['floatOne', 'floatTwo', 'floatThree', 'floatFour', 'floatFive', 'floatSix'] as const;
+
+function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word: string) => void }) {
+  const hasWords = words.length > 0;
+  const displayWords = (hasWords ? words : PREVIEW_WORDS).slice(0, FLOAT_STYLE_KEYS.length);
+
+  return <View style={[styles.emptyCard, hasWords && styles.filledCard]}>
     <View style={styles.magicBox}>
       <View style={styles.boxGlow} />
       <Text style={[styles.sparkle, styles.sparkleLeft]}>✦</Text>
       <Text style={[styles.sparkle, styles.sparkleRight]}>✦</Text>
       <Text style={[styles.sparkle, styles.sparkleTop]}>✧</Text>
-      <Text style={[styles.floatChip, styles.floatOne]}>dream</Text>
-      <Text style={[styles.floatChip, styles.floatTwo]}>travel</Text>
-      <Text style={[styles.floatChip, styles.floatThree]}>sunset</Text>
+      {displayWords.map((word, index) => {
+        const chip = (
+          <Text style={[styles.floatChip, styles[FLOAT_STYLE_KEYS[index]], hasWords && styles.realFloatChip]} numberOfLines={1}>
+            {word}
+          </Text>
+        );
+
+        return hasWords ? (
+          <Pressable key={`${word}-${index}`} onPress={() => onRemove(word)} hitSlop={6}>
+            {chip}
+          </Pressable>
+        ) : <React.Fragment key={word}>{chip}</React.Fragment>;
+      })}
       <LinearGradient
         colors={['rgba(124,58,237,0.95)', 'rgba(91,33,182,0.88)', 'rgba(44,12,94,0.94)']}
         start={{ x: 0, y: 0 }}
@@ -233,8 +249,10 @@ function EmptyWordsCard() {
         <MaterialCommunityIcons name="cube-outline" size={34} color="#D8B4FE" />
       </LinearGradient>
     </View>
-    <Text style={styles.emptyTitle}>Henüz kelime eklemedin.</Text>
-    <Text style={styles.emptyText}>En az <Text style={styles.hot}>5</Text>, en fazla <Text style={styles.hot}>15</Text> kelime ekleyebilirsin.</Text>
+    <Text style={styles.emptyTitle}>{hasWords ? `${words.length} kelime eklendi.` : 'Henüz kelime eklemedin.'}</Text>
+    <Text style={styles.emptyText}>
+      {hasWords ? 'Kelimeye dokunarak kaldırabilirsin.' : <>En az <Text style={styles.hot}>5</Text>, en fazla <Text style={styles.hot}>15</Text> kelime ekleyebilirsin.</>}
+    </Text>
   </View>;
 }
 
@@ -283,6 +301,7 @@ const styles = StyleSheet.create({
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 12, marginTop: 0, textAlign: 'center' },
   check: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
   emptyCard: { height: 142, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(5,7,18,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 10, shadowColor: '#7C3AED', shadowOpacity: 0.16, shadowRadius: 14 },
+  filledCard: { borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
   magicBox: { width: 190, height: 82, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
   boxGlow: { position: 'absolute', bottom: 4, width: 150, height: 56, borderRadius: 75, backgroundColor: '#7C3AED', opacity: 0.22, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 28 },
   magicCore: { width: 66, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-1deg' }], shadowColor: '#8B5CF6', shadowOpacity: 0.78, shadowRadius: 18, elevation: 10 },
@@ -292,6 +311,10 @@ const styles = StyleSheet.create({
   sparkleTop: { top: 22, right: 72 },
   floatChip: { position: 'absolute', color: '#F5D0FE', borderWidth: 1, borderColor: 'rgba(124,58,237,0.92)', backgroundColor: 'rgba(43,13,87,0.88)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, fontFamily: 'Inter_500Medium', fontSize: 12, letterSpacing: 0.2, transform: [{ rotate: '-9deg' }], shadowColor: '#7C3AED', shadowOpacity: 0.5, shadowRadius: 8 },
   floatOne: { top: 8, left: 42 }, floatTwo: { top: 18, right: 32, transform: [{ rotate: '12deg' }] }, floatThree: { top: 38, left: 18, color: '#FDE047', borderColor: '#A16207', backgroundColor: 'rgba(68,35,9,0.86)' },
+  floatFour: { top: 42, right: 10, transform: [{ rotate: '-8deg' }] },
+  floatFive: { top: 2, right: 70, transform: [{ rotate: '8deg' }] },
+  floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
+  realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
   emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 2 },
   emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
   hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },
