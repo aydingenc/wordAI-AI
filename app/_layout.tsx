@@ -37,6 +37,7 @@ function RootLayoutNav() {
       <Stack.Screen name="words-entry" />
       <Stack.Screen name="story-loading" options={{ animation: 'fade' }} />
       <Stack.Screen name="images-info" />
+      <Stack.Screen name="image-analysis-loading" options={{ animation: 'fade' }} />
       <Stack.Screen name="themes" />
       <Stack.Screen name="theme/[id]" />
       <Stack.Screen name="scene/[id]" />
