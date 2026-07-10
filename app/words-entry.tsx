@@ -236,6 +236,18 @@ function getLevelTextStyle(level: DummyLevel) {
   return styles.levelCText;
 }
 
+function getLevelBalloonColors(level: DummyLevel): readonly [string, string, string] {
+  if (level.startsWith('A')) return ['rgba(187,247,208,0.96)', 'rgba(34,197,94,0.88)', 'rgba(20,83,45,0.94)'];
+  if (level.startsWith('B')) return ['rgba(254,240,138,0.98)', 'rgba(234,179,8,0.9)', 'rgba(113,63,18,0.96)'];
+  return ['rgba(191,219,254,0.98)', 'rgba(14,165,233,0.9)', 'rgba(30,64,175,0.96)'];
+}
+
+function getLevelKnotStyle(level: DummyLevel) {
+  if (level.startsWith('A')) return styles.levelAKnot;
+  if (level.startsWith('B')) return styles.levelBKnot;
+  return styles.levelCKnot;
+}
+
 function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word: string) => void }) {
   const hasWords = words.length > 0;
   const displayWords = (hasWords ? words : PREVIEW_WORDS).slice(0, FLOAT_STYLE_KEYS.length);
@@ -265,9 +277,18 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
           {words.slice(0, MAX_WORDS).map((word, index) => {
             const level = getDummyLevel(index);
             return (
-              <Pressable key={word} onPress={() => onRemove(word)} hitSlop={5} style={[styles.realBalloon, getLevelBalloonStyle(level)]}>
-                <Text style={styles.realWordText} numberOfLines={1}>{word}</Text>
-                <Text style={[styles.realLevelText, getLevelTextStyle(level)]}>{level}</Text>
+              <Pressable key={word} onPress={() => onRemove(word)} hitSlop={5} style={styles.realBalloonHit}>
+                <LinearGradient
+                  colors={getLevelBalloonColors(level)}
+                  start={{ x: 0.12, y: 0.08 }}
+                  end={{ x: 0.92, y: 0.92 }}
+                  style={[styles.realBalloon, getLevelBalloonStyle(level)]}
+                >
+                  <View style={styles.balloonHighlight} />
+                  <Text style={styles.realWordText} numberOfLines={1}>{word}</Text>
+                  <Text style={[styles.realLevelText, getLevelTextStyle(level)]}>{level}</Text>
+                  <View style={[styles.balloonKnot, getLevelKnotStyle(level)]} />
+                </LinearGradient>
                 <View style={styles.realBalloonString} />
               </Pressable>
             );
@@ -349,14 +370,20 @@ const styles = StyleSheet.create({
   floatFive: { top: 2, right: 70, transform: [{ rotate: '8deg' }] },
   floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
   realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
-  realWordsCloud: { position: 'absolute', left: 10, right: 10, top: 5, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 3, paddingVertical: 5 },
-  realBalloon: { maxWidth: 88, minHeight: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderWidth: 1, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, shadowOpacity: 0.32, shadowRadius: 8 },
-  levelABalloon: { borderColor: 'rgba(74,222,128,0.82)', backgroundColor: 'rgba(20,83,45,0.68)', shadowColor: '#4ADE80' },
-  levelBBalloon: { borderColor: 'rgba(250,204,21,0.84)', backgroundColor: 'rgba(113,63,18,0.72)', shadowColor: '#FACC15' },
-  levelCBalloon: { borderColor: 'rgba(96,165,250,0.86)', backgroundColor: 'rgba(30,64,175,0.72)', shadowColor: '#60A5FA' },
-  realBalloonString: { position: 'absolute', bottom: -13, width: 1, height: 13, backgroundColor: 'rgba(216,180,254,0.5)', shadowColor: '#D8B4FE', shadowOpacity: 0.28, shadowRadius: 4 },
-  realWordText: { color: '#F8F4FF', fontFamily: 'Inter_600SemiBold', fontSize: 10, lineHeight: 12, maxWidth: 58 },
-  realLevelText: { fontFamily: 'Inter_700Bold', fontSize: 7, lineHeight: 9, opacity: 0.92 },
+  realWordsCloud: { position: 'absolute', left: 10, right: 10, top: 5, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 3, paddingVertical: 5 },
+  realBalloonHit: { position: 'relative', maxWidth: 92, alignItems: 'center', justifyContent: 'center', paddingBottom: 5 },
+  realBalloon: { maxWidth: 88, minHeight: 25, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, shadowOpacity: 0.42, shadowRadius: 10, elevation: 7 },
+  levelABalloon: { borderColor: 'rgba(187,247,208,0.72)', shadowColor: '#4ADE80' },
+  levelBBalloon: { borderColor: 'rgba(254,240,138,0.78)', shadowColor: '#FACC15' },
+  levelCBalloon: { borderColor: 'rgba(191,219,254,0.8)', shadowColor: '#38BDF8' },
+  realBalloonString: { position: 'absolute', bottom: -8, width: 1, height: 14, backgroundColor: 'rgba(216,180,254,0.5)', shadowColor: '#D8B4FE', shadowOpacity: 0.28, shadowRadius: 4 },
+  balloonHighlight: { position: 'absolute', left: 9, top: 5, width: 9, height: 4, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.62)', transform: [{ rotate: '-24deg' }] },
+  balloonKnot: { position: 'absolute', bottom: -3, width: 7, height: 6, borderRadius: 3, transform: [{ rotate: '45deg' }] },
+  levelAKnot: { backgroundColor: 'rgba(34,197,94,0.9)' },
+  levelBKnot: { backgroundColor: 'rgba(234,179,8,0.92)' },
+  levelCKnot: { backgroundColor: 'rgba(14,165,233,0.92)' },
+  realWordText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 10, lineHeight: 12, maxWidth: 58, textShadowColor: 'rgba(0,0,0,0.34)', textShadowRadius: 2 },
+  realLevelText: { fontFamily: 'Inter_700Bold', fontSize: 7, lineHeight: 9, opacity: 0.96, textShadowColor: 'rgba(0,0,0,0.26)', textShadowRadius: 2 },
   levelAText: { color: '#BBF7D0' },
   levelBText: { color: '#FEF08A' },
   levelCText: { color: '#BFDBFE' },
