@@ -181,8 +181,8 @@ export default function WordsEntryScreen() {
       </View>
 
       <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
-        <Pressable onPress={createStory} disabled={!canCreate} style={({ pressed }) => [styles.cta, { opacity: canCreate ? (pressed ? 0.86 : 1) : 0.45 }]}>
-          <LinearGradient colors={['#5B00FF', '#8B22FF', '#5F00C8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ctaGradient}>
+        <Pressable onPress={createStory} disabled={!canCreate} style={({ pressed }) => [styles.cta, { opacity: canCreate ? (pressed ? 0.9 : 1) : 0.82 }]}>
+          <LinearGradient colors={['#4C1DFF', '#7C3AED', '#5B10C8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ctaGradient}>
             <Text style={styles.ctaText}>Hikaye Oluştur</Text>
             <Feather name="arrow-right" size={28} color="#DAC8FF" />
           </LinearGradient>
@@ -286,12 +286,12 @@ const styles = StyleSheet.create({
   repeatGrid: { flexDirection: 'row', gap: 8 },
   optionCard: { flex: 1, minHeight: 44, borderRadius: 13, borderWidth: 1, borderColor: 'rgba(42,35,66,0.70)', backgroundColor: 'rgba(11,13,28,0.86)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   optionCheck: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
-  tipCard: { borderRadius: 15, borderWidth: 1, borderColor: 'rgba(42,35,66,0.62)', backgroundColor: 'rgba(13,17,39,0.68)', paddingHorizontal: 10, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  star: { fontSize: 27 },
-  tipText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 11.5, lineHeight: 16 },
+  tipCard: { marginTop: 'auto', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(139,92,246,0.34)', backgroundColor: 'rgba(21,18,45,0.82)', paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, shadowColor: '#8B5CF6', shadowOpacity: 0.22, shadowRadius: 12, elevation: 6 },
+  star: { fontSize: 24, textShadowColor: 'rgba(251,191,36,0.55)', textShadowRadius: 8 },
+  tipText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 11.5, lineHeight: 16, textAlign: 'center' },
   tipLead: { color: '#FACC15', fontFamily: 'Inter_600SemiBold' },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 10, backgroundColor: 'rgba(5,5,10,0.72)' },
-  cta: { borderRadius: 16, shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 20, elevation: 12 },
-  ctaGradient: { minHeight: 54, borderRadius: 18, borderWidth: 1, borderColor: '#A855F7', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 56 },
-  ctaText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 18 },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 8, backgroundColor: 'rgba(5,5,10,0.58)' },
+  cta: { borderRadius: 18, shadowColor: '#A855F7', shadowOpacity: 0.78, shadowRadius: 22, elevation: 14 },
+  ctaGradient: { minHeight: 56, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(216,180,254,0.72)', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 56 },
+  ctaText: { color: '#F8F4FF', fontFamily: 'Inter_700Bold', fontSize: 18, letterSpacing: -0.2 },
 });
