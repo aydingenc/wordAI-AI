@@ -227,27 +227,28 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
       <Text style={[styles.sparkle, styles.sparkleLeft]}>✦</Text>
       <Text style={[styles.sparkle, styles.sparkleRight]}>✦</Text>
       <Text style={[styles.sparkle, styles.sparkleTop]}>✧</Text>
-      {displayWords.map((word, index) => {
-        const chip = (
-          <Text style={[styles.floatChip, styles[FLOAT_STYLE_KEYS[index]], hasWords && styles.realFloatChip]} numberOfLines={1}>
-            {word}
-          </Text>
-        );
-
-        return hasWords ? (
-          <Pressable key={`${word}-${index}`} onPress={() => onRemove(word)} hitSlop={6}>
-            {chip}
-          </Pressable>
-        ) : <React.Fragment key={word}>{chip}</React.Fragment>;
-      })}
+      {!hasWords ? displayWords.map((word, index) => (
+        <React.Fragment key={word}>
+          <Text style={[styles.floatChip, styles[FLOAT_STYLE_KEYS[index]]]} numberOfLines={1}>{word}</Text>
+        </React.Fragment>
+      )) : null}
       <LinearGradient
         colors={['rgba(124,58,237,0.95)', 'rgba(91,33,182,0.88)', 'rgba(44,12,94,0.94)']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.magicCore}
+        style={[styles.magicCore, hasWords && styles.magicCoreFilled]}
       >
-        <MaterialCommunityIcons name="cube-outline" size={34} color="#D8B4FE" />
+        <MaterialCommunityIcons name="cube-outline" size={hasWords ? 26 : 34} color="#D8B4FE" />
       </LinearGradient>
+      {hasWords ? (
+        <View style={styles.realWordsCloud}>
+          {words.slice(0, MAX_WORDS).map((word) => (
+            <Pressable key={word} onPress={() => onRemove(word)} hitSlop={5} style={styles.realWordChip}>
+              <Text style={styles.realWordText} numberOfLines={1}>{word}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
     </View>
     <Text style={styles.emptyTitle}>{hasWords ? `${words.length} kelime eklendi.` : 'Henüz kelime eklemedin.'}</Text>
     <Text style={styles.emptyText}>
@@ -301,10 +302,11 @@ const styles = StyleSheet.create({
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 12, marginTop: 0, textAlign: 'center' },
   check: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
   emptyCard: { height: 142, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(5,7,18,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 10, shadowColor: '#7C3AED', shadowOpacity: 0.16, shadowRadius: 14 },
-  filledCard: { borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
-  magicBox: { width: 190, height: 82, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
+  filledCard: { height: 168, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
+  magicBox: { width: '100%', height: 102, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
   boxGlow: { position: 'absolute', bottom: 4, width: 150, height: 56, borderRadius: 75, backgroundColor: '#7C3AED', opacity: 0.22, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 28 },
   magicCore: { width: 66, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-1deg' }], shadowColor: '#8B5CF6', shadowOpacity: 0.78, shadowRadius: 18, elevation: 10 },
+  magicCoreFilled: { position: 'absolute', top: 30, opacity: 0.72, width: 52, height: 38, borderRadius: 12 },
   sparkle: { position: 'absolute', color: '#F5D0FE', fontFamily: 'Inter_700Bold', fontSize: 12, textShadowColor: '#E879F9', textShadowRadius: 8 },
   sparkleLeft: { left: 42, bottom: 24 },
   sparkleRight: { right: 44, bottom: 32 },
@@ -315,6 +317,9 @@ const styles = StyleSheet.create({
   floatFive: { top: 2, right: 70, transform: [{ rotate: '8deg' }] },
   floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
   realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
+  realWordsCloud: { position: 'absolute', left: 12, right: 12, top: 6, minHeight: 88, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 4, paddingVertical: 6 },
+  realWordChip: { maxWidth: 76, borderWidth: 1, borderColor: 'rgba(216,180,254,0.72)', backgroundColor: 'rgba(67,24,126,0.88)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, shadowColor: '#8B5CF6', shadowOpacity: 0.26, shadowRadius: 7 },
+  realWordText: { color: '#F8F4FF', fontFamily: 'Inter_600SemiBold', fontSize: 10.5, lineHeight: 12 },
   emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 2 },
   emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
   hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },
