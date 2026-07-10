@@ -216,6 +216,7 @@ function OptionCard({ item, active, onPress }: { item: (typeof REPEAT_OPTIONS)[n
 
 const PREVIEW_WORDS = ['dream', 'travel', 'sunset'];
 const FLOAT_STYLE_KEYS = ['floatOne', 'floatTwo', 'floatThree', 'floatFour', 'floatFive', 'floatSix'] as const;
+const STRING_STYLE_KEYS = ['stringOne', 'stringTwo', 'stringThree', 'stringFour', 'stringFive', 'stringSix'] as const;
 
 function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word: string) => void }) {
   const hasWords = words.length > 0;
@@ -229,6 +230,7 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
       <Text style={[styles.sparkle, styles.sparkleTop]}>✧</Text>
       {!hasWords ? displayWords.map((word, index) => (
         <React.Fragment key={word}>
+          <View style={[styles.balloonString, styles[STRING_STYLE_KEYS[index]]]} />
           <Text style={[styles.floatChip, styles[FLOAT_STYLE_KEYS[index]]]} numberOfLines={1}>{word}</Text>
         </React.Fragment>
       )) : null}
@@ -243,8 +245,9 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
       {hasWords ? (
         <View style={styles.realWordsCloud}>
           {words.slice(0, MAX_WORDS).map((word) => (
-            <Pressable key={word} onPress={() => onRemove(word)} hitSlop={5} style={styles.realWordChip}>
+            <Pressable key={word} onPress={() => onRemove(word)} hitSlop={5} style={styles.realBalloon}>
               <Text style={styles.realWordText} numberOfLines={1}>{word}</Text>
+              <View style={styles.realBalloonString} />
             </Pressable>
           ))}
         </View>
@@ -252,7 +255,7 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
     </View>
     <Text style={styles.emptyTitle}>{hasWords ? `${words.length} kelime eklendi.` : 'Henüz kelime eklemedin.'}</Text>
     <Text style={styles.emptyText}>
-      {hasWords ? 'Kelimeye dokunarak kaldırabilirsin.' : <>En az <Text style={styles.hot}>3</Text>, en fazla <Text style={styles.hot}>10</Text> kelime ekleyebilirsin.</>}
+      {hasWords ? 'Kelimeyi silmek için balonu patlatabilirsin.' : <>En az <Text style={styles.hot}>3</Text>, en fazla <Text style={styles.hot}>10</Text> kelime ekleyebilirsin.</>}
     </Text>
   </View>;
 }
@@ -311,6 +314,13 @@ const styles = StyleSheet.create({
   sparkleLeft: { left: 42, bottom: 24 },
   sparkleRight: { right: 44, bottom: 32 },
   sparkleTop: { top: 22, right: 72 },
+  balloonString: { position: 'absolute', width: 1, backgroundColor: 'rgba(216,180,254,0.58)', shadowColor: '#D8B4FE', shadowOpacity: 0.35, shadowRadius: 4 },
+  stringOne: { top: 32, left: 76, height: 34, transform: [{ rotate: '24deg' }] },
+  stringTwo: { top: 42, right: 64, height: 30, transform: [{ rotate: '-28deg' }] },
+  stringThree: { top: 58, left: 54, height: 24, transform: [{ rotate: '48deg' }] },
+  stringFour: { top: 61, right: 42, height: 22, transform: [{ rotate: '-40deg' }] },
+  stringFive: { top: 28, right: 94, height: 38, transform: [{ rotate: '-8deg' }] },
+  stringSix: { top: 50, left: 106, height: 24, transform: [{ rotate: '6deg' }] },
   floatChip: { position: 'absolute', color: '#F5D0FE', borderWidth: 1, borderColor: 'rgba(124,58,237,0.92)', backgroundColor: 'rgba(43,13,87,0.88)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, fontFamily: 'Inter_500Medium', fontSize: 12, letterSpacing: 0.2, transform: [{ rotate: '-9deg' }], shadowColor: '#7C3AED', shadowOpacity: 0.5, shadowRadius: 8 },
   floatOne: { top: 8, left: 42 }, floatTwo: { top: 18, right: 32, transform: [{ rotate: '12deg' }] }, floatThree: { top: 38, left: 18, color: '#FDE047', borderColor: '#A16207', backgroundColor: 'rgba(68,35,9,0.86)' },
   floatFour: { top: 42, right: 10, transform: [{ rotate: '-8deg' }] },
@@ -318,7 +328,8 @@ const styles = StyleSheet.create({
   floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
   realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
   realWordsCloud: { position: 'absolute', left: 12, right: 12, top: 5, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 4, paddingVertical: 5 },
-  realWordChip: { maxWidth: 76, borderWidth: 1, borderColor: 'rgba(216,180,254,0.72)', backgroundColor: 'rgba(67,24,126,0.88)', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, shadowColor: '#8B5CF6', shadowOpacity: 0.26, shadowRadius: 7 },
+  realBalloon: { maxWidth: 78, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(216,180,254,0.76)', backgroundColor: 'rgba(67,24,126,0.9)', borderRadius: 999, paddingHorizontal: 8, paddingTop: 3, paddingBottom: 4, shadowColor: '#8B5CF6', shadowOpacity: 0.3, shadowRadius: 8 },
+  realBalloonString: { position: 'absolute', bottom: -13, width: 1, height: 13, backgroundColor: 'rgba(216,180,254,0.5)', shadowColor: '#D8B4FE', shadowOpacity: 0.28, shadowRadius: 4 },
   realWordText: { color: '#F8F4FF', fontFamily: 'Inter_600SemiBold', fontSize: 10, lineHeight: 12 },
   emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 2 },
   emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
