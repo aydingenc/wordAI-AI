@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -10,28 +11,27 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { GradientBackground } from '@/components/GradientBackground';
-import { GlowCard } from '@/components/GlowCard';
-import { PrimaryButton } from '@/components/PrimaryButton';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
 import { buildSessionFromWords, LEVEL_NAMES, makeWord } from '@/data/mock';
 
 const MIN_WORDS = 5;
 const MAX_WORDS = 15;
-const QUICK_WORDS = [
-  'love',
-  'travel',
-  'airport',
-  'beautiful',
-  'book',
-  'walk',
-  'coffee',
-  'family',
+
+const THEMES = [
+  { id: 'travel', title: 'Travel', subtitle: 'Seyahat', icon: 'airplane' as const },
+  { id: 'daily', title: 'Daily Life', subtitle: 'Günlük Yaşam', icon: 'coffee-outline' as const },
+  { id: 'coffee', title: 'Coffee', subtitle: 'Kahve', icon: 'coffee' as const },
+  { id: 'nature', title: 'Nature', subtitle: 'Doğa', icon: 'leaf' as const },
 ];
-const THEMES = ['Otomatik', 'Seyahat', 'Günlük Yaşam', 'Okul', 'Kafe'];
+
+const REPEAT_OPTIONS = [
+  { id: 'auto', title: 'Otomatik', subtitle: 'Önerilen' },
+  { id: 'once', title: '1 Kere', subtitle: 'Minimum' },
+  { id: 'twice', title: '2 Kere', subtitle: 'Dengeli' },
+  { id: 'triple', title: '3 Kere', subtitle: 'Yoğun' },
+];
 
 export default function WordsEntryScreen() {
   const colors = useColors();
@@ -41,7 +41,8 @@ export default function WordsEntryScreen() {
 
   const [words, setWords] = useState<string[]>([]);
   const [input, setInput] = useState('');
-  const [theme, setTheme] = useState(THEMES[0]);
+  const [theme, setTheme] = useState(THEMES[0].id);
+  const [repeatCount, setRepeatCount] = useState('once');
   const [notice, setNotice] = useState('');
 
   const canCreate = words.length >= MIN_WORDS;
@@ -83,391 +84,199 @@ export default function WordsEntryScreen() {
 
   return (
     <GradientBackground>
-      <ScreenHeader title="Kelimelerden Öğren" onBack={() => router.replace('/home')} />
-      <KeyboardAwareScrollViewCompat
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 138 }]}
-        bottomOffset={24}
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 18, paddingBottom: insets.bottom + 112 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.hero}>
-          <View style={[styles.badge, { backgroundColor: colors.secondary, borderColor: colors.borderStrong }]}>
-            <MaterialCommunityIcons name="brain" size={13} color={colors.accent} />
-            <Text style={[styles.badgeText, { color: colors.accent }]}>AI HİKAYE MOTORU</Text>
+        <View style={styles.topBar}>
+          <Pressable onPress={() => router.replace('/home')} style={[styles.circleButton, styles.backButton]}>
+            <Feather name="arrow-left" size={24} color={colors.foreground} />
+          </Pressable>
+          <View style={styles.headingBlock}>
+            <Text style={[styles.screenTitle, { color: colors.foreground }]}>Kelimelerini Gir</Text>
+            <Text style={[styles.screenSubtitle, { color: colors.mutedForeground }]}>Senin kelimelerin, senin hikayen.</Text>
           </View>
-          <Text style={[styles.title, { color: colors.foreground }]}>Kendi kelimelerinle hikaye oluştur</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            Bildiğin ya da öğrenmek istediğin kelimeleri yaz; gerisini akıllı öğrenme döngüsü halleder.
-          </Text>
+          <Pressable style={styles.howButton}>
+            <MaterialCommunityIcons name="help-circle-outline" size={18} color="#F15DFF" />
+            <Text style={styles.howText}>Nasıl çalışır?</Text>
+          </Pressable>
         </View>
 
-        <GlowCard active style={styles.inputCard}>
-          <View style={styles.cardHeader}>
-            <View>
-              <Text style={[styles.cardTitle, { color: colors.foreground }]}>Kelime ekleme alanı</Text>
-              <Text style={[styles.limitText, { color: colors.mutedForeground }]}>En az 5, en fazla 15 kelime ekle.</Text>
+        <LinearGradient colors={['#1C0A3C', '#070711', '#12091F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.aiBanner}>
+          <View style={styles.aiArt}>
+            <View style={styles.aiOrb}>
+              <MaterialCommunityIcons name="brain" size={48} color="#E879F9" />
+              <Text style={styles.aiLabel}>AI</Text>
             </View>
-            <Text style={[styles.counter, { color: reachedMax ? colors.warning : colors.accent }]}>{words.length} / {MAX_WORDS}</Text>
           </View>
-
-          <View style={[styles.inputRow, { backgroundColor: colors.input, borderColor: colors.borderStrong, shadowColor: colors.primaryGlow }]}>
-            <Feather name="edit-3" size={18} color={colors.accent} />
-            <TextInput
-              value={input}
-              onChangeText={(value) => {
-                setInput(value);
-                if (notice) setNotice('');
-              }}
-              onSubmitEditing={() => addWord(input)}
-              placeholder="Hedef kelime: apple ya da elma yaz"
-              placeholderTextColor={colors.mutedForeground}
-              style={[styles.input, { color: colors.foreground }]}
-              autoCapitalize="none"
-              returnKeyType="done"
-              editable={!reachedMax}
-            />
-            <Pressable
-              onPress={() => addWord(input)}
-              disabled={!input.trim() || reachedMax}
-              style={({ pressed }) => [
-                styles.addButton,
-                {
-                  backgroundColor: input.trim() && !reachedMax ? colors.primary : colors.secondary,
-                  opacity: pressed ? 0.82 : 1,
-                  shadowColor: colors.primaryGlow,
-                },
-              ]}
-            >
-              <Feather name="plus" size={21} color={input.trim() && !reachedMax ? colors.primaryForeground : colors.mutedForeground} />
-            </Pressable>
+          <View style={styles.aiCopy}>
+            <Text style={styles.aiTitle}>AI Learning Engine</Text>
+            <Text style={[styles.aiDescription, { color: colors.foreground }]}>Girdiğin kelimeleri seviyene ve akışına göre hikayelere dönüştürüyoruz.</Text>
           </View>
-          {notice ? <Text style={[styles.notice, { color: colors.warning }]}>{notice}</Text> : null}
-        </GlowCard>
+        </LinearGradient>
 
-        <SectionTitle title="Hızlı ekle" />
-        <View style={styles.quickRow}>
-          {QUICK_WORDS.map((word) => {
-            const selected = words.includes(word);
-            return (
-              <Pressable
-                key={word}
-                onPress={() => addWord(word)}
-                disabled={selected || reachedMax}
-                style={({ pressed }) => [
-                  styles.quickChip,
-                  {
-                    backgroundColor: selected ? colors.primary : colors.secondary,
-                    borderColor: selected ? colors.primary : colors.border,
-                    opacity: selected ? 0.62 : pressed ? 0.82 : 1,
-                  },
-                ]}
-              >
-                <Text style={[styles.quickText, { color: selected ? colors.primaryForeground : colors.secondaryForeground }]}>{word}</Text>
-              </Pressable>
-            );
-          })}
+        <View style={styles.rowTitle}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Kelime Giriş Alanı</Text>
+          <Text style={styles.pinkCounter}>{words.length} / {MAX_WORDS} kelime</Text>
         </View>
 
-        <SectionTitle title="Tema" />
-        <View style={styles.themeRow}>
-          {THEMES.map((item) => {
-            const active = item === theme;
-            return (
-              <Pressable
-                key={item}
-                onPress={() => setTheme(item)}
-                style={({ pressed }) => [
-                  styles.themeChip,
-                  {
-                    backgroundColor: active ? colors.primary : colors.card,
-                    borderColor: active ? colors.accent : colors.border,
-                    opacity: pressed ? 0.86 : 1,
-                    shadowColor: colors.primaryGlow,
-                  },
-                ]}
-              >
-                <Text style={[styles.themeText, { color: active ? colors.primaryForeground : colors.foreground }]}>{item}</Text>
-              </Pressable>
-            );
-          })}
+        <View style={styles.neonInputWrap}>
+          <View style={styles.inputIconCircle}><Feather name="edit-3" size={30} color="#EC5DFF" /></View>
+          <TextInput
+            value={input}
+            onChangeText={(value) => {
+              setInput(value);
+              if (notice) setNotice('');
+            }}
+            onSubmitEditing={() => addWord(input)}
+            placeholder="Hedef kelime: Apple"
+            placeholderTextColor="#A49AB9"
+            style={[styles.input, { color: colors.foreground }]}
+            autoCapitalize="none"
+            returnKeyType="done"
+            editable={!reachedMax}
+          />
+          <Pressable onPress={() => addWord(input)} disabled={!input.trim() || reachedMax} style={({ pressed }) => [styles.addCircle, { opacity: !input.trim() || reachedMax ? 0.55 : pressed ? 0.8 : 1 }]}>
+            <Feather name="plus" size={34} color="#F6EEFF" />
+          </Pressable>
         </View>
+        {notice ? <Text style={[styles.notice, { color: colors.warning }]}>{notice}</Text> : null}
 
-        <View style={styles.selectedHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Seçilen Kelimeler</Text>
-          <Text style={[styles.counterSmall, { color: colors.accent }]}>{words.length} kelime</Text>
-        </View>
-
-        {words.length > 0 ? (
-          <View style={styles.wordList}>
-            {words.map((word) => (
-              <GlowCard key={word} style={styles.wordCard} padded={false}>
-                <View style={styles.wordCardInner}>
-                  <LinearGradient
-                    colors={[colors.primary, colors.glowMagenta]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.wordIcon}
-                  >
-                    <Feather name="type" size={15} color={colors.primaryForeground} />
-                  </LinearGradient>
-                  <View style={styles.wordTextBlock}>
-                    <Text style={[styles.wordName, { color: colors.foreground }]} numberOfLines={1}>{word}</Text>
-                    <Text style={[styles.wordMeta, { color: colors.mutedForeground }]}>Otomatik önerilen: 1</Text>
-                  </View>
-                  <View style={[styles.statusPill, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-                    <Text style={[styles.statusText, { color: colors.accent }]}>Dengeli</Text>
-                  </View>
-                  <Pressable onPress={() => removeWord(word)} hitSlop={8} style={styles.removeButton}>
-                    <Feather name="x" size={17} color={colors.mutedForeground} />
-                  </Pressable>
-                </View>
-              </GlowCard>
-            ))}
+        <Panel title="Tema Seçimi">
+          <View style={styles.themeGrid}>
+            {THEMES.map((item) => <ThemeCard key={item.id} item={item} active={theme === item.id} onPress={() => setTheme(item.id)} />)}
           </View>
-        ) : (
-          <GlowCard style={styles.emptyCard}>
-            <Feather name="box" size={28} color={colors.accent} />
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Henüz kelime eklemedin.</Text>
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>En az 5, en fazla 15 kelime ekleyebilirsin.</Text>
-          </GlowCard>
-        )}
-      </KeyboardAwareScrollViewCompat>
+        </Panel>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 16, backgroundColor: 'rgba(11, 7, 19, 0.88)' }]}>
-        <PrimaryButton
-          label="Hikaye Oluştur"
-          icon="zap"
-          onPress={createStory}
-          disabled={!canCreate}
-          testID="words-create"
-        />
-        {!canCreate ? (
-          <Text style={[styles.footerHint, { color: colors.mutedForeground }]}>Devam etmek için en az 5 kelime ekle.</Text>
-        ) : null}
+        <View style={styles.rowTitle}>
+          <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Eklediğin Kelimeler</Text>
+          <Text style={styles.pinkCounter}>{words.length} kelime</Text>
+        </View>
+        {words.length === 0 ? <EmptyWordsCard /> : <View style={styles.wordWrap}>{words.map((word) => <WordChip key={word} word={word} onRemove={() => removeWord(word)} />)}</View>}
+
+        <View style={styles.reasonCard}>
+          <View style={styles.reasonCopy}>
+            <Text style={styles.reasonTitle}>Neden 5–15 kelime?</Text>
+            <Text style={[styles.reasonText, { color: colors.foreground }]}>Bu aralık, kelimelerin hikâyede doğal ve etkili bir şekilde tekrar etmesini sağlar.</Text>
+          </View>
+          <MaterialCommunityIcons name="target" size={58} color="#C76BFF" />
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Kelime Geçiş Sayısı</Text>
+        <View style={styles.repeatGrid}>
+          {REPEAT_OPTIONS.map((item) => <OptionCard key={item.id} item={item} active={repeatCount === item.id} onPress={() => setRepeatCount(item.id)} />)}
+        </View>
+
+        <View style={styles.tipCard}>
+          <Text style={styles.star}>⭐</Text>
+          <Text style={[styles.tipText, { color: colors.mutedForeground }]}><Text style={styles.tipLead}>Tavsiye:</Text> Otomatik modda kelime geçişleri senin öğrenme hızına göre en verimli şekilde ayarlanır.</Text>
+        </View>
+      </ScrollView>
+
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
+        <Pressable onPress={createStory} disabled={!canCreate} style={({ pressed }) => [styles.cta, { opacity: canCreate ? (pressed ? 0.86 : 1) : 0.45 }]}>
+          <LinearGradient colors={['#5B00FF', '#8B22FF', '#5F00C8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ctaGradient}>
+            <Text style={styles.ctaText}>Hikaye Oluştur</Text>
+            <Feather name="arrow-right" size={28} color="#DAC8FF" />
+          </LinearGradient>
+        </Pressable>
       </View>
     </GradientBackground>
   );
 }
 
-function SectionTitle({ title }: { title: string }) {
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   const colors = useColors();
-  return <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{title}</Text>;
+  return <View style={styles.panel}><Text style={[styles.panelTitle, { color: colors.foreground }]}>{title}</Text>{children}</View>;
+}
+
+function ThemeCard({ item, active, onPress }: { item: (typeof THEMES)[number]; active: boolean; onPress: () => void }) {
+  return <Pressable onPress={onPress} style={[styles.themeCard, active && styles.activeCard]}>
+    <MaterialCommunityIcons name={item.icon} size={30} color={active ? '#ED5BFF' : '#DDD6FE'} />
+    <View style={styles.themeTextBlock}><Text style={styles.choiceTitle}>{item.title}</Text><Text style={styles.choiceSub}>{item.subtitle}</Text></View>
+    {active ? <View style={styles.check}><Feather name="check" size={13} color="#230433" /></View> : null}
+  </Pressable>;
+}
+
+function OptionCard({ item, active, onPress }: { item: (typeof REPEAT_OPTIONS)[number]; active: boolean; onPress: () => void }) {
+  return <Pressable onPress={onPress} style={[styles.optionCard, active && styles.activeCard]}>
+    <Text style={styles.choiceTitle}>{item.title}</Text><Text style={styles.choiceSub}>{item.subtitle}</Text>{active ? <View style={styles.optionCheck}><Feather name="check" size={12} color="#230433" /></View> : null}
+  </Pressable>;
+}
+
+function EmptyWordsCard() {
+  return <View style={styles.emptyCard}>
+    <View style={styles.magicBox}>
+      <Text style={[styles.floatChip, styles.floatOne]}>dream</Text><Text style={[styles.floatChip, styles.floatTwo]}>travel</Text><Text style={[styles.floatChip, styles.floatThree]}>sunset</Text>
+      <MaterialCommunityIcons name="cube-outline" size={72} color="#7C3AED" />
+    </View>
+    <Text style={styles.emptyTitle}>Henüz kelime eklemedin.</Text>
+    <Text style={styles.emptyText}>En az <Text style={styles.hot}>5</Text>, en fazla <Text style={styles.hot}>15</Text> kelime ekleyebilirsin.</Text>
+  </View>;
+}
+
+function WordChip({ word, onRemove }: { word: string; onRemove: () => void }) {
+  return <View style={styles.wordChip}><Text style={styles.wordText}>{word}</Text><Pressable onPress={onRemove}><Feather name="x" size={16} color="#C4B5FD" /></Pressable></View>;
 }
 
 const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: 20,
-    gap: 14,
-  },
-  hero: {
-    gap: 10,
-    paddingTop: 2,
-  },
-  badge: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  badgeText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
-    letterSpacing: 0.7,
-  },
-  title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 28,
-    lineHeight: 34,
-  },
-  subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  inputCard: {
-    gap: 14,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  cardTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-  },
-  limitText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    marginTop: 4,
-  },
-  counter: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 15,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    minHeight: 62,
-    borderWidth: 1,
-    borderRadius: 24,
-    paddingLeft: 16,
-    paddingRight: 8,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.36,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  input: {
-    flex: 1,
-    fontFamily: 'Inter_500Medium',
-    fontSize: 15,
-    height: 52,
-  },
-  addButton: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.48,
-    shadowRadius: 14,
-    elevation: 8,
-  },
-  notice: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-  },
-  sectionTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-  },
-  quickRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  quickChip: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-  },
-  quickText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-  },
-  themeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  themeChip: {
-    borderWidth: 1,
-    borderRadius: 18,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  themeText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-  },
-  selectedHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 2,
-  },
-  counterSmall: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-  },
-  wordList: {
-    gap: 10,
-  },
-  wordCard: {
-    overflow: 'hidden',
-  },
-  wordCardInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 14,
-  },
-  wordIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  wordTextBlock: {
-    flex: 1,
-    minWidth: 0,
-  },
-  wordName: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-  },
-  wordMeta: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    marginTop: 3,
-  },
-  statusPill: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  statusText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-  },
-  removeButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyCard: {
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 26,
-  },
-  emptyTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    textAlign: 'center',
-  },
-  footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    gap: 8,
-  },
-  footerHint: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    textAlign: 'center',
-  },
+  content: { paddingHorizontal: 22, gap: 14 },
+  topBar: { minHeight: 76, justifyContent: 'center' },
+  circleButton: { width: 48, height: 48, borderRadius: 24, borderWidth: 1, borderColor: '#6D28D9', backgroundColor: 'rgba(17,10,31,0.8)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.4, shadowRadius: 14 },
+  backButton: { position: 'absolute', left: 0, top: 4 },
+  headingBlock: { alignItems: 'center', paddingHorizontal: 86 },
+  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 31, lineHeight: 38, textAlign: 'center' },
+  screenSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 17, textAlign: 'center', marginTop: 3 },
+  howButton: { position: 'absolute', right: 0, top: 4, flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#6D28D9', borderRadius: 16, paddingHorizontal: 12, height: 48, backgroundColor: 'rgba(13,8,22,0.85)' },
+  howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 15 },
+  aiBanner: { minHeight: 154, borderRadius: 18, borderWidth: 1, borderColor: '#3B1974', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', padding: 18, shadowColor: '#7C3AED', shadowOpacity: 0.35, shadowRadius: 26 },
+  aiArt: { width: '34%', alignItems: 'center', justifyContent: 'center' },
+  aiOrb: { width: 112, height: 112, borderRadius: 56, borderWidth: 2, borderColor: '#7C3AED', backgroundColor: 'rgba(91,0,255,0.22)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 26 },
+  aiLabel: { color: '#F0ABFC', fontFamily: 'Inter_700Bold', fontSize: 28, marginTop: -4 },
+  aiCopy: { flex: 1, gap: 10, paddingLeft: 14 },
+  aiTitle: { color: '#F05DFF', fontFamily: 'Inter_700Bold', fontSize: 24 },
+  aiDescription: { fontFamily: 'Inter_400Regular', fontSize: 17, lineHeight: 28 },
+  rowTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
+  sectionTitle: { fontFamily: 'Inter_500Medium', fontSize: 21 },
+  pinkCounter: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 18 },
+  neonInputWrap: { height: 92, borderRadius: 20, borderWidth: 1.5, borderColor: '#8B5CF6', backgroundColor: 'rgba(8,7,18,0.92)', flexDirection: 'row', alignItems: 'center', gap: 18, paddingHorizontal: 24, shadowColor: '#8B5CF6', shadowOpacity: 0.95, shadowRadius: 18, elevation: 12 },
+  inputIconCircle: { width: 58, height: 58, borderRadius: 29, borderWidth: 1, borderColor: '#8B5CF6', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.18)' },
+  input: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 20, height: 70 },
+  addCircle: { width: 58, height: 58, borderRadius: 29, borderWidth: 1.5, borderColor: '#9E72FF', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(91,0,255,0.22)', shadowColor: '#9E72FF', shadowOpacity: 0.8, shadowRadius: 14 },
+  notice: { fontFamily: 'Inter_500Medium', fontSize: 13, marginTop: -4 },
+  panel: { borderRadius: 18, borderWidth: 1, borderColor: '#261449', backgroundColor: 'rgba(7,7,18,0.75)', padding: 14, gap: 12 },
+  panelTitle: { fontFamily: 'Inter_500Medium', fontSize: 19 },
+  themeGrid: { flexDirection: 'row', gap: 12 },
+  themeCard: { flex: 1, minHeight: 72, borderRadius: 16, borderWidth: 1, borderColor: '#19172B', backgroundColor: '#0B0D1C', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 8 },
+  activeCard: { borderColor: '#8B5CF6', backgroundColor: 'rgba(74,22,150,0.76)', shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 16, elevation: 10 },
+  themeTextBlock: { minWidth: 0 },
+  choiceTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 16, textAlign: 'center' },
+  choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 14, marginTop: 4, textAlign: 'center' },
+  check: { position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center' },
+  emptyCard: { minHeight: 188, borderRadius: 18, borderWidth: 1, borderColor: '#201246', backgroundColor: 'rgba(6,8,20,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  magicBox: { width: 210, height: 96, alignItems: 'center', justifyContent: 'flex-end' },
+  floatChip: { position: 'absolute', color: '#F5D0FE', borderWidth: 1, borderColor: '#7C3AED', backgroundColor: 'rgba(60,12,115,0.85)', borderRadius: 5, paddingHorizontal: 9, paddingVertical: 4, fontFamily: 'Inter_500Medium', fontSize: 14, transform: [{ rotate: '-9deg' }] },
+  floatOne: { top: 2, left: 52 }, floatTwo: { top: 16, right: 38, transform: [{ rotate: '12deg' }] }, floatThree: { top: 42, left: 16, color: '#FDE047', borderColor: '#A16207' },
+  emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 21, marginTop: 10 },
+  emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 16, marginTop: 5 },
+  hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },
+  wordWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, borderRadius: 18, borderWidth: 1, borderColor: '#201246', backgroundColor: 'rgba(6,8,20,0.78)', padding: 14 },
+  wordChip: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 999, borderWidth: 1, borderColor: '#7C3AED', backgroundColor: 'rgba(46,16,101,0.9)', paddingHorizontal: 14, paddingVertical: 10 },
+  wordText: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 15 },
+  reasonCard: { borderRadius: 18, borderWidth: 1, borderColor: '#6D28D9', backgroundColor: 'rgba(13,8,25,0.82)', padding: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  reasonCopy: { flex: 1, paddingRight: 18 },
+  reasonTitle: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 21, marginBottom: 8 },
+  reasonText: { fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 24 },
+  repeatGrid: { flexDirection: 'row', gap: 12 },
+  optionCard: { flex: 1, minHeight: 70, borderRadius: 15, borderWidth: 1, borderColor: '#19172B', backgroundColor: '#0B0D1C', alignItems: 'center', justifyContent: 'center' },
+  optionCheck: { position: 'absolute', top: 9, right: 9, width: 19, height: 19, borderRadius: 9.5, backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center' },
+  tipCard: { borderRadius: 15, borderWidth: 1, borderColor: '#1B1B38', backgroundColor: 'rgba(13,17,39,0.86)', paddingHorizontal: 18, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 14 },
+  star: { fontSize: 27 },
+  tipText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 22 },
+  tipLead: { color: '#FACC15', fontFamily: 'Inter_600SemiBold' },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 22, paddingTop: 12, backgroundColor: 'rgba(5,5,10,0.72)' },
+  cta: { borderRadius: 16, shadowColor: '#8B5CF6', shadowOpacity: 0.9, shadowRadius: 20, elevation: 12 },
+  ctaGradient: { minHeight: 62, borderRadius: 16, borderWidth: 1, borderColor: '#A855F7', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 80 },
+  ctaText: { color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 24 },
 });
