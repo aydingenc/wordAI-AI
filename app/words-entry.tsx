@@ -83,7 +83,7 @@ export default function WordsEntryScreen() {
 
   return (
     <GradientBackground>
-      <View style={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 124 }]}>
+      <View style={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 150 }]}>
         <View style={styles.topBar}>
           <Pressable onPress={() => router.replace('/home')} style={[styles.circleButton, styles.backButton]}>
             <Feather name="arrow-left" size={19} color={colors.foreground} />
@@ -174,13 +174,13 @@ export default function WordsEntryScreen() {
           {REPEAT_OPTIONS.map((item) => <OptionCard key={item.id} item={item} active={repeatCount === item.id} onPress={() => setRepeatCount(item.id)} />)}
         </View>
 
+      </View>
+
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <View style={styles.tipCard}>
           <Text style={styles.star}>⭐</Text>
           <Text style={[styles.tipText, { color: colors.mutedForeground }]}><Text style={styles.tipLead}>Tavsiye:</Text> Otomatik modda kelime geçişleri senin öğrenme hızına göre en verimli şekilde ayarlanır.</Text>
         </View>
-      </View>
-
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <Pressable onPress={createStory} disabled={!canCreate} style={({ pressed }) => [styles.cta, { opacity: canCreate ? (pressed ? 0.9 : 1) : 0.82 }]}>
           <LinearGradient colors={['#4C1DFF', '#7C3AED', '#5B10C8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ctaGradient}>
             <Text style={styles.ctaText}>Hikaye Oluştur</Text>
@@ -253,7 +253,7 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
   const displayWords = (hasWords ? words : PREVIEW_WORDS).slice(0, FLOAT_STYLE_KEYS.length);
 
   return <View style={[styles.emptyCard, hasWords && styles.filledCard]}>
-    <View style={styles.magicBox}>
+    <View style={[styles.magicBox, hasWords && styles.magicBoxFilled]}>
       <View style={styles.boxGlow} />
       <Text style={[styles.sparkle, styles.sparkleLeft]}>✦</Text>
       <Text style={[styles.sparkle, styles.sparkleRight]}>✦</Text>
@@ -286,7 +286,7 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
                 >
                   <View style={styles.balloonHighlight} />
                   <Text style={styles.realWordText} numberOfLines={1}>{word}</Text>
-                  <Text style={[styles.realLevelText, getLevelTextStyle(level)]}>{level}</Text>
+                  <View style={styles.levelBadge}><Text style={[styles.realLevelText, getLevelTextStyle(level)]}>{level}</Text></View>
                   <View style={[styles.balloonKnot, getLevelKnotStyle(level)]} />
                 </LinearGradient>
                 <View style={styles.realBalloonString} />
@@ -348,8 +348,9 @@ const styles = StyleSheet.create({
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 12, marginTop: 0, textAlign: 'center' },
   check: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
   emptyCard: { height: 142, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(5,7,18,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 10, shadowColor: '#7C3AED', shadowOpacity: 0.16, shadowRadius: 14 },
-  filledCard: { height: 148, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
+  filledCard: { height: 158, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
   magicBox: { width: '100%', height: 84, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
+  magicBoxFilled: { height: 96 },
   boxGlow: { position: 'absolute', bottom: 4, width: 150, height: 56, borderRadius: 75, backgroundColor: '#7C3AED', opacity: 0.22, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 28 },
   magicCore: { width: 66, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-1deg' }], shadowColor: '#8B5CF6', shadowOpacity: 0.78, shadowRadius: 18, elevation: 10 },
   magicCoreFilled: { position: 'absolute', top: 24, opacity: 0.58, width: 48, height: 34, borderRadius: 11 },
@@ -370,9 +371,9 @@ const styles = StyleSheet.create({
   floatFive: { top: 2, right: 70, transform: [{ rotate: '8deg' }] },
   floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
   realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
-  realWordsCloud: { position: 'absolute', left: 10, right: 10, top: 5, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 3, paddingVertical: 5 },
-  realBalloonHit: { position: 'relative', maxWidth: 92, alignItems: 'center', justifyContent: 'center', paddingBottom: 5 },
-  realBalloon: { maxWidth: 88, minHeight: 25, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderWidth: 1, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4, shadowOpacity: 0.42, shadowRadius: 10, elevation: 7 },
+  realWordsCloud: { position: 'absolute', left: 8, right: 8, top: 8, minHeight: 78, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 2, paddingVertical: 4 },
+  realBalloonHit: { position: 'relative', width: 66, alignItems: 'center', justifyContent: 'center', paddingBottom: 6 },
+  realBalloon: { width: 64, minHeight: 25, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 4, shadowOpacity: 0.42, shadowRadius: 10, elevation: 7 },
   levelABalloon: { borderColor: 'rgba(187,247,208,0.72)', shadowColor: '#4ADE80' },
   levelBBalloon: { borderColor: 'rgba(254,240,138,0.78)', shadowColor: '#FACC15' },
   levelCBalloon: { borderColor: 'rgba(191,219,254,0.8)', shadowColor: '#38BDF8' },
@@ -382,8 +383,9 @@ const styles = StyleSheet.create({
   levelAKnot: { backgroundColor: 'rgba(34,197,94,0.9)' },
   levelBKnot: { backgroundColor: 'rgba(234,179,8,0.92)' },
   levelCKnot: { backgroundColor: 'rgba(14,165,233,0.92)' },
-  realWordText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 10, lineHeight: 12, maxWidth: 58, textShadowColor: 'rgba(0,0,0,0.34)', textShadowRadius: 2 },
-  realLevelText: { fontFamily: 'Inter_700Bold', fontSize: 7, lineHeight: 9, opacity: 0.96, textShadowColor: 'rgba(0,0,0,0.26)', textShadowRadius: 2 },
+  realWordText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 9.5, lineHeight: 12, maxWidth: 52, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.34)', textShadowRadius: 2 },
+  levelBadge: { position: 'absolute', top: -5, right: -4, minWidth: 20, height: 12, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3, backgroundColor: 'rgba(4,7,18,0.72)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
+  realLevelText: { fontFamily: 'Inter_700Bold', fontSize: 6.5, lineHeight: 8, opacity: 0.96, textShadowColor: 'rgba(0,0,0,0.26)', textShadowRadius: 2 },
   levelAText: { color: '#BBF7D0' },
   levelBText: { color: '#FEF08A' },
   levelCText: { color: '#BFDBFE' },
@@ -400,11 +402,11 @@ const styles = StyleSheet.create({
   repeatGrid: { flexDirection: 'row', gap: 8 },
   optionCard: { flex: 1, minHeight: 44, borderRadius: 13, borderWidth: 1, borderColor: 'rgba(42,35,66,0.70)', backgroundColor: 'rgba(11,13,28,0.86)', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3 },
   optionCheck: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
-  tipCard: { marginTop: 6, marginBottom: 12, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(139,92,246,0.34)', backgroundColor: 'rgba(21,18,45,0.82)', paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, shadowColor: '#8B5CF6', shadowOpacity: 0.22, shadowRadius: 12, elevation: 6 },
+  tipCard: { marginTop: 0, marginBottom: 10, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(139,92,246,0.34)', backgroundColor: 'rgba(21,18,45,0.82)', paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, shadowColor: '#8B5CF6', shadowOpacity: 0.22, shadowRadius: 12, elevation: 6 },
   star: { fontSize: 24, textShadowColor: 'rgba(251,191,36,0.55)', textShadowRadius: 8 },
   tipText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 11.5, lineHeight: 16, textAlign: 'center' },
   tipLead: { color: '#FACC15', fontFamily: 'Inter_600SemiBold' },
-  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 16, backgroundColor: 'rgba(5,5,10,0.44)' },
+  footer: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 10, backgroundColor: 'rgba(5,5,10,0.44)' },
   cta: { borderRadius: 18, shadowColor: '#A855F7', shadowOpacity: 0.78, shadowRadius: 22, elevation: 14 },
   ctaGradient: { minHeight: 56, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(216,180,254,0.72)', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 28 },
   ctaText: { color: '#F8F4FF', fontFamily: 'Inter_700Bold', fontSize: 18, letterSpacing: -0.2 },
