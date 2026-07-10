@@ -215,8 +215,26 @@ function OptionCard({ item, active, onPress }: { item: (typeof REPEAT_OPTIONS)[n
 }
 
 const PREVIEW_WORDS = ['dream', 'travel', 'sunset'];
+type DummyLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+const DUMMY_LEVELS: DummyLevel[] = ['A1', 'B1', 'C1', 'A2', 'B2', 'C2'];
 const FLOAT_STYLE_KEYS = ['floatOne', 'floatTwo', 'floatThree', 'floatFour', 'floatFive', 'floatSix'] as const;
 const STRING_STYLE_KEYS = ['stringOne', 'stringTwo', 'stringThree', 'stringFour', 'stringFive', 'stringSix'] as const;
+
+function getDummyLevel(index: number): DummyLevel {
+  return DUMMY_LEVELS[index % DUMMY_LEVELS.length];
+}
+
+function getLevelBalloonStyle(level: DummyLevel) {
+  if (level.startsWith('A')) return styles.levelABalloon;
+  if (level.startsWith('B')) return styles.levelBBalloon;
+  return styles.levelCBalloon;
+}
+
+function getLevelTextStyle(level: DummyLevel) {
+  if (level.startsWith('A')) return styles.levelAText;
+  if (level.startsWith('B')) return styles.levelBText;
+  return styles.levelCText;
+}
 
 function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word: string) => void }) {
   const hasWords = words.length > 0;
@@ -244,12 +262,16 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
       </LinearGradient>
       {hasWords ? (
         <View style={styles.realWordsCloud}>
-          {words.slice(0, MAX_WORDS).map((word) => (
-            <Pressable key={word} onPress={() => onRemove(word)} hitSlop={5} style={styles.realBalloon}>
-              <Text style={styles.realWordText} numberOfLines={1}>{word}</Text>
-              <View style={styles.realBalloonString} />
-            </Pressable>
-          ))}
+          {words.slice(0, MAX_WORDS).map((word, index) => {
+            const level = getDummyLevel(index);
+            return (
+              <Pressable key={word} onPress={() => onRemove(word)} hitSlop={5} style={[styles.realBalloon, getLevelBalloonStyle(level)]}>
+                <Text style={styles.realWordText} numberOfLines={1}>{word}</Text>
+                <Text style={[styles.realLevelText, getLevelTextStyle(level)]}>{level}</Text>
+                <View style={styles.realBalloonString} />
+              </Pressable>
+            );
+          })}
         </View>
       ) : null}
     </View>
@@ -327,10 +349,17 @@ const styles = StyleSheet.create({
   floatFive: { top: 2, right: 70, transform: [{ rotate: '8deg' }] },
   floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
   realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
-  realWordsCloud: { position: 'absolute', left: 12, right: 12, top: 5, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 4, paddingVertical: 5 },
-  realBalloon: { maxWidth: 78, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(216,180,254,0.76)', backgroundColor: 'rgba(67,24,126,0.9)', borderRadius: 999, paddingHorizontal: 8, paddingTop: 3, paddingBottom: 4, shadowColor: '#8B5CF6', shadowOpacity: 0.3, shadowRadius: 8 },
+  realWordsCloud: { position: 'absolute', left: 10, right: 10, top: 5, minHeight: 72, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 3, paddingVertical: 5 },
+  realBalloon: { maxWidth: 88, minHeight: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderWidth: 1, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, shadowOpacity: 0.32, shadowRadius: 8 },
+  levelABalloon: { borderColor: 'rgba(74,222,128,0.82)', backgroundColor: 'rgba(20,83,45,0.68)', shadowColor: '#4ADE80' },
+  levelBBalloon: { borderColor: 'rgba(250,204,21,0.84)', backgroundColor: 'rgba(113,63,18,0.72)', shadowColor: '#FACC15' },
+  levelCBalloon: { borderColor: 'rgba(96,165,250,0.86)', backgroundColor: 'rgba(30,64,175,0.72)', shadowColor: '#60A5FA' },
   realBalloonString: { position: 'absolute', bottom: -13, width: 1, height: 13, backgroundColor: 'rgba(216,180,254,0.5)', shadowColor: '#D8B4FE', shadowOpacity: 0.28, shadowRadius: 4 },
-  realWordText: { color: '#F8F4FF', fontFamily: 'Inter_600SemiBold', fontSize: 10, lineHeight: 12 },
+  realWordText: { color: '#F8F4FF', fontFamily: 'Inter_600SemiBold', fontSize: 10, lineHeight: 12, maxWidth: 58 },
+  realLevelText: { fontFamily: 'Inter_700Bold', fontSize: 7, lineHeight: 9, opacity: 0.92 },
+  levelAText: { color: '#BBF7D0' },
+  levelBText: { color: '#FEF08A' },
+  levelCText: { color: '#BFDBFE' },
   emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 2 },
   emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
   hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },
