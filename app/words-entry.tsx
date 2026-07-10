@@ -100,10 +100,18 @@ export default function WordsEntryScreen() {
 
         <LinearGradient colors={['#1C0A3C', '#070711', '#12091F']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.aiBanner}>
           <View style={styles.aiArt}>
-            <View style={styles.aiOrb}>
-              <MaterialCommunityIcons name="brain" size={18} color="#E879F9" />
+            <LinearGradient
+              colors={['rgba(124,58,237,0.58)', 'rgba(20,10,44,0.92)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.aiOrb}
+            >
+              <View style={styles.aiOrbit} />
+              <View style={[styles.aiDot, styles.aiDotTop]} />
+              <View style={[styles.aiDot, styles.aiDotBottom]} />
+              <MaterialCommunityIcons name="brain" size={20} color="#F0ABFC" />
               <Text style={styles.aiLabel}>AI</Text>
-            </View>
+            </LinearGradient>
           </View>
           <View style={styles.aiCopy}>
             <Text style={styles.aiTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82}>AI Learning Engine</Text>
@@ -191,9 +199,12 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 function ThemeCard({ item, active, onPress }: { item: (typeof THEMES)[number]; active: boolean; onPress: () => void }) {
   return <Pressable onPress={onPress} style={[styles.themeCard, active && styles.activeCard]}>
-    <MaterialCommunityIcons name={item.icon} size={16} color={active ? '#ED5BFF' : '#DDD6FE'} />
-    <View style={styles.themeTextBlock}><Text style={styles.choiceTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{item.title}</Text><Text style={styles.choiceSub} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{item.subtitle}</Text></View>
-    {active ? <View style={styles.check}><Feather name="check" size={13} color="#230433" /></View> : null}
+    <View style={styles.themeLabelRow}>
+      <MaterialCommunityIcons name={item.icon} size={15} color={active ? '#F0ABFC' : '#DDD6FE'} />
+      <Text style={styles.choiceTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>{item.title}</Text>
+    </View>
+    <Text style={styles.choiceSub} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>{item.subtitle}</Text>
+    {active ? <View style={styles.check}><Feather name="check" size={12} color="#230433" /></View> : null}
   </Pressable>;
 }
 
@@ -219,24 +230,28 @@ function WordChip({ word, onRemove }: { word: string; onRemove: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  content: { flex: 1, paddingHorizontal: 20, gap: 6 },
+  content: { flex: 1, paddingHorizontal: 20, gap: 7 },
   topBar: { minHeight: 48, justifyContent: 'center' },
-  circleButton: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.68)', backgroundColor: 'rgba(13,8,22,0.62)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.24, shadowRadius: 9, zIndex: 2 },
+  circleButton: { width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(168,85,247,0.72)', backgroundColor: 'rgba(18,12,31,0.74)', alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOpacity: 0.36, shadowRadius: 12, elevation: 7, zIndex: 2 },
   backButton: { position: 'absolute', left: 0, top: 4 },
-  headingBlock: { position: 'absolute', left: 0, right: 0, top: 4, alignItems: 'center', paddingHorizontal: 90 },
-  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 20, lineHeight: 24, textAlign: 'center', letterSpacing: -0.25 },
+  headingBlock: { position: 'absolute', left: 52, right: 104, top: 4, alignItems: 'center' },
+  screenTitle: { fontFamily: 'Inter_700Bold', fontSize: 19, lineHeight: 23, textAlign: 'center', letterSpacing: -0.2 },
   screenSubtitle: { fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 15, textAlign: 'center', marginTop: 0 },
-  howButton: { position: 'absolute', right: 0, top: 7, flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(139,92,246,0.54)', borderRadius: 12, paddingHorizontal: 8, height: 30, backgroundColor: 'rgba(13,8,22,0.70)', zIndex: 2 },
+  howButton: { position: 'absolute', right: 0, top: 8, flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(139,92,246,0.50)', borderRadius: 12, paddingHorizontal: 8, height: 28, backgroundColor: 'rgba(13,8,22,0.66)', zIndex: 2 },
   howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 10.5 },
-  aiBanner: { height: 96, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.28)', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 14, shadowColor: '#7C3AED', shadowOpacity: 0.2, shadowRadius: 15 },
+  aiBanner: { height: 98, borderRadius: 19, borderWidth: 1, borderColor: 'rgba(139,92,246,0.30)', overflow: 'hidden', flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 14, shadowColor: '#7C3AED', shadowOpacity: 0.22, shadowRadius: 16 },
   aiArt: { width: 108, alignItems: 'center', justifyContent: 'center' },
-  aiOrb: { width: 66, height: 66, borderRadius: 33, borderWidth: 1.2, borderColor: 'rgba(139,92,246,0.78)', backgroundColor: 'rgba(91,0,255,0.16)', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOpacity: 0.44, shadowRadius: 14 },
+  aiOrb: { width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: 'rgba(192,132,252,0.78)', alignItems: 'center', justifyContent: 'center', shadowColor: '#A855F7', shadowOpacity: 0.58, shadowRadius: 18, overflow: 'hidden' },
+  aiOrbit: { position: 'absolute', width: 54, height: 54, borderRadius: 27, borderWidth: 1, borderColor: 'rgba(240,171,252,0.22)' },
+  aiDot: { position: 'absolute', width: 4, height: 4, borderRadius: 2, backgroundColor: '#E879F9', shadowColor: '#E879F9', shadowOpacity: 0.9, shadowRadius: 5 },
+  aiDotTop: { top: 12, right: 19 },
+  aiDotBottom: { bottom: 12, left: 18 },
   aiLabel: { color: '#F0ABFC', fontFamily: 'Inter_700Bold', fontSize: 16, marginTop: -5 },
   aiCopy: { flex: 1, gap: 4, paddingLeft: 6, paddingRight: 30, zIndex: 1 },
   aiTitle: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 19 },
   aiDescription: { fontFamily: 'Inter_400Regular', fontSize: 11.5, lineHeight: 17 },
   aiBook: { position: 'absolute', right: 16, bottom: 14, opacity: 0.9 },
-  rowTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 3 },
+  rowTitle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 7 },
   sectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 19 },
   pinkCounter: { color: '#F05DFF', fontFamily: 'Inter_600SemiBold', fontSize: 13 },
   neonInputWrap: { height: 58, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.82)', backgroundColor: 'rgba(8,7,18,0.88)', flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 13, shadowColor: '#8B5CF6', shadowOpacity: 0.28, shadowRadius: 12, elevation: 7 },
@@ -247,10 +262,11 @@ const styles = StyleSheet.create({
   panel: { borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.20)', backgroundColor: 'rgba(7,7,18,0.66)', padding: 9, gap: 7 },
   panelTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 15 },
   themeGrid: { flexDirection: 'row', gap: 6 },
-  themeCard: { flex: 1, minHeight: 48, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(42,35,66,0.70)', backgroundColor: 'rgba(11,13,28,0.86)', alignItems: 'center', justifyContent: 'center', gap: 1, paddingHorizontal: 3, paddingVertical: 4 },
-  activeCard: { borderColor: 'rgba(139,92,246,0.86)', backgroundColor: 'rgba(74,22,150,0.50)', shadowColor: '#8B5CF6', shadowOpacity: 0.28, shadowRadius: 10, elevation: 6 },
+  themeCard: { flex: 1, minHeight: 50, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(42,35,66,0.70)', backgroundColor: 'rgba(11,13,28,0.86)', alignItems: 'center', justifyContent: 'center', gap: 3, paddingHorizontal: 4, paddingVertical: 5 },
+  activeCard: { borderColor: 'rgba(192,132,252,0.95)', backgroundColor: 'rgba(89,28,166,0.62)', shadowColor: '#A855F7', shadowOpacity: 0.5, shadowRadius: 13, elevation: 8 },
   themeTextBlock: { minWidth: 0 },
-  choiceTitle: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 11, lineHeight: 14, textAlign: 'center' },
+  themeLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, maxWidth: '100%' },
+  choiceTitle: { color: '#F5F3FF', fontFamily: 'Inter_600SemiBold', fontSize: 11, lineHeight: 13, textAlign: 'center' },
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 12, marginTop: 0, textAlign: 'center' },
   check: { position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center' },
   emptyCard: { height: 108, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.20)', backgroundColor: 'rgba(6,8,20,0.70)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 8 },
