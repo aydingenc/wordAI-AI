@@ -60,7 +60,7 @@ export default function ImagesInfoScreen() {
           <View style={[styles.headerStar, styles.headerStarSix]} />
           <View style={[styles.headerStar, styles.headerStarSeven]} />
           <Pressable style={styles.backButton} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={24} color="#FFFFFF" />
+            <Feather name="arrow-left" size={24} color={TOKENS.violet100} />
           </Pressable>
           <View style={styles.headerCopy}>
             <View style={styles.titleRow}>
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   bgGlowMid: { position: 'absolute', top: 260, left: -135, width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(76,42,110,0.18)' },
   bgGlowBottom: { position: 'absolute', bottom: -100, right: -110, width: 280, height: 280, borderRadius: 140, backgroundColor: 'rgba(139,92,246,0.16)' },
   content: { paddingHorizontal: 22, gap: 16 },
-  header: { minHeight: 158, position: 'relative' },
+  header: { minHeight: 150, position: 'relative' },
   headerStar: { position: 'absolute', width: 4, height: 4, borderRadius: 2, backgroundColor: 'rgba(196,181,253,0.72)' },
   headerStarOne: { left: 22, top: 18, opacity: 0.6 },
   headerStarTwo: { left: 156, top: 7, width: 3, height: 3, borderRadius: 1.5, opacity: 0.8 },
@@ -235,14 +235,14 @@ const styles = StyleSheet.create({
   headerStarFive: { right: 142, bottom: 38, width: 5, height: 5, borderRadius: 2.5, opacity: 0.5 },
   headerStarSix: { left: 88, bottom: 20, width: 3, height: 3, borderRadius: 1.5, opacity: 0.75 },
   headerStarSeven: { right: 12, bottom: 58, width: 4, height: 4, borderRadius: 2, opacity: 0.65 },
-  backButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
-  headerCopy: { marginTop: 16, width: '78%' },
+  backButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(196,181,253,0.46)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(10,7,20,0.45)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 6 },
+  headerCopy: { marginTop: 18, width: '100%', zIndex: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' },
-  title: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 29, lineHeight: 36, flexShrink: 0, letterSpacing: -0.5 },
-  titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 16, lineHeight: 20 },
-  subtitle: { marginTop: 8, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 22, width: '100%' },
-  mascotWrap: { position: 'absolute', right: -10, top: -2, width: 116, height: 116, alignItems: 'center', justifyContent: 'center' },
-  mascotCircle: { width: 90, height: 90, borderRadius: 45, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.32)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.62, shadowRadius: 24, elevation: 12 },
+  title: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 26, lineHeight: 32, flexShrink: 0, letterSpacing: -0.45 },
+  titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 18, lineHeight: 22 },
+  subtitle: { marginTop: 8, color: '#C7C2D0', fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 20, width: '100%' },
+  mascotWrap: { position: 'absolute', right: -34, top: -34, width: 108, height: 108, alignItems: 'center', justifyContent: 'center', opacity: 0.9 },
+  mascotCircle: { width: 82, height: 82, borderRadius: 41, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.32)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.62, shadowRadius: 24, elevation: 12 },
   floatSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   sparkleOne: { top: 4, left: 12, fontSize: 8 },
   sparkleTwo: { top: 11, right: 4, fontSize: 6 },
