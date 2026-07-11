@@ -24,17 +24,17 @@ const TOKENS = {
 
 const features = [
   {
-    icon: 'magnify',
+    icon: 'search',
     title: 'Görsele Uygun Kelime Analizi',
     description: 'AI, görseldeki ana nesneleri ve bağlamı seçer.',
   },
   {
-    icon: 'book-open-variant',
+    icon: 'book-open',
     title: 'Sana Özel Hikâye + Quiz',
     description: 'Seçilen kelimelerle seviyene uygun içerik oluşturulur.',
   },
   {
-    icon: 'cards-outline',
+    icon: 'flashcards',
     title: 'Kelime Kartlarıyla Pekiştir',
     description: 'Öğrendiğin kelimeleri tekrar ederek kalıcı hale getir.',
   },
@@ -42,8 +42,8 @@ const features = [
 
 const flow = [
   { icon: 'image-outline', label: 'Görsel' },
-  { icon: 'brain', label: 'AI Analizi' },
-  { icon: 'format-list-checks', label: 'Seçilen Kelimeler' },
+  { icon: 'cpu', label: 'AI Analizi' },
+  { icon: 'list', label: 'Seçilen Kelimeler' },
   { icon: 'book-open-page-variant-outline', label: 'Hikaye + Quiz' },
 ] as const;
 
@@ -84,17 +84,6 @@ export default function ImagesInfoScreen() {
           </View>
         </View>
 
-        <View style={styles.stepSelector}>
-          <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.stepPill, styles.stepActive]}>
-            <Feather name="image" size={18} color="#FFFFFF" />
-            <Text style={styles.stepActiveText}>1  Kendi Görselini Yükle</Text>
-          </LinearGradient>
-          <View style={[styles.stepPill, styles.stepPassive]}>
-            <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
-            <Text style={styles.stepPassiveText}>Hazır Temalar</Text>
-          </View>
-        </View>
-
         <Pressable style={styles.uploadCard} onPress={showDemoAlert}>
           <LinearGradient colors={['#4C2A6E', '#6B3FA0', '#2E1A47', '#150E22']} locations={[0, 0.3, 0.65, 1]} style={styles.uploadOverlay}>
             <View style={styles.uploadDarkOverlay} />
@@ -121,9 +110,7 @@ export default function ImagesInfoScreen() {
         <View style={styles.featuresRow}>
           {features.map((feature) => (
             <View key={feature.title} style={styles.featureCard}>
-              <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.featureIcon}>
-                <MaterialCommunityIcons name={feature.icon} size={22} color="#FFFFFF" />
-              </LinearGradient>
+              <FeatureIcon type={feature.icon} />
               <Text style={styles.featureTitle}>{feature.title}</Text>
               <Text style={styles.featureDescription}>{feature.description}</Text>
             </View>
@@ -135,7 +122,7 @@ export default function ImagesInfoScreen() {
             <React.Fragment key={step.label}>
               <View style={styles.flowStep}>
                 <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.flowCircle}>
-                  <MaterialCommunityIcons name={step.icon} size={24} color="#FFFFFF" />
+                  {step.icon === 'list' || step.icon === 'cpu' ? <Feather name={step.icon} size={24} color="#FFFFFF" /> : <MaterialCommunityIcons name={step.icon} size={24} color="#FFFFFF" />}
                 </LinearGradient>
                 <Text style={styles.flowLabel}>{step.label}</Text>
               </View>
@@ -165,7 +152,7 @@ export default function ImagesInfoScreen() {
           <View style={styles.bookWrap}>
             <Text style={[styles.bookSparkle, styles.bookSparkleOne]}>✦</Text>
             <Text style={[styles.bookSparkle, styles.bookSparkleTwo]}>✦</Text>
-            <MaterialCommunityIcons name="book-open-variant" size={36} color={TOKENS.violet100} />
+            <Feather name="book-open" size={36} color={TOKENS.violet100} />
           </View>
         </View>
 
@@ -179,6 +166,26 @@ export default function ImagesInfoScreen() {
         </Pressable>
       </ScrollView>
     </View>
+  );
+}
+
+function FeatureIcon({ type }: { type: 'search' | 'book-open' | 'flashcards' }) {
+  return (
+    <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.featureIcon}>
+      {type === 'search' ? <Feather name="search" size={22} color="#FFFFFF" /> : null}
+      {type === 'book-open' ? (
+        <View style={styles.bookFeatureIconWrap}>
+          <Feather name="book-open" size={22} color="#FFFFFF" />
+          <Text style={styles.featureMiniSparkle}>✦</Text>
+        </View>
+      ) : null}
+      {type === 'flashcards' ? (
+        <View style={styles.flashcardIconWrap}>
+          <View style={styles.flashcardBack} />
+          <View style={styles.flashcardFront} />
+        </View>
+      ) : null}
+    </LinearGradient>
   );
 }
 
@@ -201,7 +208,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 22, gap: 16 },
   header: { minHeight: 158, position: 'relative' },
   backButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
-  headerCopy: { marginTop: 16, maxWidth: '62%' },
+  headerCopy: { marginTop: 16, maxWidth: '70%' },
   titleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' },
   title: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 23, lineHeight: 29, flexShrink: 0 },
   titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 16, lineHeight: 20 },
@@ -213,36 +220,33 @@ const styles = StyleSheet.create({
   sparkleTwo: { top: 15, right: 6, fontSize: 6 },
   sparkleThree: { bottom: 14, left: 2, fontSize: 4 },
   sparkleFour: { bottom: 6, right: 18, fontSize: 7 },
-  stepSelector: { flexDirection: 'row', gap: 12 },
-  stepPill: { height: 52, borderRadius: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  stepActive: { flex: 55, gap: 7, paddingHorizontal: 10 },
-  stepPassive: { flex: 45, gap: 8, borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', backgroundColor: 'transparent', paddingHorizontal: 10 },
-  stepActiveText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 11, lineHeight: 18, flexShrink: 1 },
-  stepNumber: { width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)', alignItems: 'center', justifyContent: 'center' },
-  stepNumberText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 13 },
-  stepPassiveText: { color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 13, lineHeight: 18, flexShrink: 1 },
   uploadCard: { borderRadius: 22, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(167,139,250,0.5)', overflow: 'hidden' },
-  uploadOverlay: { padding: 24, alignItems: 'center' },
+  uploadOverlay: { padding: 20, alignItems: 'center' },
   uploadDarkOverlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(10,7,20,0.22)' },
-  uploadIconArea: { width: 130, height: 104, alignItems: 'center', justifyContent: 'center' },
-  radialGlow: { position: 'absolute', width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(167,139,250,0.35)', opacity: 0.75 },
+  uploadIconArea: { width: 112, height: 92, alignItems: 'center', justifyContent: 'center' },
+  radialGlow: { position: 'absolute', width: 112, height: 112, borderRadius: 56, backgroundColor: 'rgba(167,139,250,0.35)', opacity: 0.35 },
   iconSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   iconSparkleOne: { left: 14, top: 10, fontSize: 8 },
   iconSparkleTwo: { right: 12, bottom: 9, fontSize: 7 },
-  uploadCircle: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center' },
+  uploadCircle: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center' },
   uploadTitle: { marginTop: 16, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 22, lineHeight: 28 },
   uploadDescription: { marginTop: 8, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, textAlign: 'center' },
-  uploadActions: { marginTop: 20, flexDirection: 'row', gap: 14 },
-  actionButton: { flex: 1, height: 76, borderRadius: 14, backgroundColor: 'rgba(22,16,31,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, gap: 6 },
+  uploadActions: { marginTop: 18, flexDirection: 'row', gap: 10 },
+  actionButton: { flex: 1, height: 68, borderRadius: 14, backgroundColor: 'rgba(22,16,31,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, gap: 6 },
   actionIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   actionCopy: { flex: 1, minWidth: 0 },
-  actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 13, lineHeight: 19 },
-  actionSubtitle: { marginTop: 3, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 16 },
-  featuresRow: { flexDirection: 'row', gap: 12, alignItems: 'stretch' },
-  featureCard: { flex: 1, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.18)', backgroundColor: TOKENS.card, padding: 16, alignItems: 'flex-start' },
+  actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 14, lineHeight: 19 },
+  actionSubtitle: { marginTop: 3, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 16 },
+  featuresRow: { flexDirection: 'row', gap: 10, alignItems: 'stretch' },
+  featureCard: { flex: 1, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.18)', backgroundColor: TOKENS.card, padding: 14, alignItems: 'flex-start' },
   featureIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  featureTitle: { marginTop: 12, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 15, lineHeight: 19 },
-  featureDescription: { marginTop: 6, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 17.4 },
+  bookFeatureIconWrap: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
+  featureMiniSparkle: { position: 'absolute', top: -2, right: -1, color: '#FFFFFF', fontSize: 7, lineHeight: 9 },
+  flashcardIconWrap: { width: 25, height: 22 },
+  flashcardBack: { position: 'absolute', left: 2, top: 1, width: 18, height: 14, borderWidth: 1.8, borderColor: 'rgba(255,255,255,0.7)', borderRadius: 3 },
+  flashcardFront: { position: 'absolute', right: 1, bottom: 1, width: 18, height: 14, borderWidth: 1.8, borderColor: '#FFFFFF', borderRadius: 3 },
+  featureTitle: { marginTop: 12, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14, lineHeight: 17.5 },
+  featureDescription: { marginTop: 6, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16.8 },
   flowCard: { borderRadius: 22, backgroundColor: TOKENS.card, padding: 20, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
   flowStep: { flex: 1, alignItems: 'center' },
   flowCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
