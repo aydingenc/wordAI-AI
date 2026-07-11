@@ -120,11 +120,11 @@ export default function ImagesInfoScreen() {
         <View style={styles.featuresRow}>
           {features.map((feature) => (
             <LinearGradient key={feature.title} colors={cardGradient} style={styles.featureCard}>
-              <FeatureIcon type={feature.icon} />
-              <View style={styles.featureCopy}>
+              <View style={styles.featureHead}>
+                <FeatureIcon type={feature.icon} />
                 <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureDescription}>{feature.description}</Text>
               </View>
+              <Text style={styles.featureDescription}>{feature.description}</Text>
             </LinearGradient>
           ))}
         </View>
@@ -262,16 +262,16 @@ const styles = StyleSheet.create({
   actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 16 },
   actionSubtitle: { marginTop: 2, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 13 },
   featuresRow: { flexDirection: 'row', gap: 10, alignItems: 'stretch' },
-  featureCard: { flex: 1, minHeight: 112, borderRadius: 22, padding: 8, flexDirection: 'row', alignItems: 'flex-start', gap: 6, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
-  featureCopy: { flex: 1, minWidth: 0 },
-  featureIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
+  featureCard: { flex: 1, minHeight: 112, borderRadius: 22, padding: 12, flexDirection: 'column', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
+  featureHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, minWidth: 0 },
+  featureIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   bookFeatureIconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
   featureMiniSparkle: { position: 'absolute', top: -3, right: -2, color: '#FFFFFF', fontSize: 7, lineHeight: 9 },
   flashcardIconWrap: { width: 22, height: 19 },
   flashcardBack: { position: 'absolute', left: 2, top: 1, width: 16, height: 12, borderWidth: 1.8, borderColor: 'rgba(255,255,255,0.7)', borderRadius: 3 },
   flashcardFront: { position: 'absolute', right: 1, bottom: 1, width: 16, height: 12, borderWidth: 1.8, borderColor: '#FFFFFF', borderRadius: 3 },
-  featureTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 12, lineHeight: 15 },
-  featureDescription: { marginTop: 4, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 15.4 },
+  featureTitle: { flex: 1, minWidth: 0, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 12, lineHeight: 15 },
+  featureDescription: { color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 15.4, width: '100%' },
   flowCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   flowStep: { flex: 1, alignItems: 'center' },
   flowCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
