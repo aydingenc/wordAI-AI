@@ -104,40 +104,34 @@ export default function ImagesInfoScreen() {
 
         <View style={styles.featureGrid}>
           <LinearGradient colors={cardGradient} style={styles.featureCard}>
-            <View style={styles.featureHead}>
-              <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
-                <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
-                  <Circle cx="11" cy="11" r="7" /><Path d="m20 20-3.5-3.5" />
-                </Svg>
-              </LinearGradient>
-              <Text style={[styles.featureHeadTitle, webNoBreak]}>Görsele Uygun Kelime Analizi</Text>
-            </View>
+            <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
+              <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
+                <Circle cx="11" cy="11" r="7" /><Path d="m20 20-3.5-3.5" />
+              </Svg>
+            </LinearGradient>
+            <Text style={[styles.featureHeadTitle, webNoBreak]}>Görsele Uygun Kelime Analizi</Text>
             <Text style={[styles.featureCardText, webNoBreak]}>AI, görseldeki ana nesneleri ve bağlamı seçer.</Text>
           </LinearGradient>
 
           <LinearGradient colors={cardGradient} style={styles.featureCard}>
-            <View style={styles.featureHead}>
-              <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
-                <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
-                  <Path d="M12 7v14" />
-                  <Path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
-                </Svg>
-              </LinearGradient>
-              <Text style={[styles.featureHeadTitle, webNoBreak]}>Sana Özel Hikâye + Quiz</Text>
-            </View>
+            <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
+              <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
+                <Path d="M12 7v14" />
+                <Path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+              </Svg>
+            </LinearGradient>
+            <Text style={[styles.featureHeadTitle, webNoBreak]}>Sana Özel Hikâye + Quiz</Text>
             <Text style={[styles.featureCardText, webNoBreak]}>Seçilen kelimelerle seviyene uygun içerik oluşturulur.</Text>
           </LinearGradient>
 
           <LinearGradient colors={cardGradient} style={styles.featureCard}>
-            <View style={styles.featureHead}>
-              <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
-                <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
-                  <Rect x="3" y="7" width="13" height="13" rx="2" />
-                  <Path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
-                </Svg>
-              </LinearGradient>
-              <Text style={[styles.featureHeadTitle, webNoBreak]}>Kelime Kartlarıyla Pekiştir</Text>
-            </View>
+            <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
+              <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
+                <Rect x="3" y="7" width="13" height="13" rx="2" />
+                <Path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+              </Svg>
+            </LinearGradient>
+            <Text style={[styles.featureHeadTitle, webNoBreak]}>Kelime Kartlarıyla Pekiştir</Text>
             <Text style={[styles.featureCardText, webNoBreak]}>Öğrendiğin kelimeleri tekrar ederek kalıcı hale getir.</Text>
           </LinearGradient>
         </View>
@@ -255,11 +249,10 @@ const styles = StyleSheet.create({
   actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 16 },
   actionSubtitle: { marginTop: 2, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 13 },
   featureGrid: { flexDirection: 'row', gap: 10, paddingHorizontal: 0 },
-  featureCard: { flex: 1, display: 'flex', flexDirection: 'column', padding: 12, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0, minWidth: 0 },
-  featureHead: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  iconCircle: { width: 34, height: 34, flexShrink: 0, borderRadius: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 14, elevation: 8 },
+  featureCard: { flex: 1, display: 'flex', flexDirection: 'column', padding: 10, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0, minWidth: 0 },
+  iconCircle: { width: 34, height: 34, flexShrink: 0, borderRadius: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 14, elevation: 8 },
   iconSvg: { width: 18, height: 18 },
-  featureHeadTitle: { margin: 0, flex: 1, fontSize: 12, fontFamily: 'Inter_700Bold', lineHeight: 15, color: '#fff' },
+  featureHeadTitle: { margin: 0, marginBottom: 6, fontSize: 11, fontFamily: 'Inter_700Bold', lineHeight: 14.3, color: '#fff' },
   featureCardText: { margin: 0, fontSize: 11, fontFamily: 'Inter_400Regular', lineHeight: 15.4, color: '#A19DB0', width: '100%' },
   flowCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   flowStep: { flex: 1, alignItems: 'center' },
