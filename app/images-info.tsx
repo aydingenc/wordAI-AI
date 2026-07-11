@@ -25,18 +25,18 @@ const TOKENS = {
 const features = [
   {
     icon: 'magnify',
-    title: 'AI görseli analiz eder',
-    description: 'Nesneleri ve bağlamı güvenle tanır.',
+    title: 'Görsele Uygun Kelime Analizi',
+    description: 'AI, görseldeki ana nesneleri ve bağlamı seçer.',
   },
   {
     icon: 'book-open-variant',
-    title: 'Kelimeler hikâyeye dönüşür',
-    description: 'Sana özel güçlü örnekler oluşturur.',
+    title: 'Sana Özel Hikâye + Quiz',
+    description: 'Seçilen kelimelerle seviyene uygun içerik oluşturulur.',
   },
   {
     icon: 'cards-outline',
-    title: 'Kartlarla hızlı tekrar',
-    description: 'Seçilen kelimeleri akılda kalıcı yapar.',
+    title: 'Kelime Kartlarıyla Pekiştir',
+    description: 'Öğrendiğin kelimeleri tekrar ederek kalıcı hale getir.',
   },
 ] as const;
 
@@ -67,10 +67,10 @@ export default function ImagesInfoScreen() {
           </Pressable>
           <View style={styles.headerCopy}>
             <View style={styles.titleRow}>
-              <Text style={styles.title} numberOfLines={1}>Görsellerden Öğren</Text>
+              <Text style={styles.title}>Görsellerden Öğren</Text>
               <Text style={styles.titleSparkle}>✦</Text>
             </View>
-            <Text style={styles.subtitle} numberOfLines={2}>
+            <Text style={styles.subtitle}>
               Kendi fotoğrafını yükle, AI analiz etsin,{`\n`}sana özel kelimeler ve hikâyeler oluştursun.
             </Text>
           </View>
@@ -78,22 +78,8 @@ export default function ImagesInfoScreen() {
             <Text style={[styles.floatSparkle, styles.sparkleOne]}>✦</Text>
             <Text style={[styles.floatSparkle, styles.sparkleTwo]}>✦</Text>
             <Text style={[styles.floatSparkle, styles.sparkleThree]}>✦</Text>
-            <Text style={[styles.floatSparkle, styles.sparkleFour]}>✦</Text>
-            <View style={styles.mascotCards}>
-              <View style={[styles.photoCard, styles.photoCardLeft]} />
-              <View style={[styles.photoCard, styles.photoCardRight]} />
-              <View style={[styles.photoCard, styles.photoCardBottom]} />
-            </View>
-            <LinearGradient colors={[TOKENS.violet100, '#FFFFFF']} style={styles.robotHead}>
-              <View style={styles.robotAntenna} />
-              <View style={styles.robotFace}>
-                <View style={styles.robotEye} />
-                <View style={styles.robotEye} />
-              </View>
-              <View style={styles.robotMouth} />
-            </LinearGradient>
-            <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} style={styles.robotBody}>
-              <MaterialCommunityIcons name="robot-happy-outline" size={28} color="#FFFFFF" />
+            <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.mascotCircle}>
+              <MaterialCommunityIcons name="robot-happy-outline" size={54} color="#FFFFFF" />
             </LinearGradient>
           </View>
         </View>
@@ -101,21 +87,17 @@ export default function ImagesInfoScreen() {
         <View style={styles.stepSelector}>
           <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.stepPill, styles.stepActive]}>
             <Feather name="image" size={18} color="#FFFFFF" />
-            <Text style={styles.stepActiveText} numberOfLines={1}>1  Kendi Görselini Yükle</Text>
+            <Text style={styles.stepActiveText}>1  Kendi Görselini Yükle</Text>
           </LinearGradient>
           <View style={[styles.stepPill, styles.stepPassive]}>
             <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
-            <Text style={styles.stepPassiveText} numberOfLines={1}>Hazır Temalar</Text>
+            <Text style={styles.stepPassiveText}>Hazır Temalar</Text>
           </View>
         </View>
 
         <Pressable style={styles.uploadCard} onPress={showDemoAlert}>
-          <LinearGradient colors={['#31205B', '#1B1234', '#0A0714']} locations={[0, 0.48, 1]} style={styles.uploadOverlay}>
-            <View style={styles.uploadSkyGlow} />
-            <View style={styles.uploadLakeGlow} />
-            <View style={[styles.uploadMountain, styles.uploadMountainLeft]} />
-            <View style={[styles.uploadMountain, styles.uploadMountainRight]} />
-            <View style={styles.uploadBalloon} />
+          <LinearGradient colors={['#4C2A6E', '#6B3FA0', '#2E1A47', '#150E22']} locations={[0, 0.3, 0.65, 1]} style={styles.uploadOverlay}>
+            <View style={styles.uploadDarkOverlay} />
             <View style={styles.uploadIconArea}>
               <View style={styles.radialGlow} />
               <Text style={[styles.iconSparkle, styles.iconSparkleOne]}>✦</Text>
@@ -125,7 +107,7 @@ export default function ImagesInfoScreen() {
               </LinearGradient>
             </View>
             <Text style={styles.uploadTitle}>Görselini Yükle</Text>
-            <Text style={styles.uploadDescription} numberOfLines={2}>
+            <Text style={styles.uploadDescription}>
               Fotoğraf çek ya da galerinden seç.{`
 `}Tek bir görseli kişisel İngilizce dersine dönüştür.
             </Text>
@@ -166,7 +148,7 @@ export default function ImagesInfoScreen() {
           <MaterialCommunityIcons name="shield-check-outline" size={40} color={TOKENS.violet300} />
           <View style={styles.safetyTextWrap}>
             <Text style={styles.bandTitle}>Güvenli Görsel Analizi</Text>
-            <Text style={styles.bandDescription} numberOfLines={2}>Uygunsuz içerikler analizden geçmez. Güvenli görsel kontrolünü aşamayan yüklemeler işlenmez.</Text>
+            <Text style={styles.bandDescription}>Uygunsuz içerikler analizden geçmez. Güvenli görsel kontrolünü aşamayan yüklemeler işlenmez.</Text>
           </View>
           <View style={styles.lockBadge}>
             <Feather name="lock" size={22} color={TOKENS.violet100} />
@@ -207,8 +189,8 @@ function UploadAction({ icon, title, subtitle, onPress }: { icon: 'camera' | 'im
         <Feather name={icon} size={24} color="#FFFFFF" />
       </LinearGradient>
       <View style={styles.actionCopy}>
-        <Text style={styles.actionTitle} numberOfLines={1}>{title}</Text>
-        <Text style={styles.actionSubtitle} numberOfLines={1}>{subtitle}</Text>
+        <Text style={styles.actionTitle}>{title}</Text>
+        <Text style={styles.actionSubtitle}>{subtitle}</Text>
       </View>
     </Pressable>
   );
@@ -221,21 +203,11 @@ const styles = StyleSheet.create({
   backButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
   headerCopy: { marginTop: 16, maxWidth: '62%' },
   titleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' },
-  title: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 27, lineHeight: 33, flexShrink: 0 },
+  title: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 23, lineHeight: 29, flexShrink: 0 },
   titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 16, lineHeight: 20 },
   subtitle: { marginTop: 8, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 21 },
-  mascotWrap: { position: 'absolute', right: -8, top: 40, width: 150, height: 132 },
-  mascotCards: { ...StyleSheet.absoluteFillObject },
-  photoCard: { position: 'absolute', width: 58, height: 42, borderRadius: 10, borderWidth: 3, borderColor: '#FFFFFF', opacity: 0.92 },
-  photoCardLeft: { left: 3, top: 41, backgroundColor: '#FCD34D', transform: [{ rotate: '-12deg' }] },
-  photoCardRight: { right: 0, top: 32, backgroundColor: '#7DD3FC', transform: [{ rotate: '10deg' }] },
-  photoCardBottom: { right: 8, bottom: 10, backgroundColor: TOKENS.violet100, transform: [{ rotate: '-7deg' }] },
-  robotHead: { position: 'absolute', left: 36, top: 23, width: 78, height: 72, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
-  robotAntenna: { position: 'absolute', top: -19, width: 6, height: 20, borderRadius: 3, backgroundColor: TOKENS.violet100 },
-  robotFace: { width: 54, height: 28, borderRadius: 14, backgroundColor: '#2A2048', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  robotEye: { width: 9, height: 9, borderRadius: 4.5, backgroundColor: TOKENS.violet300 },
-  robotMouth: { marginTop: 6, width: 28, height: 4, borderRadius: 2, backgroundColor: TOKENS.violet600, opacity: 0.5 },
-  robotBody: { position: 'absolute', left: 51, top: 88, width: 48, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  mascotWrap: { position: 'absolute', right: -4, top: 36, width: 118, height: 118, alignItems: 'center', justifyContent: 'center' },
+  mascotCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
   floatSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   sparkleOne: { top: 2, left: 18, fontSize: 8 },
   sparkleTwo: { top: 15, right: 6, fontSize: 6 },
@@ -245,18 +217,13 @@ const styles = StyleSheet.create({
   stepPill: { height: 52, borderRadius: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   stepActive: { flex: 55, gap: 7, paddingHorizontal: 10 },
   stepPassive: { flex: 45, gap: 8, borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', backgroundColor: 'transparent', paddingHorizontal: 10 },
-  stepActiveText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 13, lineHeight: 18, flexShrink: 1 },
+  stepActiveText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 11, lineHeight: 18, flexShrink: 1 },
   stepNumber: { width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)', alignItems: 'center', justifyContent: 'center' },
   stepNumberText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 13 },
-  stepPassiveText: { color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 14, lineHeight: 18, flexShrink: 1 },
+  stepPassiveText: { color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 13, lineHeight: 18, flexShrink: 1 },
   uploadCard: { borderRadius: 22, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(167,139,250,0.5)', overflow: 'hidden' },
-  uploadOverlay: { padding: 24, alignItems: 'center', overflow: 'hidden' },
-  uploadSkyGlow: { position: 'absolute', top: -45, right: 34, width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(252,211,77,0.20)' },
-  uploadLakeGlow: { position: 'absolute', left: -28, right: -28, bottom: 0, height: 86, backgroundColor: 'rgba(56,189,248,0.13)' },
-  uploadMountain: { position: 'absolute', bottom: 104, width: 170, height: 170, backgroundColor: 'rgba(22,16,31,0.62)', transform: [{ rotate: '45deg' }] },
-  uploadMountainLeft: { left: -52 },
-  uploadMountainRight: { right: -24, bottom: 92, backgroundColor: 'rgba(76,29,149,0.36)' },
-  uploadBalloon: { position: 'absolute', right: 48, top: 34, width: 20, height: 26, borderRadius: 12, backgroundColor: 'rgba(196,181,253,0.85)' },
+  uploadOverlay: { padding: 24, alignItems: 'center' },
+  uploadDarkOverlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(10,7,20,0.22)' },
   uploadIconArea: { width: 130, height: 104, alignItems: 'center', justifyContent: 'center' },
   radialGlow: { position: 'absolute', width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(167,139,250,0.35)', opacity: 0.75 },
   iconSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
@@ -266,11 +233,11 @@ const styles = StyleSheet.create({
   uploadTitle: { marginTop: 16, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 22, lineHeight: 28 },
   uploadDescription: { marginTop: 8, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, textAlign: 'center' },
   uploadActions: { marginTop: 20, flexDirection: 'row', gap: 14 },
-  actionButton: { flex: 1, height: 76, borderRadius: 14, backgroundColor: 'rgba(22,16,31,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 9, gap: 8 },
-  actionIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  actionButton: { flex: 1, height: 76, borderRadius: 14, backgroundColor: 'rgba(22,16,31,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, gap: 6 },
+  actionIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   actionCopy: { flex: 1, minWidth: 0 },
-  actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 19 },
-  actionSubtitle: { marginTop: 3, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16 },
+  actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 13, lineHeight: 19 },
+  actionSubtitle: { marginTop: 3, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 16 },
   featuresRow: { flexDirection: 'row', gap: 12, alignItems: 'stretch' },
   featureCard: { flex: 1, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.18)', backgroundColor: TOKENS.card, padding: 16, alignItems: 'flex-start' },
   featureIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
