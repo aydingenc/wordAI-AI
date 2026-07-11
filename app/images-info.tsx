@@ -62,6 +62,10 @@ export default function ImagesInfoScreen() {
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <Feather name="arrow-left" size={24} color={TOKENS.violet100} />
           </Pressable>
+          <Pressable style={styles.howButton}>
+            <MaterialCommunityIcons name="help-circle-outline" size={13} color="#F15DFF" />
+            <Text style={styles.howText}>Nasıl çalışır?</Text>
+          </Pressable>
           <View style={styles.headerCopy}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>Görsellerden Öğren</Text>
@@ -83,7 +87,8 @@ export default function ImagesInfoScreen() {
 
         <View style={styles.stepSelector}>
           <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.stepActive}>
-            <Text style={styles.stepActiveText}>1 Kendi Görselini Yükle</Text>
+            <View style={styles.stepActiveNumber}><Text style={styles.stepActiveNumberText}>1</Text></View>
+            <Text style={styles.stepActiveText}>Kendi Görselini Yükle</Text>
           </LinearGradient>
           <View style={styles.stepPassive}>
             <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
@@ -236,12 +241,14 @@ const styles = StyleSheet.create({
   headerStarSix: { left: 88, bottom: 20, width: 3, height: 3, borderRadius: 1.5, opacity: 0.75 },
   headerStarSeven: { right: 12, bottom: 58, width: 4, height: 4, borderRadius: 2, opacity: 0.65 },
   backButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(196,181,253,0.46)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(10,7,20,0.45)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 6 },
+  howButton: { position: 'absolute', right: 0, top: 8, flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(139,92,246,0.50)', borderRadius: 12, paddingHorizontal: 8, height: 28, backgroundColor: 'rgba(13,8,22,0.66)', zIndex: 4 },
+  howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 10.5 },
   headerCopy: { marginTop: 18, width: '100%', zIndex: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' },
   title: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 26, lineHeight: 32, flexShrink: 0, letterSpacing: -0.45 },
   titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 18, lineHeight: 22 },
   subtitle: { marginTop: 8, color: '#C7C2D0', fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 20, width: '100%' },
-  mascotWrap: { position: 'absolute', right: -34, top: -34, width: 108, height: 108, alignItems: 'center', justifyContent: 'center', opacity: 0.9 },
+  mascotWrap: { position: 'absolute', right: -34, top: 22, width: 108, height: 108, alignItems: 'center', justifyContent: 'center', opacity: 0.9 },
   mascotCircle: { width: 82, height: 82, borderRadius: 41, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.32)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.62, shadowRadius: 24, elevation: 12 },
   floatSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   sparkleOne: { top: 4, left: 12, fontSize: 8 },
@@ -250,6 +257,8 @@ const styles = StyleSheet.create({
   sparkleFour: { bottom: 6, right: 18, fontSize: 7 },
   stepSelector: { height: 50, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)', flexDirection: 'row', padding: 0, overflow: 'hidden', backgroundColor: 'rgba(8,4,18,0.72)' },
   stepActive: { flex: 1.08, borderRadius: 14, margin: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.55, shadowRadius: 18, elevation: 8 },
+  stepActiveNumber: { width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.50)', alignItems: 'center', justifyContent: 'center' },
+  stepActiveNumberText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12 },
   stepActiveText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 16 },
   stepPassive: { flex: 0.92, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   stepNumber: { width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: TOKENS.violet300, alignItems: 'center', justifyContent: 'center' },
