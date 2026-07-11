@@ -112,7 +112,7 @@ export default function ImagesInfoScreen() {
             </Text>
             <View style={styles.uploadActions}>
               <UploadAction icon="camera" title="Fotoğraf Çek" subtitle="Anı yakala" onPress={showDemoAlert} />
-              <UploadAction icon="image" title="Galeriden Seç" subtitle="Hazır görsel yükle" onPress={showDemoAlert} />
+              <UploadAction icon="image" title="Galeriden Seç" subtitle="Hazır görsel yükle" onPress={showDemoAlert} wide />
             </View>
           </LinearGradient>
         </Pressable>
@@ -202,9 +202,9 @@ function FeatureIcon({ type }: { type: 'search' | 'book-open' | 'flashcards' }) 
   );
 }
 
-function UploadAction({ icon, title, subtitle, onPress }: { icon: 'camera' | 'image'; title: string; subtitle: string; onPress: () => void }) {
+function UploadAction({ icon, title, subtitle, onPress, wide = false }: { icon: 'camera' | 'image'; title: string; subtitle: string; onPress: () => void; wide?: boolean }) {
   return (
-    <Pressable style={styles.actionButton} onPress={onPress}>
+    <Pressable style={[styles.actionButton, wide ? styles.actionButtonWide : styles.actionButtonStandard]} onPress={onPress}>
       <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.actionIcon}>
         <Feather name={icon} size={24} color="#FFFFFF" />
       </LinearGradient>
@@ -229,13 +229,13 @@ const styles = StyleSheet.create({
   headerStarSix: { left: 88, bottom: 20, width: 3, height: 3, borderRadius: 1.5, opacity: 0.75 },
   headerStarSeven: { right: 12, bottom: 58, width: 4, height: 4, borderRadius: 2, opacity: 0.65 },
   backButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
-  headerCopy: { marginTop: 16, maxWidth: '70%' },
+  headerCopy: { marginTop: 16, width: '100%' },
   titleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' },
   title: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 23, lineHeight: 29, flexShrink: 0 },
   titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 16, lineHeight: 20 },
-  subtitle: { marginTop: 8, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 21 },
-  mascotWrap: { position: 'absolute', right: -4, top: 36, width: 118, height: 118, alignItems: 'center', justifyContent: 'center' },
-  mascotCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
+  subtitle: { marginTop: 8, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19.5, width: '100%' },
+  mascotWrap: { position: 'absolute', right: -2, top: 0, width: 96, height: 96, alignItems: 'center', justifyContent: 'center' },
+  mascotCircle: { width: 76, height: 76, borderRadius: 38, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   floatSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   sparkleOne: { top: 2, left: 18, fontSize: 8 },
   sparkleTwo: { top: 15, right: 6, fontSize: 6 },
@@ -254,22 +254,24 @@ const styles = StyleSheet.create({
   uploadTitle: { marginTop: 16, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 22, lineHeight: 28 },
   uploadDescription: { marginTop: 8, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, textAlign: 'center' },
   uploadActions: { marginTop: 18, flexDirection: 'row', gap: 10 },
-  actionButton: { flex: 1, height: 68, borderRadius: 14, backgroundColor: 'rgba(22,16,31,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 6, gap: 6 },
-  actionIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  actionButton: { height: 60, borderRadius: 14, backgroundColor: 'rgba(22,16,31,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 10, gap: 8, minWidth: 0 },
+  actionButtonStandard: { flex: 0.48 },
+  actionButtonWide: { flex: 0.52 },
+  actionIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   actionCopy: { flex: 1, minWidth: 0 },
-  actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 14, lineHeight: 19 },
-  actionSubtitle: { marginTop: 3, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 16 },
-  featuresRow: { gap: 10 },
-  featureCard: { minHeight: 92, borderRadius: 22, padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 10, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
+  actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 16 },
+  actionSubtitle: { marginTop: 2, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 13 },
+  featuresRow: { flexDirection: 'row', gap: 10, alignItems: 'stretch' },
+  featureCard: { flex: 1, minHeight: 112, borderRadius: 22, padding: 8, flexDirection: 'row', alignItems: 'flex-start', gap: 6, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   featureCopy: { flex: 1, minWidth: 0 },
-  featureIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
-  bookFeatureIconWrap: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
-  featureMiniSparkle: { position: 'absolute', top: -2, right: -1, color: '#FFFFFF', fontSize: 7, lineHeight: 9 },
-  flashcardIconWrap: { width: 25, height: 22 },
-  flashcardBack: { position: 'absolute', left: 2, top: 1, width: 18, height: 14, borderWidth: 1.8, borderColor: 'rgba(255,255,255,0.7)', borderRadius: 3 },
-  flashcardFront: { position: 'absolute', right: 1, bottom: 1, width: 18, height: 14, borderWidth: 1.8, borderColor: '#FFFFFF', borderRadius: 3 },
-  featureTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14, lineHeight: 17.5 },
-  featureDescription: { marginTop: 6, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16.8 },
+  featureIcon: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
+  bookFeatureIconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  featureMiniSparkle: { position: 'absolute', top: -3, right: -2, color: '#FFFFFF', fontSize: 7, lineHeight: 9 },
+  flashcardIconWrap: { width: 22, height: 19 },
+  flashcardBack: { position: 'absolute', left: 2, top: 1, width: 16, height: 12, borderWidth: 1.8, borderColor: 'rgba(255,255,255,0.7)', borderRadius: 3 },
+  flashcardFront: { position: 'absolute', right: 1, bottom: 1, width: 16, height: 12, borderWidth: 1.8, borderColor: '#FFFFFF', borderRadius: 3 },
+  featureTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 12, lineHeight: 15 },
+  featureDescription: { marginTop: 4, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 15.4 },
   flowCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   flowStep: { flex: 1, alignItems: 'center' },
   flowCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
@@ -283,7 +285,7 @@ const styles = StyleSheet.create({
   quoteBand: { borderRadius: 22, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   quoteIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   quoteSparkle: { color: '#FFFFFF', fontSize: 22 },
-  quoteText: { flex: 1, color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 21 },
+  quoteText: { flex: 1, color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 18 },
   quoteAccent: { color: TOKENS.violet100 },
   bookWrap: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   bookSparkle: { position: 'absolute', color: TOKENS.violet100 },
