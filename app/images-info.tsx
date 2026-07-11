@@ -1,8 +1,6 @@
 import React from 'react';
 import {
   Alert,
-  Image,
-  ImageBackground,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,8 +12,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const mascot = require('../assets/mascot.png');
-const uploadBg = require('../assets/upload-bg.jpg');
 
 const TOKENS = {
   bg: '#0A0714',
@@ -83,7 +79,22 @@ export default function ImagesInfoScreen() {
             <Text style={[styles.floatSparkle, styles.sparkleTwo]}>✦</Text>
             <Text style={[styles.floatSparkle, styles.sparkleThree]}>✦</Text>
             <Text style={[styles.floatSparkle, styles.sparkleFour]}>✦</Text>
-            <Image source={mascot} style={styles.mascot} resizeMode="contain" />
+            <View style={styles.mascotCards}>
+              <View style={[styles.photoCard, styles.photoCardLeft]} />
+              <View style={[styles.photoCard, styles.photoCardRight]} />
+              <View style={[styles.photoCard, styles.photoCardBottom]} />
+            </View>
+            <LinearGradient colors={[TOKENS.violet100, '#FFFFFF']} style={styles.robotHead}>
+              <View style={styles.robotAntenna} />
+              <View style={styles.robotFace}>
+                <View style={styles.robotEye} />
+                <View style={styles.robotEye} />
+              </View>
+              <View style={styles.robotMouth} />
+            </LinearGradient>
+            <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} style={styles.robotBody}>
+              <MaterialCommunityIcons name="robot-happy-outline" size={28} color="#FFFFFF" />
+            </LinearGradient>
           </View>
         </View>
 
@@ -99,26 +110,30 @@ export default function ImagesInfoScreen() {
         </View>
 
         <Pressable style={styles.uploadCard} onPress={showDemoAlert}>
-          <ImageBackground source={uploadBg} style={styles.uploadBg} imageStyle={styles.uploadImage} resizeMode="cover">
-            <LinearGradient colors={['rgba(10,7,20,0.10)', 'rgba(10,7,20,0.35)', 'rgba(10,7,20,0.65)']} locations={[0, 0.45, 1]} style={styles.uploadOverlay}>
-              <View style={styles.uploadIconArea}>
-                <View style={styles.radialGlow} />
-                <Text style={[styles.iconSparkle, styles.iconSparkleOne]}>✦</Text>
-                <Text style={[styles.iconSparkle, styles.iconSparkleTwo]}>✦</Text>
-                <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.uploadCircle}>
-                  <Feather name="upload-cloud" size={40} color="#FFFFFF" />
-                </LinearGradient>
-              </View>
-              <Text style={styles.uploadTitle}>Görselini Yükle</Text>
-              <Text style={styles.uploadDescription} numberOfLines={2}>
-                Fotoğraf çek ya da galerinden seç.{`\n`}Tek bir görseli kişisel İngilizce dersine dönüştür.
-              </Text>
-              <View style={styles.uploadActions}>
-                <UploadAction icon="camera" title="Fotoğraf Çek" subtitle="Anı yakala" onPress={showDemoAlert} />
-                <UploadAction icon="image" title="Galeriden Seç" subtitle="Hazır görsel yükle" onPress={showDemoAlert} />
-              </View>
-            </LinearGradient>
-          </ImageBackground>
+          <LinearGradient colors={['#31205B', '#1B1234', '#0A0714']} locations={[0, 0.48, 1]} style={styles.uploadOverlay}>
+            <View style={styles.uploadSkyGlow} />
+            <View style={styles.uploadLakeGlow} />
+            <View style={[styles.uploadMountain, styles.uploadMountainLeft]} />
+            <View style={[styles.uploadMountain, styles.uploadMountainRight]} />
+            <View style={styles.uploadBalloon} />
+            <View style={styles.uploadIconArea}>
+              <View style={styles.radialGlow} />
+              <Text style={[styles.iconSparkle, styles.iconSparkleOne]}>✦</Text>
+              <Text style={[styles.iconSparkle, styles.iconSparkleTwo]}>✦</Text>
+              <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.uploadCircle}>
+                <Feather name="upload-cloud" size={40} color="#FFFFFF" />
+              </LinearGradient>
+            </View>
+            <Text style={styles.uploadTitle}>Görselini Yükle</Text>
+            <Text style={styles.uploadDescription} numberOfLines={2}>
+              Fotoğraf çek ya da galerinden seç.{`
+`}Tek bir görseli kişisel İngilizce dersine dönüştür.
+            </Text>
+            <View style={styles.uploadActions}>
+              <UploadAction icon="camera" title="Fotoğraf Çek" subtitle="Anı yakala" onPress={showDemoAlert} />
+              <UploadAction icon="image" title="Galeriden Seç" subtitle="Hazır görsel yükle" onPress={showDemoAlert} />
+            </View>
+          </LinearGradient>
         </Pressable>
 
         <View style={styles.featuresRow}>
@@ -210,7 +225,17 @@ const styles = StyleSheet.create({
   titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 16, lineHeight: 20 },
   subtitle: { marginTop: 8, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 21 },
   mascotWrap: { position: 'absolute', right: -8, top: 40, width: 150, height: 132 },
-  mascot: { width: 150, height: 132 },
+  mascotCards: { ...StyleSheet.absoluteFillObject },
+  photoCard: { position: 'absolute', width: 58, height: 42, borderRadius: 10, borderWidth: 3, borderColor: '#FFFFFF', opacity: 0.92 },
+  photoCardLeft: { left: 3, top: 41, backgroundColor: '#FCD34D', transform: [{ rotate: '-12deg' }] },
+  photoCardRight: { right: 0, top: 32, backgroundColor: '#7DD3FC', transform: [{ rotate: '10deg' }] },
+  photoCardBottom: { right: 8, bottom: 10, backgroundColor: TOKENS.violet100, transform: [{ rotate: '-7deg' }] },
+  robotHead: { position: 'absolute', left: 36, top: 23, width: 78, height: 72, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
+  robotAntenna: { position: 'absolute', top: -19, width: 6, height: 20, borderRadius: 3, backgroundColor: TOKENS.violet100 },
+  robotFace: { width: 54, height: 28, borderRadius: 14, backgroundColor: '#2A2048', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  robotEye: { width: 9, height: 9, borderRadius: 4.5, backgroundColor: TOKENS.violet300 },
+  robotMouth: { marginTop: 6, width: 28, height: 4, borderRadius: 2, backgroundColor: TOKENS.violet600, opacity: 0.5 },
+  robotBody: { position: 'absolute', left: 51, top: 88, width: 48, height: 42, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
   floatSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   sparkleOne: { top: 2, left: 18, fontSize: 8 },
   sparkleTwo: { top: 15, right: 6, fontSize: 6 },
@@ -225,9 +250,13 @@ const styles = StyleSheet.create({
   stepNumberText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 13 },
   stepPassiveText: { color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 14, lineHeight: 18, flexShrink: 1 },
   uploadCard: { borderRadius: 22, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(167,139,250,0.5)', overflow: 'hidden' },
-  uploadBg: { overflow: 'hidden' },
-  uploadImage: { borderRadius: 22 },
-  uploadOverlay: { padding: 24, alignItems: 'center' },
+  uploadOverlay: { padding: 24, alignItems: 'center', overflow: 'hidden' },
+  uploadSkyGlow: { position: 'absolute', top: -45, right: 34, width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(252,211,77,0.20)' },
+  uploadLakeGlow: { position: 'absolute', left: -28, right: -28, bottom: 0, height: 86, backgroundColor: 'rgba(56,189,248,0.13)' },
+  uploadMountain: { position: 'absolute', bottom: 104, width: 170, height: 170, backgroundColor: 'rgba(22,16,31,0.62)', transform: [{ rotate: '45deg' }] },
+  uploadMountainLeft: { left: -52 },
+  uploadMountainRight: { right: -24, bottom: 92, backgroundColor: 'rgba(76,29,149,0.36)' },
+  uploadBalloon: { position: 'absolute', right: 48, top: 34, width: 20, height: 26, borderRadius: 12, backgroundColor: 'rgba(196,181,253,0.85)' },
   uploadIconArea: { width: 130, height: 104, alignItems: 'center', justifyContent: 'center' },
   radialGlow: { position: 'absolute', width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(167,139,250,0.35)', opacity: 0.75 },
   iconSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
