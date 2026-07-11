@@ -22,6 +22,8 @@ const TOKENS = {
   textMuted: '#A19DB0',
 };
 
+const cardGradient = ['rgba(38,28,58,0.55)', 'rgba(22,16,31,0.9)'] as const;
+
 const features = [
   {
     icon: 'search',
@@ -62,6 +64,13 @@ export default function ImagesInfoScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
+          <View style={[styles.headerStar, styles.headerStarOne]} />
+          <View style={[styles.headerStar, styles.headerStarTwo]} />
+          <View style={[styles.headerStar, styles.headerStarThree]} />
+          <View style={[styles.headerStar, styles.headerStarFour]} />
+          <View style={[styles.headerStar, styles.headerStarFive]} />
+          <View style={[styles.headerStar, styles.headerStarSix]} />
+          <View style={[styles.headerStar, styles.headerStarSeven]} />
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <Feather name="arrow-left" size={24} color="#FFFFFF" />
           </Pressable>
@@ -91,6 +100,7 @@ export default function ImagesInfoScreen() {
               <View style={styles.radialGlow} />
               <Text style={[styles.iconSparkle, styles.iconSparkleOne]}>✦</Text>
               <Text style={[styles.iconSparkle, styles.iconSparkleTwo]}>✦</Text>
+              <Text style={[styles.iconSparkle, styles.iconSparkleThree]}>✦</Text>
               <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.uploadCircle}>
                 <Feather name="upload-cloud" size={40} color="#FFFFFF" />
               </LinearGradient>
@@ -109,15 +119,17 @@ export default function ImagesInfoScreen() {
 
         <View style={styles.featuresRow}>
           {features.map((feature) => (
-            <View key={feature.title} style={styles.featureCard}>
+            <LinearGradient key={feature.title} colors={cardGradient} style={styles.featureCard}>
               <FeatureIcon type={feature.icon} />
-              <Text style={styles.featureTitle}>{feature.title}</Text>
-              <Text style={styles.featureDescription}>{feature.description}</Text>
-            </View>
+              <View style={styles.featureCopy}>
+                <Text style={styles.featureTitle}>{feature.title}</Text>
+                <Text style={styles.featureDescription}>{feature.description}</Text>
+              </View>
+            </LinearGradient>
           ))}
         </View>
 
-        <View style={styles.flowCard}>
+        <LinearGradient colors={cardGradient} style={styles.flowCard}>
           {flow.map((step, index) => (
             <React.Fragment key={step.label}>
               <View style={styles.flowStep}>
@@ -129,20 +141,20 @@ export default function ImagesInfoScreen() {
               {index < flow.length - 1 ? <Text style={styles.flowArrow}>→</Text> : null}
             </React.Fragment>
           ))}
-        </View>
+        </LinearGradient>
 
-        <View style={styles.safetyBand}>
+        <LinearGradient colors={cardGradient} style={styles.safetyBand}>
           <MaterialCommunityIcons name="shield-check-outline" size={40} color={TOKENS.violet300} />
           <View style={styles.safetyTextWrap}>
             <Text style={styles.bandTitle}>Güvenli Görsel Analizi</Text>
             <Text style={styles.bandDescription}>Uygunsuz içerikler analizden geçmez. Güvenli görsel kontrolünü aşamayan yüklemeler işlenmez.</Text>
           </View>
-          <View style={styles.lockBadge}>
-            <Feather name="lock" size={22} color={TOKENS.violet100} />
-          </View>
-        </View>
+          <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.lockBadge}>
+            <Feather name="lock" size={22} color="#FFFFFF" />
+          </LinearGradient>
+        </LinearGradient>
 
-        <View style={styles.quoteBand}>
+        <LinearGradient colors={cardGradient} style={styles.quoteBand}>
           <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.quoteIcon}>
             <Text style={styles.quoteSparkle}>✦</Text>
           </LinearGradient>
@@ -154,11 +166,12 @@ export default function ImagesInfoScreen() {
             <Text style={[styles.bookSparkle, styles.bookSparkleTwo]}>✦</Text>
             <Feather name="book-open" size={36} color={TOKENS.violet100} />
           </View>
-        </View>
+        </LinearGradient>
 
         <Pressable style={styles.ctaWrap} onPress={() => router.push('/story-loading')}>
           <LinearGradient colors={['rgba(139,92,246,0.45)', 'rgba(109,40,217,0.45)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.ctaGlow} />
           <LinearGradient colors={['#8B5CF6', '#6D28D9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.ctaButton}>
+            <View style={styles.ctaTopLine} />
             <Text style={styles.ctaSparkle}>✦</Text>
             <Text style={styles.ctaText}>Hikâyeyi Başlat</Text>
             <Feather name="arrow-right" size={20} color="#FFFFFF" />
@@ -207,6 +220,14 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: TOKENS.bg },
   content: { paddingHorizontal: 22, gap: 16 },
   header: { minHeight: 158, position: 'relative' },
+  headerStar: { position: 'absolute', width: 4, height: 4, borderRadius: 2, backgroundColor: 'rgba(196,181,253,0.72)' },
+  headerStarOne: { left: 22, top: 18, opacity: 0.6 },
+  headerStarTwo: { left: 156, top: 7, width: 3, height: 3, borderRadius: 1.5, opacity: 0.8 },
+  headerStarThree: { right: 116, top: 22, width: 6, height: 6, borderRadius: 3, opacity: 0.55 },
+  headerStarFour: { right: 34, top: 18, width: 2, height: 2, borderRadius: 1, opacity: 0.9 },
+  headerStarFive: { right: 142, bottom: 38, width: 5, height: 5, borderRadius: 2.5, opacity: 0.5 },
+  headerStarSix: { left: 88, bottom: 20, width: 3, height: 3, borderRadius: 1.5, opacity: 0.75 },
+  headerStarSeven: { right: 12, bottom: 58, width: 4, height: 4, borderRadius: 2, opacity: 0.65 },
   backButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
   headerCopy: { marginTop: 16, maxWidth: '70%' },
   titleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' },
@@ -214,7 +235,7 @@ const styles = StyleSheet.create({
   titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 16, lineHeight: 20 },
   subtitle: { marginTop: 8, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 21 },
   mascotWrap: { position: 'absolute', right: -4, top: 36, width: 118, height: 118, alignItems: 'center', justifyContent: 'center' },
-  mascotCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center' },
+  mascotCircle: { width: 100, height: 100, borderRadius: 50, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   floatSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   sparkleOne: { top: 2, left: 18, fontSize: 8 },
   sparkleTwo: { top: 15, right: 6, fontSize: 6 },
@@ -226,9 +247,10 @@ const styles = StyleSheet.create({
   uploadIconArea: { width: 112, height: 92, alignItems: 'center', justifyContent: 'center' },
   radialGlow: { position: 'absolute', width: 112, height: 112, borderRadius: 56, backgroundColor: 'rgba(167,139,250,0.35)', opacity: 0.35 },
   iconSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
-  iconSparkleOne: { left: 14, top: 10, fontSize: 8 },
-  iconSparkleTwo: { right: 12, bottom: 9, fontSize: 7 },
-  uploadCircle: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center' },
+  iconSparkleOne: { left: 8, top: 3, fontSize: 14 },
+  iconSparkleTwo: { right: 10, top: 8, fontSize: 10 },
+  iconSparkleThree: { left: 18, bottom: 6, fontSize: 8 },
+  uploadCircle: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.55, shadowRadius: 28, elevation: 10 },
   uploadTitle: { marginTop: 16, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 22, lineHeight: 28 },
   uploadDescription: { marginTop: 8, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, textAlign: 'center' },
   uploadActions: { marginTop: 18, flexDirection: 'row', gap: 10 },
@@ -237,28 +259,29 @@ const styles = StyleSheet.create({
   actionCopy: { flex: 1, minWidth: 0 },
   actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 14, lineHeight: 19 },
   actionSubtitle: { marginTop: 3, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 16 },
-  featuresRow: { flexDirection: 'row', gap: 10, alignItems: 'stretch' },
-  featureCard: { flex: 1, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(167,139,250,0.18)', backgroundColor: TOKENS.card, padding: 14, alignItems: 'flex-start' },
-  featureIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  featuresRow: { gap: 10 },
+  featureCard: { minHeight: 92, borderRadius: 22, padding: 14, flexDirection: 'row', alignItems: 'flex-start', gap: 10, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
+  featureCopy: { flex: 1, minWidth: 0 },
+  featureIcon: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   bookFeatureIconWrap: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
   featureMiniSparkle: { position: 'absolute', top: -2, right: -1, color: '#FFFFFF', fontSize: 7, lineHeight: 9 },
   flashcardIconWrap: { width: 25, height: 22 },
   flashcardBack: { position: 'absolute', left: 2, top: 1, width: 18, height: 14, borderWidth: 1.8, borderColor: 'rgba(255,255,255,0.7)', borderRadius: 3 },
   flashcardFront: { position: 'absolute', right: 1, bottom: 1, width: 18, height: 14, borderWidth: 1.8, borderColor: '#FFFFFF', borderRadius: 3 },
-  featureTitle: { marginTop: 12, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14, lineHeight: 17.5 },
+  featureTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 14, lineHeight: 17.5 },
   featureDescription: { marginTop: 6, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 16.8 },
-  flowCard: { borderRadius: 22, backgroundColor: TOKENS.card, padding: 20, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  flowCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   flowStep: { flex: 1, alignItems: 'center' },
-  flowCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center' },
+  flowCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   flowLabel: { marginTop: 8, color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 15, textAlign: 'center' },
-  flowArrow: { width: 20, marginTop: 16, textAlign: 'center', color: TOKENS.violet300, fontSize: 18, lineHeight: 20 },
-  safetyBand: { borderRadius: 22, backgroundColor: TOKENS.card, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  flowArrow: { width: 20, marginTop: 16, textAlign: 'center', color: TOKENS.violet100, fontSize: 18, lineHeight: 20, textShadowColor: 'rgba(167,139,250,0.6)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 4 },
+  safetyBand: { borderRadius: 22, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   safetyTextWrap: { flex: 1, minWidth: 0 },
   bandTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 15, lineHeight: 19 },
   bandDescription: { marginTop: 4, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19.5 },
-  lockBadge: { width: 52, height: 52, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(167,139,250,0.4)', alignItems: 'center', justifyContent: 'center' },
-  quoteBand: { borderRadius: 22, backgroundColor: TOKENS.card, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  quoteIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  lockBadge: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 16, elevation: 8 },
+  quoteBand: { borderRadius: 22, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
+  quoteIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   quoteSparkle: { color: '#FFFFFF', fontSize: 22 },
   quoteText: { flex: 1, color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 15, lineHeight: 21 },
   quoteAccent: { color: TOKENS.violet100 },
@@ -268,7 +291,8 @@ const styles = StyleSheet.create({
   bookSparkleTwo: { bottom: 2, left: 2, fontSize: 5 },
   ctaWrap: { height: 68, justifyContent: 'flex-start' },
   ctaGlow: { position: 'absolute', left: '5%', right: '5%', top: 8, height: 60, borderRadius: 30, opacity: 0.45 },
-  ctaButton: { height: 60, borderRadius: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  ctaButton: { height: 60, borderRadius: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(196,181,253,0.4)', overflow: 'hidden' },
+  ctaTopLine: { position: 'absolute', left: 18, right: 18, top: 0, height: 1, backgroundColor: 'rgba(255,255,255,0.35)' },
   ctaSparkle: { color: '#FCD34D', fontSize: 18, lineHeight: 22 },
   ctaText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 18, lineHeight: 22 },
 });
