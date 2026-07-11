@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -23,24 +24,8 @@ const TOKENS = {
 };
 
 const cardGradient = ['rgba(38,28,58,0.55)', 'rgba(22,16,31,0.9)'] as const;
+const webNoBreak = { wordBreak: 'keep-all', overflowWrap: 'normal', hyphens: 'none', letterSpacing: 0 } as const;
 
-const features = [
-  {
-    icon: 'search',
-    title: 'Görsele Uygun Kelime Analizi',
-    description: 'AI, görseldeki ana nesneleri ve bağlamı seçer.',
-  },
-  {
-    icon: 'book-open',
-    title: 'Sana Özel Hikâye + Quiz',
-    description: 'Seçilen kelimelerle seviyene uygun içerik oluşturulur.',
-  },
-  {
-    icon: 'flashcards',
-    title: 'Kelime Kartlarıyla Pekiştir',
-    description: 'Öğrendiğin kelimeleri tekrar ederek kalıcı hale getir.',
-  },
-] as const;
 
 const flow = [
   { icon: 'image-outline', label: 'Görsel' },
@@ -117,16 +102,44 @@ export default function ImagesInfoScreen() {
           </LinearGradient>
         </Pressable>
 
-        <View style={styles.featuresRow}>
-          {features.map((feature) => (
-            <LinearGradient key={feature.title} colors={cardGradient} style={styles.featureCard}>
-              <View style={styles.featureHead}>
-                <FeatureIcon type={feature.icon} />
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-              </View>
-              <Text style={styles.featureDescription}>{feature.description}</Text>
-            </LinearGradient>
-          ))}
+        <View style={styles.featureGrid}>
+          <LinearGradient colors={cardGradient} style={styles.featureCard}>
+            <View style={styles.featureHead}>
+              <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
+                <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
+                  <Circle cx="11" cy="11" r="7" /><Path d="m20 20-3.5-3.5" />
+                </Svg>
+              </LinearGradient>
+              <Text style={[styles.featureHeadTitle, webNoBreak]}>Görsele Uygun Kelime Analizi</Text>
+            </View>
+            <Text style={[styles.featureCardText, webNoBreak]}>AI, görseldeki ana nesneleri ve bağlamı seçer.</Text>
+          </LinearGradient>
+
+          <LinearGradient colors={cardGradient} style={styles.featureCard}>
+            <View style={styles.featureHead}>
+              <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
+                <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
+                  <Path d="M12 7v14" />
+                  <Path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+                </Svg>
+              </LinearGradient>
+              <Text style={[styles.featureHeadTitle, webNoBreak]}>Sana Özel Hikâye + Quiz</Text>
+            </View>
+            <Text style={[styles.featureCardText, webNoBreak]}>Seçilen kelimelerle seviyene uygun içerik oluşturulur.</Text>
+          </LinearGradient>
+
+          <LinearGradient colors={cardGradient} style={styles.featureCard}>
+            <View style={styles.featureHead}>
+              <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconCircle}>
+                <Svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" style={styles.iconSvg}>
+                  <Rect x="3" y="7" width="13" height="13" rx="2" />
+                  <Path d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+                </Svg>
+              </LinearGradient>
+              <Text style={[styles.featureHeadTitle, webNoBreak]}>Kelime Kartlarıyla Pekiştir</Text>
+            </View>
+            <Text style={[styles.featureCardText, webNoBreak]}>Öğrendiğin kelimeleri tekrar ederek kalıcı hale getir.</Text>
+          </LinearGradient>
         </View>
 
         <LinearGradient colors={cardGradient} style={styles.flowCard}>
@@ -179,26 +192,6 @@ export default function ImagesInfoScreen() {
         </Pressable>
       </ScrollView>
     </View>
-  );
-}
-
-function FeatureIcon({ type }: { type: 'search' | 'book-open' | 'flashcards' }) {
-  return (
-    <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.featureIcon}>
-      {type === 'search' ? <Feather name="search" size={22} color="#FFFFFF" /> : null}
-      {type === 'book-open' ? (
-        <View style={styles.bookFeatureIconWrap}>
-          <Feather name="book-open" size={22} color="#FFFFFF" />
-          <Text style={styles.featureMiniSparkle}>✦</Text>
-        </View>
-      ) : null}
-      {type === 'flashcards' ? (
-        <View style={styles.flashcardIconWrap}>
-          <View style={styles.flashcardBack} />
-          <View style={styles.flashcardFront} />
-        </View>
-      ) : null}
-    </LinearGradient>
   );
 }
 
@@ -261,17 +254,13 @@ const styles = StyleSheet.create({
   actionCopy: { flex: 1, minWidth: 0 },
   actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 16 },
   actionSubtitle: { marginTop: 2, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 13 },
-  featuresRow: { flexDirection: 'row', gap: 10, alignItems: 'stretch' },
-  featureCard: { flex: 1, minHeight: 112, borderRadius: 22, padding: 12, flexDirection: 'column', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
-  featureHead: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, minWidth: 0 },
-  featureIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
-  bookFeatureIconWrap: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
-  featureMiniSparkle: { position: 'absolute', top: -3, right: -2, color: '#FFFFFF', fontSize: 7, lineHeight: 9 },
-  flashcardIconWrap: { width: 22, height: 19 },
-  flashcardBack: { position: 'absolute', left: 2, top: 1, width: 16, height: 12, borderWidth: 1.8, borderColor: 'rgba(255,255,255,0.7)', borderRadius: 3 },
-  flashcardFront: { position: 'absolute', right: 1, bottom: 1, width: 16, height: 12, borderWidth: 1.8, borderColor: '#FFFFFF', borderRadius: 3 },
-  featureTitle: { flex: 1, minWidth: 0, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 12, lineHeight: 15 },
-  featureDescription: { color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 15.4, width: '100%' },
+  featureGrid: { flexDirection: 'row', gap: 10, paddingHorizontal: 0 },
+  featureCard: { flex: 1, display: 'flex', flexDirection: 'column', padding: 12, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0, minWidth: 0 },
+  featureHead: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  iconCircle: { width: 34, height: 34, flexShrink: 0, borderRadius: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 14, elevation: 8 },
+  iconSvg: { width: 18, height: 18 },
+  featureHeadTitle: { margin: 0, flex: 1, fontSize: 12, fontFamily: 'Inter_700Bold', lineHeight: 15, color: '#fff' },
+  featureCardText: { margin: 0, fontSize: 11, fontFamily: 'Inter_400Regular', lineHeight: 15.4, color: '#A19DB0', width: '100%' },
   flowCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   flowStep: { flex: 1, alignItems: 'center' },
   flowCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
