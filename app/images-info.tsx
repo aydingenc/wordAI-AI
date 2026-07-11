@@ -44,6 +44,9 @@ export default function ImagesInfoScreen() {
 
   return (
     <View style={styles.screen}>
+      <View pointerEvents="none" style={styles.bgGlowTop} />
+      <View pointerEvents="none" style={styles.bgGlowMid} />
+      <View pointerEvents="none" style={styles.bgGlowBottom} />
       <ScrollView
         contentContainerStyle={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 28 }]}
         showsVerticalScrollIndicator={false}
@@ -80,12 +83,11 @@ export default function ImagesInfoScreen() {
 
         <View style={styles.stepSelector}>
           <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.stepActive}>
-            <Feather name="image" size={16} color="#FFFFFF" />
-            <Text style={styles.stepActiveText}>1  Kendi Görselini Yükle</Text>
+            <Text style={styles.stepActiveText}>1 Kendi Görselini Yükle</Text>
           </LinearGradient>
           <View style={styles.stepPassive}>
             <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
-            <Text style={styles.stepPassiveText}>Hazır Temalar</Text>
+            <Text style={styles.stepPassiveText}>Hazır Görseller</Text>
           </View>
         </View>
 
@@ -93,9 +95,9 @@ export default function ImagesInfoScreen() {
           <LinearGradient colors={['#4C2A6E', '#6B3FA0', '#2E1A47', '#150E22']} locations={[0, 0.3, 0.65, 1]} style={styles.uploadOverlay}>
             <View style={styles.uploadDarkOverlay} />
             <View style={styles.uploadHorizonGlow} />
-            <View style={[styles.uploadPeak, styles.uploadPeakLeft]} />
-            <View style={[styles.uploadPeak, styles.uploadPeakRight]} />
-            <View style={styles.uploadBalloon} />
+            <View style={styles.uploadGlassLayerTop} />
+            <View style={styles.uploadGlassLayerBottom} />
+            <MaterialCommunityIcons name="shield-lock-outline" size={118} color="rgba(196,181,253,0.09)" style={styles.uploadPrivacyMark} />
             <View style={styles.uploadIconArea}>
               <View style={styles.radialGlow} />
               <Text style={[styles.iconSparkle, styles.iconSparkleOne]}>✦</Text>
@@ -219,7 +221,10 @@ function UploadAction({ icon, title, subtitle, onPress, wide = false }: { icon: 
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#03020A' },
+  screen: { flex: 1, backgroundColor: '#03020A', overflow: 'hidden' },
+  bgGlowTop: { position: 'absolute', top: -90, right: -95, width: 230, height: 230, borderRadius: 115, backgroundColor: 'rgba(124,58,237,0.22)' },
+  bgGlowMid: { position: 'absolute', top: 260, left: -135, width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(76,42,110,0.18)' },
+  bgGlowBottom: { position: 'absolute', bottom: -100, right: -110, width: 280, height: 280, borderRadius: 140, backgroundColor: 'rgba(139,92,246,0.16)' },
   content: { paddingHorizontal: 22, gap: 16 },
   header: { minHeight: 158, position: 'relative' },
   headerStar: { position: 'absolute', width: 4, height: 4, borderRadius: 2, backgroundColor: 'rgba(196,181,253,0.72)' },
@@ -243,32 +248,31 @@ const styles = StyleSheet.create({
   sparkleTwo: { top: 15, right: 6, fontSize: 6 },
   sparkleThree: { bottom: 14, left: 2, fontSize: 4 },
   sparkleFour: { bottom: 6, right: 18, fontSize: 7 },
-  stepSelector: { height: 64, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)', flexDirection: 'row', padding: 0, overflow: 'hidden', backgroundColor: 'rgba(8,4,18,0.72)' },
-  stepActive: { flex: 1, borderRadius: 16, margin: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.55, shadowRadius: 18, elevation: 8 },
-  stepActiveText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 14, lineHeight: 18 },
-  stepPassive: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  stepNumber: { width: 28, height: 28, borderRadius: 14, borderWidth: 1, borderColor: TOKENS.violet300, alignItems: 'center', justifyContent: 'center' },
-  stepNumberText: { color: TOKENS.violet100, fontFamily: 'Inter_600SemiBold', fontSize: 13 },
-  stepPassiveText: { color: TOKENS.textMuted, fontFamily: 'Inter_500Medium', fontSize: 14, lineHeight: 18 },
-  uploadCard: { borderRadius: 22, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(167,139,250,0.5)', overflow: 'hidden' },
-  uploadOverlay: { minHeight: 310, padding: 24, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  uploadDarkOverlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(10,7,20,0.34)' },
-  uploadHorizonGlow: { position: 'absolute', left: -20, right: -20, top: 82, height: 120, backgroundColor: 'rgba(167,139,250,0.16)', borderRadius: 80 },
-  uploadPeak: { position: 'absolute', bottom: 78, width: 190, height: 190, backgroundColor: 'rgba(8,4,18,0.42)', transform: [{ rotate: '45deg' }] },
-  uploadPeakLeft: { left: -72 },
-  uploadPeakRight: { right: -42, backgroundColor: 'rgba(44,24,75,0.44)' },
-  uploadBalloon: { position: 'absolute', right: 34, top: 42, width: 34, height: 44, borderRadius: 18, backgroundColor: 'rgba(124,58,237,0.45)', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)' },
-  uploadIconArea: { width: 112, height: 92, alignItems: 'center', justifyContent: 'center' },
-  radialGlow: { position: 'absolute', width: 112, height: 112, borderRadius: 56, backgroundColor: 'rgba(167,139,250,0.35)', opacity: 0.35 },
+  stepSelector: { height: 50, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)', flexDirection: 'row', padding: 0, overflow: 'hidden', backgroundColor: 'rgba(8,4,18,0.72)' },
+  stepActive: { flex: 1.08, borderRadius: 14, margin: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.55, shadowRadius: 18, elevation: 8 },
+  stepActiveText: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 16 },
+  stepPassive: { flex: 0.92, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  stepNumber: { width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: TOKENS.violet300, alignItems: 'center', justifyContent: 'center' },
+  stepNumberText: { color: TOKENS.violet100, fontFamily: 'Inter_600SemiBold', fontSize: 12 },
+  stepPassiveText: { color: TOKENS.textMuted, fontFamily: 'Inter_500Medium', fontSize: 12, lineHeight: 16 },
+  uploadCard: { borderRadius: 24, borderWidth: 1.5, borderStyle: 'dashed', borderColor: 'rgba(167,139,250,0.48)', overflow: 'hidden', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.22, shadowRadius: 24, elevation: 8 },
+  uploadOverlay: { minHeight: 260, padding: 18, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  uploadDarkOverlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(4,2,11,0.48)' },
+  uploadHorizonGlow: { position: 'absolute', left: -30, right: -30, top: 84, height: 128, backgroundColor: 'rgba(167,139,250,0.13)', borderRadius: 80 },
+  uploadGlassLayerTop: { position: 'absolute', left: -20, right: -20, top: 0, height: 110, backgroundColor: 'rgba(255,255,255,0.035)' },
+  uploadGlassLayerBottom: { position: 'absolute', left: -24, right: -24, bottom: 0, height: 96, borderTopLeftRadius: 130, borderTopRightRadius: 130, backgroundColor: 'rgba(0,0,0,0.22)' },
+  uploadPrivacyMark: { position: 'absolute', right: -12, bottom: 18 },
+  uploadIconArea: { width: 96, height: 76, alignItems: 'center', justifyContent: 'center' },
+  radialGlow: { position: 'absolute', width: 96, height: 96, borderRadius: 48, backgroundColor: 'rgba(167,139,250,0.35)', opacity: 0.35 },
   iconSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   iconSparkleOne: { left: 8, top: 3, fontSize: 14 },
   iconSparkleTwo: { right: 10, top: 8, fontSize: 10 },
   iconSparkleThree: { left: 18, bottom: 6, fontSize: 8 },
-  uploadCircle: { width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.55, shadowRadius: 28, elevation: 10 },
-  uploadTitle: { marginTop: 14, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 22, lineHeight: 28 },
+  uploadCircle: { width: 70, height: 70, borderRadius: 35, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.55, shadowRadius: 28, elevation: 10 },
+  uploadTitle: { marginTop: 10, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 22, lineHeight: 28 },
   uploadDescription: { marginTop: 8, color: 'rgba(255,255,255,0.85)', fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19, textAlign: 'center' },
-  uploadActions: { marginTop: 22, flexDirection: 'row', gap: 10 },
-  actionButton: { height: 60, borderRadius: 14, backgroundColor: 'rgba(22,16,31,0.75)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 10, gap: 8, minWidth: 0 },
+  uploadActions: { marginTop: 16, flexDirection: 'row', gap: 10 },
+  actionButton: { height: 60, borderRadius: 14, backgroundColor: 'rgba(10,7,20,0.68)', borderWidth: 1, borderColor: 'rgba(167,139,250,0.25)', flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 10, gap: 8, minWidth: 0 },
   actionButtonStandard: { flex: 0.48 },
   actionButtonWide: { flex: 0.52 },
   actionIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
@@ -276,23 +280,23 @@ const styles = StyleSheet.create({
   actionTitle: { color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 16 },
   actionSubtitle: { marginTop: 2, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 13 },
   featureGrid: { flexDirection: 'row', gap: 10, paddingHorizontal: 0 },
-  featureCard: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', padding: 9, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0, minWidth: 0 },
+  featureCard: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch', padding: 10, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0, minWidth: 0 },
   iconCircle: { width: 34, height: 34, flexShrink: 0, borderRadius: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(196,181,253,0.3)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.55, shadowRadius: 16, elevation: 10 },
   iconSvg: { width: 17, height: 17, shadowColor: 'rgba(0,0,0,0.3)', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 1, shadowRadius: 1 },
   featureHeadTitle: { margin: 0, marginBottom: 4, fontSize: 10, fontFamily: 'Inter_600SemiBold', lineHeight: 13, letterSpacing: 0, color: 'rgba(255,255,255,0.95)' },
   featureCardText: { margin: 0, fontSize: 10, fontFamily: 'Inter_400Regular', lineHeight: 14, color: '#A19DB0', width: '100%' },
-  flowCard: { borderRadius: 22, padding: 20, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
+  flowCard: { borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   flowStep: { flex: 1, alignItems: 'center' },
-  flowCircle: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
-  flowLabel: { marginTop: 8, color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 15, textAlign: 'center' },
-  flowArrow: { width: 20, marginTop: 16, textAlign: 'center', color: TOKENS.violet100, fontSize: 18, lineHeight: 20, textShadowColor: 'rgba(167,139,250,0.6)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 4 },
-  safetyBand: { borderRadius: 22, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
+  flowCircle: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
+  flowLabel: { marginTop: 6, color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 15, textAlign: 'center' },
+  flowArrow: { width: 18, marginTop: 13, textAlign: 'center', color: TOKENS.violet100, fontSize: 18, lineHeight: 20, textShadowColor: 'rgba(167,139,250,0.6)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 4 },
+  safetyBand: { borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
   safetyTextWrap: { flex: 1, minWidth: 0 },
   bandTitle: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 15, lineHeight: 19 },
   bandDescription: { marginTop: 4, color: TOKENS.textMuted, fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 19.5 },
-  lockBadge: { width: 52, height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 16, elevation: 8 },
-  quoteBand: { borderRadius: 22, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
-  quoteIcon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
+  lockBadge: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 16, elevation: 8 },
+  quoteBand: { borderRadius: 20, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: 'rgba(167,139,250,0.22)', shadowColor: '#FFFFFF', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 0 },
+  quoteIcon: { width: 42, height: 42, borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   quoteSparkle: { color: '#FFFFFF', fontSize: 22 },
   quoteText: { flex: 1, color: '#FFFFFF', fontFamily: 'Inter_600SemiBold', fontSize: 12, lineHeight: 18 },
   quoteAccent: { color: TOKENS.violet100 },
@@ -300,9 +304,9 @@ const styles = StyleSheet.create({
   bookSparkle: { position: 'absolute', color: TOKENS.violet100 },
   bookSparkleOne: { top: 1, right: 0, fontSize: 7 },
   bookSparkleTwo: { bottom: 2, left: 2, fontSize: 5 },
-  ctaWrap: { height: 68, justifyContent: 'flex-start' },
-  ctaGlow: { position: 'absolute', left: '5%', right: '5%', top: 8, height: 60, borderRadius: 30, opacity: 0.45 },
-  ctaButton: { height: 60, borderRadius: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(196,181,253,0.4)', overflow: 'hidden' },
+  ctaWrap: { height: 62, justifyContent: 'flex-start' },
+  ctaGlow: { position: 'absolute', left: '5%', right: '5%', top: 8, height: 54, borderRadius: 30, opacity: 0.45 },
+  ctaButton: { height: 56, borderRadius: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(196,181,253,0.4)', overflow: 'hidden' },
   ctaTopLine: { position: 'absolute', left: 18, right: 18, top: 0, height: 1, backgroundColor: 'rgba(255,255,255,0.35)' },
   ctaSparkle: { color: '#FCD34D', fontSize: 18, lineHeight: 22 },
   ctaText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 18, lineHeight: 22 },
