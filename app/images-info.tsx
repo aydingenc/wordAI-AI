@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   iconCircle: { width: 36, height: 36, flexShrink: 0, borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 10, borderWidth: 1, borderColor: 'rgba(196,181,253,0.3)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.55, shadowRadius: 16, elevation: 10 },
   iconSvg: { width: 17, height: 17, shadowColor: 'rgba(0,0,0,0.3)', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 1, shadowRadius: 1 },
   featureHeadTitle: { margin: 0, marginBottom: 5, fontSize: 10, fontFamily: 'Inter_700Bold', lineHeight: 13, letterSpacing: -0.1, color: 'rgba(255,255,255,0.98)', textAlign: 'center' },
-  featureCardText: { margin: 0, fontSize: 10, fontFamily: 'Inter_400Regular', lineHeight: 14.5, color: '#A19DB0', width: '100%', textAlign: 'center' },
+  featureCardText: { margin: 0, minHeight: 58, fontSize: 10, fontFamily: 'Inter_400Regular', lineHeight: 14.5, color: '#A19DB0', width: '100%', textAlign: 'center', textAlignVertical: 'top' },
   flowCard: { borderRadius: 24, paddingVertical: 18, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderWidth: 1, borderColor: 'rgba(167,139,250,0.28)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.18, shadowRadius: 16, elevation: 6 },
   flowStep: { flex: 1, alignItems: 'center' },
   flowCircle: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.34)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.62, shadowRadius: 18, elevation: 10 },
