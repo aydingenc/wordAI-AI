@@ -1,171 +1,357 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Easing,
+  LayoutChangeEvent,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '@/components/GradientBackground';
-import { GlowCard } from '@/components/GlowCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
-import { getWordTier, isNewWord, mockStoryCountForIndex, TIER_COLORS } from '@/data/mock';
+import { buildStoryReaderData, getWordTier, isNewWord, TIER_COLORS } from '@/data/mock';
+
+const TOKENS = {
+  bg: '#08070D',
+  violet300: '#C4B5FD',
+  violet400: '#A78BFA',
+  violet500: '#8B5CF6',
+  violet600: '#7C3AED',
+  violet700: '#5B21B6',
+  green: '#4ADE80',
+  textHi: '#F5F3FF',
+  textMid: '#B9B3D1',
+  textLow: '#6F6A8A',
+};
+
+const PAGES_PER_CHAPTER = 4;
+
+const CHAPTER_VISUALS: { gradient: readonly [string, string]; icon: keyof typeof MaterialCommunityIcons.glyphMap }[] = [
+  { gradient: ['#7C3AED', '#4C1D95'], icon: 'airplane-takeoff' },
+  { gradient: ['#2563EB', '#1E3A8A'], icon: 'weather-partly-cloudy' },
+  { gradient: ['#F59E0B', '#B45309'], icon: 'white-balance-sunny' },
+];
 
 export default function StoryLearnScreen() {
-  const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentSession } = useProgress();
-  const [showTr, setShowTr] = useState(true);
 
-  if (!currentSession) {
+  const [pageIndex, setPageIndex] = useState(0);
+  const [showTranslation, setShowTranslation] = useState(false);
+  const textOpacity = useRef(new Animated.Value(1)).current;
+  const textTranslateY = useRef(new Animated.Value(0)).current;
+  // Tracks which storyCount===0 words have already had their NEW badge shown,
+  // by word text (not by page/paragraph position) — across the whole read session.
+  const seenNewWordsRef = useRef<Set<string>>(new Set());
+
+  const readerData = useMemo(
+    () =>
+      currentSession
+        ? buildStoryReaderData(currentSession.title, currentSession.targetWords, currentSession.paragraphs)
+        : null,
+    [currentSession],
+  );
+
+  useEffect(() => {
+    setShowTranslation(false);
+    textOpacity.setValue(0);
+    textTranslateY.setValue(10);
+    Animated.parallel([
+      Animated.timing(textOpacity, { toValue: 1, duration: 320, useNativeDriver: true }),
+      Animated.timing(textTranslateY, { toValue: 0, duration: 320, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+    ]).start();
+  }, [pageIndex, textOpacity, textTranslateY]);
+
+  if (!currentSession || !readerData) {
     return <EmptySession />;
   }
 
-  const { title, levelName, paragraphs, targetWords } = currentSession;
-
-  // storyCount is mocked per target word (no real per-user story history yet) —
-  // same generator/tier rules as the legacy StoryReader, so the "NEW" badge and
-  // tier color can never contradict each other (both derive from storyCount).
-  const wordTierByKey = new Map(
-    targetWords.map((w, i) => {
-      const storyCount = mockStoryCountForIndex(i);
-      return [w.en.toLowerCase(), { storyCount, tier: getWordTier(storyCount) }] as const;
-    }),
-  );
-  // Tracks which storyCount===0 words have already claimed their NEW badge in
-  // this render pass, so only the word's first occurrence in the story gets it.
-  const seenNewWords = new Set<string>();
   const claimNewWordBadge = (word: string): boolean => {
     const key = word.toLowerCase();
-    if (seenNewWords.has(key)) return false;
-    seenNewWords.add(key);
+    if (seenNewWordsRef.current.has(key)) return false;
+    seenNewWordsRef.current.add(key);
     return true;
   };
 
-  return (
-    <GradientBackground>
-      <ScreenHeader title="Hikaye" subtitle={`${title} · ${levelName}`} />
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 120 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.stepBar}>
-          <StepDot label="Hikaye" active icon="book-open" />
-          <View style={[styles.stepLine, { backgroundColor: colors.border }]} />
-          <StepDot label="Quiz" icon="help-circle" />
-          <View style={[styles.stepLine, { backgroundColor: colors.border }]} />
-          <StepDot label="Kartlar" icon="layers" />
-        </View>
+  const { storyTitle, targetWords, chapters, pages } = readerData;
+  const page = pages[pageIndex];
+  const chapterIndex = page.chapterIndex;
+  const pageIndexInChapter = pageIndex % PAGES_PER_CHAPTER;
+  const isLastPage = pageIndex === pages.length - 1;
+  const visual = CHAPTER_VISUALS[chapterIndex];
 
-        <View style={styles.toggleRow}>
-          <Text style={[styles.toggleLabel, { color: colors.mutedForeground }]}>
-            Türkçe çeviri
-          </Text>
-          <Pressable
-            onPress={() => setShowTr((v) => !v)}
-            style={[
-              styles.toggle,
-              {
-                backgroundColor: showTr ? colors.primary : colors.secondary,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.knob,
-                {
-                  backgroundColor: '#fff',
-                  alignSelf: showTr ? 'flex-end' : 'flex-start',
-                },
-              ]}
-            />
+  const goToPrevPage = () => {
+    if (pageIndex === 0) return;
+    setPageIndex((p) => p - 1);
+  };
+
+  const goToNextPage = () => {
+    if (isLastPage) {
+      router.push('/learn/quiz');
+      return;
+    }
+    setPageIndex((p) => p + 1);
+  };
+
+  return (
+    <View style={styles.root}>
+      <View style={[styles.page, { paddingTop: insets.top + 10 }]}>
+        <View style={styles.topBar}>
+          <Pressable onPress={() => router.back()} style={styles.topBarButton}>
+            <Feather name="arrow-left" size={19} color={TOKENS.textHi} />
           </Pressable>
         </View>
 
-        {paragraphs.map((p, i) => (
-          <GlowCard key={i} style={styles.para}>
-            <Text style={[styles.enText, { color: colors.foreground }]}>
-              {highlight(p.en, wordTierByKey, claimNewWordBadge)}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <ChapterNav chapterIndex={chapterIndex} />
+          <ChapterTitleMarquee title={chapters[chapterIndex].title} />
+          <PageDots activeIndex={pageIndexInChapter} />
+
+          <View style={styles.headBlock}>
+            <Text style={styles.eyebrow}>
+              ✦ Senin Kelimelerin · {targetWords.length} Hedef Kelime · {currentSession.levelName}
             </Text>
-            {showTr ? (
-              <Text style={[styles.trText, { color: colors.mutedForeground }]}>
-                {p.tr}
-              </Text>
-            ) : null}
-          </GlowCard>
-        ))}
-
-        <GlowCard style={styles.wordsCard}>
-          <Text style={[styles.wordsTitle, { color: colors.foreground }]}>
-            Bu hikayedeki kelimeler
-          </Text>
-          <View style={styles.wordsWrap}>
-            {targetWords.map((w) => (
-              <View
-                key={w.id}
-                style={[styles.wordPill, { backgroundColor: colors.secondary }]}
-              >
-                <Text style={[styles.wordEn, { color: colors.accent }]}>{w.en}</Text>
-                <Text style={[styles.wordTr, { color: colors.mutedForeground }]}>
-                  {w.tr}
-                </Text>
-              </View>
-            ))}
+            <Text style={styles.storyTitle}>{storyTitle}</Text>
+            <Text style={styles.pageCounter}>Sayfa {pageIndex + 1} / {pages.length}</Text>
           </View>
-        </GlowCard>
-      </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
-        <PrimaryButton
-          label="Quiz'e Geç"
-          icon="arrow-right"
-          onPress={() => router.push('/learn/quiz')}
-          testID="story-to-quiz"
-        />
+          <LinearGradient colors={visual.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.pageImage}>
+            <MaterialCommunityIcons name={visual.icon} size={44} color="rgba(255,255,255,0.85)" />
+          </LinearGradient>
+
+          <Pressable
+            style={[styles.translateBtn, showTranslation && styles.translateBtnActive]}
+            onPress={() => setShowTranslation((v) => !v)}
+          >
+            <MaterialCommunityIcons name="translate" size={14} color={showTranslation ? '#FFFFFF' : TOKENS.violet300} />
+            <Text style={[styles.translateBtnText, showTranslation && styles.translateBtnTextActive]}>Türkçe çeviri</Text>
+          </Pressable>
+
+          {showTranslation ? (
+            <View style={styles.translationPanel}>
+              <View style={styles.translationHeader}>
+                <Feather name="globe" size={13} color={TOKENS.violet300} />
+                <Text style={styles.translationHeaderText}>Türkçe Çeviri</Text>
+              </View>
+              <Text style={styles.trParagraphText}>{page.paragraphsTR[0]}</Text>
+              <Text style={[styles.trParagraphText, { marginBottom: 0 }]}>{page.paragraphsTR[1]}</Text>
+            </View>
+          ) : null}
+
+          <Animated.View style={{ opacity: textOpacity, transform: [{ translateY: textTranslateY }] }}>
+            <ParagraphBlock key={`p${pageIndex}-0`} text={page.paragraphs[0]} targetWords={targetWords} claimNewWordBadge={claimNewWordBadge} />
+            <ParagraphBlock key={`p${pageIndex}-1`} text={page.paragraphs[1]} targetWords={targetWords} claimNewWordBadge={claimNewWordBadge} />
+          </Animated.View>
+        </ScrollView>
       </View>
-    </GradientBackground>
+
+      <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 12 }]}>
+        <Pressable
+          onPress={goToPrevPage}
+          disabled={pageIndex === 0}
+          style={[styles.backPageButton, pageIndex === 0 && styles.backPageButtonDisabled]}
+        >
+          <Feather name="chevron-left" size={20} color={pageIndex === 0 ? TOKENS.textLow : TOKENS.textHi} />
+        </Pressable>
+        <Pressable style={styles.nextButtonWrap} onPress={goToNextPage}>
+          <LinearGradient
+            colors={isLastPage ? ['#22C55E', '#15803D'] : [TOKENS.violet400, TOKENS.violet600]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.nextButton}
+          >
+            <Text style={styles.nextButtonText}>{isLastPage ? 'Quize Devam Et' : 'Sonraki Sayfa'}</Text>
+            <Feather name={isLastPage ? 'check' : 'arrow-right'} size={17} color="#FFFFFF" />
+          </LinearGradient>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
-function highlight(
-  text: string,
-  wordTierByKey: Map<string, { storyCount: number; tier: ReturnType<typeof getWordTier> }>,
-  claimNewWordBadge: (word: string) => boolean,
-) {
-  const parts = text.split(/(\b)/);
-  return parts.map((part, i) => {
-    const meta = wordTierByKey.get(part.toLowerCase());
-    if (meta) {
-      return <WordPill key={i} word={part} storyCount={meta.storyCount} tier={meta.tier} claimNewWordBadge={claimNewWordBadge} />;
+function ChapterNav({ chapterIndex }: { chapterIndex: number }) {
+  return (
+    <View style={styles.chapterNavRow}>
+      {[0, 1, 2].map((i) => {
+        if (i === chapterIndex) {
+          return (
+            <LinearGradient
+              key={i}
+              colors={[TOKENS.violet500, TOKENS.violet700]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.chapterDot, styles.chapterDotActive]}
+            >
+              <Text style={[styles.chapterDotText, { color: '#FFFFFF' }]}>{i + 1}</Text>
+            </LinearGradient>
+          );
+        }
+        const done = i < chapterIndex;
+        return (
+          <View key={i} style={[styles.chapterDot, done ? styles.chapterDotDone : styles.chapterDotFuture]}>
+            <Text style={[styles.chapterDotText, { color: done ? '#FFFFFF' : TOKENS.textMid }]}>{i + 1}</Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+function ChapterTitleMarquee({ title }: { title: string }) {
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [textWidth, setTextWidth] = useState(0);
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    setTextWidth(0);
+  }, [title]);
+
+  useEffect(() => {
+    if (!containerWidth || !textWidth) return;
+    const overflow = textWidth - containerWidth;
+
+    if (overflow <= 0) {
+      translateX.setValue(0);
+      return;
     }
-    return part;
-  });
+
+    translateX.setValue(0);
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.delay(1500),
+        Animated.timing(translateX, { toValue: -overflow, duration: 3400, easing: Easing.linear, useNativeDriver: true }),
+        Animated.delay(800),
+        Animated.timing(translateX, { toValue: 0, duration: 1000, easing: Easing.linear, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [containerWidth, textWidth, translateX]);
+
+  const fits = textWidth > 0 && containerWidth > 0 && textWidth <= containerWidth;
+  const centeredOffset = fits ? (containerWidth - textWidth) / 2 : 0;
+
+  const onContainerLayout = (e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width);
+  const onTextLayout = (e: LayoutChangeEvent) => setTextWidth(e.nativeEvent.layout.width);
+
+  return (
+    <View style={styles.marqueeContainer} onLayout={onContainerLayout}>
+      <Animated.View
+        style={[
+          styles.marqueeInner,
+          { transform: [{ translateX: fits ? centeredOffset : translateX }] },
+        ]}
+      >
+        <Text style={styles.chapterTitleText} onLayout={onTextLayout} numberOfLines={1}>
+          {title}
+        </Text>
+      </Animated.View>
+      <LinearGradient colors={[TOKENS.bg, 'rgba(8,7,13,0)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.marqueeFadeLeft} pointerEvents="none" />
+      <LinearGradient colors={['rgba(8,7,13,0)', TOKENS.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.marqueeFadeRight} pointerEvents="none" />
+    </View>
+  );
+}
+
+function PageDots({ activeIndex }: { activeIndex: number }) {
+  return (
+    <View style={styles.pageDotsRow}>
+      {Array.from({ length: PAGES_PER_CHAPTER }, (_, i) => (
+        <View key={i} style={[styles.pageDot, i === activeIndex && styles.pageDotActive]} />
+      ))}
+    </View>
+  );
+}
+
+interface TargetWordLite {
+  word: string;
+  storyCount: number;
+}
+
+function ParagraphBlock({
+  text,
+  targetWords,
+  claimNewWordBadge,
+}: {
+  text: string;
+  targetWords: TargetWordLite[];
+  claimNewWordBadge: (word: string) => boolean;
+}) {
+  const segments = useMemo(() => splitWithTargets(text, targetWords), [text, targetWords]);
+  return (
+    <Text style={styles.paragraphText}>
+      <View style={styles.indentSpacer} />
+      {segments.map((seg, i) =>
+        seg.type === 'word' ? (
+          <WordPill key={i} target={seg.target} claimNewWordBadge={claimNewWordBadge} />
+        ) : (
+          <Text key={i}>{seg.value}</Text>
+        ),
+      )}
+    </Text>
+  );
+}
+
+type TextSegment = { type: 'text'; value: string } | { type: 'word'; value: string; target: TargetWordLite };
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function splitWithTargets(text: string, targetWords: TargetWordLite[]): TextSegment[] {
+  if (!targetWords.length) return [{ type: 'text', value: text }];
+
+  const byLength = [...targetWords].sort((a, b) => b.word.length - a.word.length);
+  const pattern = byLength.map((w) => escapeRegExp(w.word)).join('|');
+  const re = new RegExp(`\\b(${pattern})\\b`, 'gi');
+
+  const segments: TextSegment[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = re.exec(text))) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', value: text.slice(lastIndex, match.index) });
+    }
+    const matched = match[0];
+    const target = targetWords.find((w) => w.word.toLowerCase() === matched.toLowerCase());
+    if (target) {
+      segments.push({ type: 'word', value: matched, target });
+    } else {
+      segments.push({ type: 'text', value: matched });
+    }
+    lastIndex = match.index + matched.length;
+  }
+  if (lastIndex < text.length) {
+    segments.push({ type: 'text', value: text.slice(lastIndex) });
+  }
+  return segments;
 }
 
 function WordPill({
-  word,
-  storyCount,
-  tier,
+  target,
   claimNewWordBadge,
 }: {
-  word: string;
-  storyCount: number;
-  tier: ReturnType<typeof getWordTier>;
+  target: TargetWordLite;
   claimNewWordBadge: (word: string) => boolean;
 }) {
   const starOpacity = useRef(new Animated.Value(0.65)).current;
-  // Decided once per mount (lazy initializer) so a re-render (e.g. TR toggle)
-  // never re-queries the seen-set and hides an already-shown badge.
-  const [showBadge] = useState(() => isNewWord(storyCount) && claimNewWordBadge(word));
+  const tier = getWordTier(target.storyCount);
+
+  // Decided once per mount (lazy initializer), not recomputed on every re-render —
+  // otherwise a re-render of an already-shown badge would re-query the seen-set and hide it.
+  // isNewWord(storyCount) and tier==='red' are equivalent (both derive from the same storyCount),
+  // so claimNewWordBadge is only ever invoked — and the badge only ever rendered — for the red tier.
+  const [showBadge] = useState(() => isNewWord(target.storyCount) && claimNewWordBadge(target.word));
 
   useEffect(() => {
     if (!showBadge) return;
@@ -188,7 +374,7 @@ function WordPill({
         { backgroundColor: tierColors.background, borderColor: tierColors.borderColor, color: tierColors.color },
       ]}
     >
-      {word}
+      {target.word}
       {showBadge ? (
         <View style={styles.newBadge}>
           <Text style={styles.newBadgeText}>NEW</Text>
@@ -196,45 +382,6 @@ function WordPill({
         </View>
       ) : null}
     </Text>
-  );
-}
-
-function StepDot({
-  label,
-  icon,
-  active,
-}: {
-  label: string;
-  icon: keyof typeof Feather.glyphMap;
-  active?: boolean;
-}) {
-  const colors = useColors();
-  return (
-    <View style={styles.stepDot}>
-      <View
-        style={[
-          styles.stepIcon,
-          {
-            backgroundColor: active ? colors.primary : colors.secondary,
-            borderColor: active ? colors.primaryGlow : colors.border,
-          },
-        ]}
-      >
-        <Feather
-          name={icon}
-          size={14}
-          color={active ? colors.primaryForeground : colors.mutedForeground}
-        />
-      </View>
-      <Text
-        style={[
-          styles.stepLabel,
-          { color: active ? colors.foreground : colors.mutedForeground },
-        ]}
-      >
-        {label}
-      </Text>
-    </View>
   );
 }
 
@@ -261,87 +408,91 @@ export function EmptySession() {
 }
 
 const styles = StyleSheet.create({
-  content: {
-    paddingHorizontal: 20,
-    gap: 14,
+  root: { flex: 1, backgroundColor: TOKENS.bg },
+  page: { flex: 1, paddingHorizontal: 20 },
+
+  topBar: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  topBarButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  stepBar: {
+
+  scrollContent: { paddingBottom: 24, gap: 14 },
+
+  chapterNavRow: { flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 4 },
+  chapterDot: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  chapterDotActive: {
+    shadowColor: TOKENS.violet600,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  chapterDotDone: { backgroundColor: 'rgba(139,92,246,0.32)' },
+  chapterDotFuture: { backgroundColor: 'rgba(255,255,255,0.08)' },
+  chapterDotText: { fontFamily: 'Inter_700Bold', fontSize: 13 },
+
+  marqueeContainer: { height: 22, width: '100%', overflow: 'hidden', position: 'relative' },
+  marqueeInner: { position: 'absolute', left: 0, top: 0, flexDirection: 'row' },
+  chapterTitleText: { color: TOKENS.textMid, fontFamily: 'Inter_600SemiBold', fontSize: 12.5, letterSpacing: 0.2 },
+  marqueeFadeLeft: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 24 },
+  marqueeFadeRight: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 24 },
+
+  pageDotsRow: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  pageDot: { width: 16, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.08)' },
+  pageDotActive: { backgroundColor: TOKENS.violet400 },
+
+  headBlock: { alignItems: 'center', gap: 4 },
+  eyebrow: { color: TOKENS.violet300, fontFamily: 'Inter_600SemiBold', fontSize: 11.5, textAlign: 'center' },
+  storyTitle: { color: TOKENS.textHi, fontFamily: 'Inter_700Bold', fontSize: 22, textAlign: 'center' },
+  pageCounter: { color: TOKENS.textLow, fontFamily: 'Inter_500Medium', fontSize: 11.5 },
+
+  pageImage: { width: '100%', height: 170, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+
+  translateBtn: {
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 6,
-  },
-  stepDot: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  stepIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  stepLabel: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 11,
-  },
-  stepLine: {
-    width: 40,
-    height: 2,
-    marginBottom: 18,
-    marginHorizontal: 4,
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 10,
-  },
-  toggleLabel: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-  },
-  toggle: {
-    width: 46,
-    height: 26,
-    borderRadius: 13,
-    padding: 3,
-    justifyContent: 'center',
-  },
-  knob: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-  },
-  para: {
-    gap: 10,
-  },
-  enText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 17,
-    lineHeight: 27,
-  },
-  trText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  pill: {
-    paddingHorizontal: 5,
-    borderRadius: 6,
+  translateBtnActive: { backgroundColor: TOKENS.violet600, borderColor: 'transparent' },
+  translateBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: TOKENS.violet300 },
+  translateBtnTextActive: { color: '#FFFFFF' },
+
+  paragraphText: { color: TOKENS.textHi, fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 26.25, marginBottom: 19 },
+  indentSpacer: { width: 20, height: 1 },
+
+  translationPanel: {
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: 'rgba(139,92,246,0.06)',
     borderWidth: 1,
-    fontFamily: 'Inter_700Bold',
-    fontSize: 16,
-    position: 'relative',
+    borderColor: 'rgba(139,92,246,0.18)',
   },
+  translationHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  translationHeaderText: { color: TOKENS.violet300, fontFamily: 'Inter_600SemiBold', fontSize: 11.5 },
+  trParagraphText: { color: TOKENS.textMid, fontFamily: 'Inter_400Regular', fontSize: 13.5, lineHeight: 23.6, marginBottom: 14 },
+
+  pill: { paddingHorizontal: 5, borderRadius: 6, borderWidth: 1, fontFamily: 'Inter_700Bold', fontSize: 14, position: 'relative' },
+
   newBadge: {
     position: 'absolute',
-    top: -8,
-    right: -7,
-    height: 10,
-    paddingHorizontal: 2,
+    top: -7,
+    right: -6,
+    height: 9,
+    paddingHorizontal: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -354,51 +505,42 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  newBadgeText: {
-    fontSize: 7,
-    fontWeight: '800',
-    color: '#5c3d00',
-    lineHeight: 8,
-  },
-  newBadgeStar: {
-    fontSize: 6,
-    color: '#1e3a8a',
-    lineHeight: 7,
-  },
-  wordsCard: {
-    gap: 12,
-  },
-  wordsTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-  },
-  wordsWrap: {
+  newBadgeText: { fontSize: 6, fontWeight: '800', color: '#5c3d00', lineHeight: 7 },
+  newBadgeStar: { fontSize: 5, color: '#1e3a8a', lineHeight: 6 },
+
+  bottomBar: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  wordPill: {
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  wordEn: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-  },
-  wordTr: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  footer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    gap: 10,
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 10,
+    backgroundColor: 'rgba(8,7,13,0.9)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.06)',
   },
+  backPageButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  backPageButtonDisabled: { opacity: 0.4 },
+  nextButtonWrap: { flex: 1 },
+  nextButton: {
+    height: 52,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(196,181,253,0.4)',
+  },
+  nextButtonText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 15 },
+
   emptyWrap: {
     flex: 1,
     alignItems: 'center',
