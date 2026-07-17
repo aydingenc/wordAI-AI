@@ -24,7 +24,7 @@ export default function SceneTransitionScreen() {
       sceneIcon={GALLERY_CATEGORIES.find((c) => c.id === item.categoryId)?.icon ?? 'image-outline'}
       onProceed={() => {
         startSession(sessionFromGalleryItem(item));
-        router.replace('/story-reader');
+        router.replace('/learn/story');
       }}
     />
   );

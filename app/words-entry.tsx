@@ -14,11 +14,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '@/components/GradientBackground';
 import { StoryGenerationCooldown } from '@/components/StoryGenerationCooldown';
-import { StoryReader } from '@/components/StoryReader';
-import { PostStoryFlow } from '@/components/PostStoryFlow';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
-import { buildSessionFromWords, buildStoryReaderData, LEVEL_NAMES, makeWord, type LearnSession } from '@/data/mock';
+import { buildSessionFromWords, LEVEL_NAMES, makeWord, type LearnSession } from '@/data/mock';
 
 const COOLDOWN_MOCK_READY_DELAY = 9000;
 
@@ -39,11 +37,7 @@ const REPEAT_OPTIONS = [
   { id: 'triple', title: '3 Kere', subtitle: 'Yoğun' },
 ];
 
-type OverlayStage =
-  | { kind: 'cooldown'; session: LearnSession }
-  | { kind: 'reader'; session: LearnSession }
-  | { kind: 'postStory'; session: LearnSession }
-  | null;
+type OverlayStage = { kind: 'cooldown'; session: LearnSession } | null;
 
 export default function WordsEntryScreen() {
   const colors = useColors();
@@ -123,16 +117,8 @@ export default function WordsEntryScreen() {
   const proceedFromCooldown = () => {
     if (!overlay) return;
     setCooldownReady(false);
-    setOverlay({ kind: 'reader', session: overlay.session });
-  };
-
-  const finishReading = () => {
-    if (!overlay) return;
-    setOverlay({ kind: 'postStory', session: overlay.session });
-  };
-
-  const closeReader = () => {
     setOverlay(null);
+    router.push('/learn/story');
   };
 
   return (
@@ -256,34 +242,6 @@ export default function WordsEntryScreen() {
             storyPreview={overlay.session.paragraphs[0]?.en ?? ''}
             isReady={cooldownReady}
             onProceed={proceedFromCooldown}
-          />
-        ) : null}
-
-        {overlay?.kind === 'reader' ? (
-          <StoryReader
-            {...buildStoryReaderData(overlay.session.title, overlay.session.targetWords, overlay.session.paragraphs)}
-            onFinish={finishReading}
-            onBack={closeReader}
-          />
-        ) : null}
-
-        {overlay?.kind === 'postStory' ? (
-          <PostStoryFlow
-            storyTitle={overlay.session.title}
-            targetWords={buildStoryReaderData(overlay.session.title, overlay.session.targetWords, overlay.session.paragraphs).targetWords}
-            onExit={() => {
-              setOverlay(null);
-              router.replace('/home');
-            }}
-            onBackToStory={() => setOverlay({ kind: 'reader', session: overlay.session })}
-            onDifferentTheme={() => {
-              setOverlay(null);
-              router.push('/images-gallery');
-            }}
-            onNewStorySameWords={(newWords) => {
-              setOverlay(null);
-              router.push({ pathname: '/words-entry', params: { prefillWords: newWords.join(',') } });
-            }}
           />
         ) : null}
       </Modal>

@@ -14,9 +14,7 @@ import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StoryGenerationCooldown } from '@/components/StoryGenerationCooldown';
-import { StoryReader } from '@/components/StoryReader';
-import { PostStoryFlow } from '@/components/PostStoryFlow';
-import { buildStoryPreview, buildStoryReaderData, makeWord, SAMPLE_WORDS } from '@/data/mock';
+import { buildSessionFromWords, LEVEL_NAMES, makeWord, SAMPLE_WORDS } from '@/data/mock';
 import { useProgress } from '@/context/ProgressContext';
 
 const COOLDOWN_MOCK_READY_DELAY = 9000;
@@ -45,9 +43,9 @@ const flow = [
 export default function ImagesInfoScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { currentSession } = useProgress();
+  const { startSession } = useProgress();
 
-  const [overlayStage, setOverlayStage] = useState<'cooldown' | 'reader' | 'postStory' | null>(null);
+  const [overlayStage, setOverlayStage] = useState<'cooldown' | null>(null);
   const [cooldownReady, setCooldownReady] = useState(false);
   const readyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -63,6 +61,7 @@ export default function ImagesInfoScreen() {
 
   const startCooldown = () => {
     if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
+    startSession(session);
     setCooldownReady(false);
     setOverlayStage('cooldown');
     readyTimerRef.current = setTimeout(() => setCooldownReady(true), COOLDOWN_MOCK_READY_DELAY);
@@ -70,23 +69,12 @@ export default function ImagesInfoScreen() {
 
   const proceedFromCooldown = () => {
     setCooldownReady(false);
-    setOverlayStage('reader');
-  };
-
-  const finishReading = () => {
-    setOverlayStage('postStory');
-  };
-
-  const closeReader = () => {
     setOverlayStage(null);
+    router.push('/learn/story');
   };
 
   const mockWords = useMemo(() => SAMPLE_WORDS.map((w) => makeWord(w)), []);
-  const mockPreview = useMemo(() => buildStoryPreview(mockWords), [mockWords]);
-  const readerData = useMemo(
-    () => buildStoryReaderData(currentSession?.title ?? 'Görsellerden Öğren', mockWords, currentSession?.paragraphs ?? []),
-    [mockWords, currentSession],
-  );
+  const session = useMemo(() => buildSessionFromWords(mockWords, LEVEL_NAMES[0]), [mockWords]);
 
   return (
     <View style={styles.screen}>
@@ -264,33 +252,9 @@ export default function ImagesInfoScreen() {
         {overlayStage === 'cooldown' ? (
           <StoryGenerationCooldown
             targetWords={mockWords.map((w) => ({ word: w.en, meaning: w.tr }))}
-            storyPreview={`${mockPreview.before}${mockPreview.wordA}${mockPreview.middle}${mockPreview.wordB}${mockPreview.after}`}
+            storyPreview={session.paragraphs[0]?.en ?? ''}
             isReady={cooldownReady}
             onProceed={proceedFromCooldown}
-          />
-        ) : null}
-
-        {overlayStage === 'reader' ? (
-          <StoryReader {...readerData} onFinish={finishReading} onBack={closeReader} />
-        ) : null}
-
-        {overlayStage === 'postStory' ? (
-          <PostStoryFlow
-            storyTitle={readerData.storyTitle}
-            targetWords={readerData.targetWords}
-            onExit={() => {
-              setOverlayStage(null);
-              router.replace('/home');
-            }}
-            onBackToStory={() => setOverlayStage('reader')}
-            onDifferentTheme={() => {
-              setOverlayStage(null);
-              router.push('/images-gallery');
-            }}
-            onNewStorySameWords={(words) => {
-              setOverlayStage(null);
-              router.push({ pathname: '/words-entry', params: { prefillWords: words.join(',') } });
-            }}
           />
         ) : null}
       </Modal>
