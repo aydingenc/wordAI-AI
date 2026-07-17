@@ -465,9 +465,15 @@ function ResultsScreen({
   const strokeDashoffset = ringProgress.interpolate({ inputRange: [0, 1], outputRange: [RING_CIRCUMFERENCE, 0] });
 
   const goToSummary = () => {
+    const learnedWords = targetWords.filter((tw) => wordResults[tw.word]).map((tw) => tw.word);
     router.push({
       pathname: '/learn/summary',
-      params: { correct: String(correctCount), total: String(questions.length), xp: String(xp) },
+      params: {
+        correct: String(correctCount),
+        total: String(questions.length),
+        xp: String(xp),
+        learned: learnedWords.join(','),
+      },
     });
   };
 

@@ -26,7 +26,7 @@ export default function FlashcardsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentSession, addLearnedWords } = useProgress();
-  const { xp } = useLocalSearchParams<{ xp?: string }>();
+  const { xp, learned } = useLocalSearchParams<{ xp?: string; learned?: string }>();
 
   const words = currentSession?.targetWords ?? [];
   const [index, setIndex] = useState(0);
@@ -64,6 +64,7 @@ export default function FlashcardsScreen() {
           known: String(known + (didKnow ? 1 : 0)),
           total: String(words.length),
           xp: xp ?? '0',
+          learned: learned ?? '',
         },
       });
       return;

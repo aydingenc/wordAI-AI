@@ -8,7 +8,6 @@ import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ConfettiBurst } from '@/components/Confetti';
 import { useProgress } from '@/context/ProgressContext';
-import { getWordTier, mockStoryCountForIndex } from '@/data/mock';
 
 const TOKENS = {
   bg: '#08070D',
@@ -45,6 +44,7 @@ export default function SummaryScreen() {
     fromCards?: string;
     known?: string;
     xp?: string;
+    learned?: string;
   }>();
   const { currentSession, recentWords, unlockNextLevel, clearSession } = useProgress();
 
@@ -85,11 +85,19 @@ export default function SummaryScreen() {
   }, []);
 
   const targetWords = currentSession?.targetWords ?? [];
-  // "Bugün öğrendiğin kelimeler" = this session's genuinely new (red-tier) words,
-  // same storyCount source as learn/story.tsx and learn/quiz.tsx so tiers agree everywhere.
-  const newWords = targetWords.filter((w, i) => getWordTier(mockStoryCountForIndex(i)) === 'red');
+  // "Bugün öğrendiğin kelimeler" = only the words the user actually answered
+  // correctly in the quiz (wordResults, threaded from learn/quiz.tsx via the
+  // `learned` param) — not every target word regardless of quiz result.
+  const learnedSet = new Set(
+    (params.learned ?? '')
+      .split(',')
+      .map((w) => w.trim().toLowerCase())
+      .filter(Boolean),
+  );
+  const correctWords = targetWords.filter((w) => learnedSet.has(w.en.toLowerCase()));
 
-  const goCards = () => router.push({ pathname: '/learn/flashcards', params: { xp: String(xp) } });
+  const goCards = () =>
+    router.push({ pathname: '/learn/flashcards', params: { xp: String(xp), learned: params.learned ?? '' } });
   const closeSession = () => {
     clearSession();
     router.dismissAll();
@@ -131,16 +139,16 @@ export default function SummaryScreen() {
 
         <View style={styles.statGrid}>
           <StatCard delay={500} icon="trophy" color="#FBBF24" value={`${xp}`} label="Toplam XP" />
-          <StatCard delay={620} icon="sprout" color="#4ADE80" value={`${newWords.length}`} label="Yeni Kelime" />
+          <StatCard delay={620} icon="sprout" color="#4ADE80" value={`${correctWords.length}`} label="Yeni Kelime" />
           <StatCard delay={740} icon="star-outline" color="#60A5FA" value={`${recentWords.length}`} label="Toplam Kelime" />
           <StatCard delay={860} icon="chart-bar" color={TOKENS.violet400} value={`${quizCorrect}/${quizTotal}`} label="Quiz Skoru" />
         </View>
 
-        {newWords.length > 0 ? (
+        {correctWords.length > 0 ? (
           <Animated.View style={[styles.recap, recapAnim]}>
             <Text style={styles.recapLabel}>✓ BUGÜN ÖĞRENDİĞİN KELİMELER</Text>
             <View style={styles.recapRow}>
-              {newWords.map((w) => (
+              {correctWords.map((w) => (
                 <View key={w.id} style={styles.recapPill}>
                   <Text style={styles.recapPillText}>{w.en}</Text>
                 </View>
