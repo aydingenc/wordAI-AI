@@ -90,6 +90,16 @@ export default function StoryLearnScreen() {
   const isLastPage = pageIndex === pages.length - 1;
   const visual = CHAPTER_VISUALS[chapterIndex];
 
+  // Real storyCount-tier counts (same contract as the pill system above) —
+  // not hardcoded numbers. "Öğreniliyor" groups green+amber per the source's
+  // 3-bucket stat row (StoryReader.tsx), "Mastered" is the blue tier.
+  const newCount = targetWords.filter((tw) => getWordTier(tw.storyCount) === 'red').length;
+  const learningCount = targetWords.filter((tw) => {
+    const tier = getWordTier(tw.storyCount);
+    return tier === 'green' || tier === 'amber';
+  }).length;
+  const masteredCount = targetWords.filter((tw) => getWordTier(tw.storyCount) === 'blue').length;
+
   const goToPrevPage = () => {
     if (pageIndex === 0) return;
     setPageIndex((p) => p - 1);
@@ -110,6 +120,21 @@ export default function StoryLearnScreen() {
           <Pressable onPress={() => router.back()} style={styles.topBarButton}>
             <Feather name="arrow-left" size={19} color={TOKENS.textHi} />
           </Pressable>
+          <View style={styles.topBarActions}>
+            {/* No working TTS implementation exists anywhere in this project (no
+                expo-speech dependency; the source StoryReader.tsx button this was
+                ported from has no onPress either) — shown passive rather than as
+                a dead-looking active button. Blocker: see report. */}
+            <View style={[styles.topBarButton, styles.topBarButtonDisabled]}>
+              <Feather name="volume-2" size={17} color={TOKENS.textLow} />
+            </View>
+            <Pressable
+              style={[styles.topBarButton, showTranslation && styles.topBarButtonActive]}
+              onPress={() => setShowTranslation((v) => !v)}
+            >
+              <MaterialCommunityIcons name="translate" size={18} color={showTranslation ? '#FFFFFF' : TOKENS.violet300} />
+            </Pressable>
+          </View>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -118,9 +143,7 @@ export default function StoryLearnScreen() {
           <PageDots activeIndex={pageIndexInChapter} />
 
           <View style={styles.headBlock}>
-            <Text style={styles.eyebrow}>
-              ✦ Senin Kelimelerin · {targetWords.length} Hedef Kelime · {currentSession.levelName}
-            </Text>
+            <Text style={styles.eyebrow}>✦ Senin Kelimelerin · {targetWords.length} Hedef Kelime</Text>
             <Text style={styles.storyTitle}>{storyTitle}</Text>
             <Text style={styles.pageCounter}>Sayfa {pageIndex + 1} / {pages.length}</Text>
           </View>
@@ -129,13 +152,10 @@ export default function StoryLearnScreen() {
             <MaterialCommunityIcons name={visual.icon} size={44} color="rgba(255,255,255,0.85)" />
           </LinearGradient>
 
-          <Pressable
-            style={[styles.translateBtn, showTranslation && styles.translateBtnActive]}
-            onPress={() => setShowTranslation((v) => !v)}
-          >
-            <MaterialCommunityIcons name="translate" size={14} color={showTranslation ? '#FFFFFF' : TOKENS.violet300} />
-            <Text style={[styles.translateBtnText, showTranslation && styles.translateBtnTextActive]}>Türkçe çeviri</Text>
-          </Pressable>
+          <Animated.View style={{ opacity: textOpacity, transform: [{ translateY: textTranslateY }] }}>
+            <ParagraphBlock key={`p${pageIndex}-0`} text={page.paragraphs[0]} targetWords={targetWords} claimNewWordBadge={claimNewWordBadge} />
+            <ParagraphBlock key={`p${pageIndex}-1`} text={page.paragraphs[1]} targetWords={targetWords} claimNewWordBadge={claimNewWordBadge} />
+          </Animated.View>
 
           {showTranslation ? (
             <View style={styles.translationPanel}>
@@ -148,10 +168,11 @@ export default function StoryLearnScreen() {
             </View>
           ) : null}
 
-          <Animated.View style={{ opacity: textOpacity, transform: [{ translateY: textTranslateY }] }}>
-            <ParagraphBlock key={`p${pageIndex}-0`} text={page.paragraphs[0]} targetWords={targetWords} claimNewWordBadge={claimNewWordBadge} />
-            <ParagraphBlock key={`p${pageIndex}-1`} text={page.paragraphs[1]} targetWords={targetWords} claimNewWordBadge={claimNewWordBadge} />
-          </Animated.View>
+          <View style={styles.statsRow}>
+            <StatItem icon="sprout" label="Yeni Kelime" value={newCount} color="#4ade80" />
+            <StatItem icon="book-open-variant" label="Öğreniliyor" value={learningCount} color="#facc15" />
+            <StatItem icon="star" label="Mastered" value={masteredCount} color="#60a5fa" />
+          </View>
         </ScrollView>
       </View>
 
@@ -268,6 +289,26 @@ function PageDots({ activeIndex }: { activeIndex: number }) {
       {Array.from({ length: PAGES_PER_CHAPTER }, (_, i) => (
         <View key={i} style={[styles.pageDot, i === activeIndex && styles.pageDotActive]} />
       ))}
+    </View>
+  );
+}
+
+function StatItem({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  label: string;
+  value: number;
+  color: string;
+}) {
+  return (
+    <View style={styles.statItem}>
+      <MaterialCommunityIcons name={icon} size={16} color={color} />
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
@@ -411,7 +452,8 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: TOKENS.bg },
   page: { flex: 1, paddingHorizontal: 20 },
 
-  topBar: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
+  topBarActions: { flexDirection: 'row', gap: 8 },
   topBarButton: {
     width: 36,
     height: 36,
@@ -422,6 +464,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
+  topBarButtonActive: { backgroundColor: TOKENS.violet600, borderColor: 'transparent' },
+  topBarButtonDisabled: { opacity: 0.5 },
 
   scrollContent: { paddingBottom: 24, gap: 14 },
 
@@ -455,21 +499,20 @@ const styles = StyleSheet.create({
 
   pageImage: { width: '100%', height: 170, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
 
-  translateBtn: {
-    alignSelf: 'center',
-    flexDirection: 'row',
+  statsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 4 },
+  statItem: {
+    flex: 1,
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    gap: 3,
+    paddingVertical: 10,
+    marginHorizontal: 3,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
-  translateBtnActive: { backgroundColor: TOKENS.violet600, borderColor: 'transparent' },
-  translateBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12, color: TOKENS.violet300 },
-  translateBtnTextActive: { color: '#FFFFFF' },
+  statValue: { fontFamily: 'Inter_700Bold', fontSize: 16 },
+  statLabel: { color: TOKENS.textLow, fontFamily: 'Inter_500Medium', fontSize: 10 },
 
   paragraphText: { color: TOKENS.textHi, fontFamily: 'Inter_400Regular', fontSize: 15, lineHeight: 26.25, marginBottom: 19 },
   indentSpacer: { width: 20, height: 1 },
