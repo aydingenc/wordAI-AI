@@ -464,15 +464,19 @@ function ResultsScreen({
 
   const strokeDashoffset = ringProgress.interpolate({ inputRange: [0, 1], outputRange: [RING_CIRCUMFERENCE, 0] });
 
+  const goToSummary = () => {
+    router.push({
+      pathname: '/learn/summary',
+      params: { correct: String(correctCount), total: String(questions.length), xp: String(xp) },
+    });
+  };
+
   const handleCta = () => {
     if (isLowTier) {
       router.replace('/learn/story');
       return;
     }
-    router.push({
-      pathname: '/learn/summary',
-      params: { correct: String(correctCount), total: String(questions.length), xp: String(xp) },
-    });
+    goToSummary();
   };
 
   return (
@@ -517,6 +521,11 @@ function ResultsScreen({
               <Text style={styles.resultsBtnText}>{tier.btnText}</Text>
             </LinearGradient>
           </Pressable>
+          {isLowTier ? (
+            <Pressable onPress={goToSummary} style={styles.resultsBtnSecondary}>
+              <Text style={styles.resultsBtnSecondaryText}>Devam Et</Text>
+            </Pressable>
+          ) : null}
         </Animated.View>
       </View>
 
@@ -620,4 +629,15 @@ const styles = StyleSheet.create({
 
   resultsBtn: { width: '100%', padding: 16, borderRadius: 16, alignItems: 'center' },
   resultsBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#FFFFFF' },
+  resultsBtnSecondary: {
+    width: '100%',
+    padding: 14,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(139,92,246,0.35)',
+    backgroundColor: 'rgba(139,92,246,0.1)',
+  },
+  resultsBtnSecondaryText: { fontFamily: 'Inter_700Bold', fontSize: 13.5, color: TOKENS.violet300 },
 });
