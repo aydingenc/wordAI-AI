@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -26,6 +26,7 @@ export default function FlashcardsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentSession, addLearnedWords } = useProgress();
+  const { xp } = useLocalSearchParams<{ xp?: string }>();
 
   const words = currentSession?.targetWords ?? [];
   const [index, setIndex] = useState(0);
@@ -62,6 +63,7 @@ export default function FlashcardsScreen() {
           fromCards: '1',
           known: String(known + (didKnow ? 1 : 0)),
           total: String(words.length),
+          xp: xp ?? '0',
         },
       });
       return;
