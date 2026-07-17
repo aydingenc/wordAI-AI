@@ -232,3 +232,16 @@ Final: `npx tsc --noEmit` ve `npx tsc -p tsconfig.json --noEmit` → ikisi de 0 
 `story-reader.tsx` (Redirect) dokunulmadı; hub'a ondan geçilmiyor, doğrudan gidiliyor.
 
 `npx tsc --noEmit`: 0 hata. **Cihazda doğrulanmalı:** hub'ın Keşfet tab'ı içinde tab bar'la birlikte görünümü; 5 pratik ekranının tamamının görsel/etkileşim sonucu.
+
+### Ek: "Bugün Öğrendiğin Kelimeler" / "Yeni Kelime" mantık hatası düzeltmesi
+
+**Bulunan hata:** `learn/summary.tsx`, recap pill listesini ve "Yeni Kelime" istatistiğini quiz sonucundan tamamen BAĞIMSIZ hesaplıyordu — `currentSession.targetWords`'ün storyCount-tier'i "red" (yeni) olan TÜMÜ, kullanıcı o kelimenin sorusunu doğru cevaplasın ya da cevaplamasın, yeşil pill olarak listeleniyordu. Yani quizde tüm kelime sorularını yanlış cevaplayan bir kullanıcı bile dolu bir "öğrendiğin kelimeler" listesi görüyordu.
+
+**Kök neden:** `learn/quiz.tsx`'in `wordResults` map'i (hangi kelimenin doğru cevaplandığı) hiçbir zaman `learn/summary.tsx`'e aktarılmıyordu — sözleşmede sadece `correct`/`total`/`xp` vardı, `wordResults`'a karşılık gelen bir param yoktu.
+
+**Düzeltme:** Sözleşmeye ekleme yapıldı (mevcut hiçbir param adı değişmedi/kaldırılmadı):
+- `learn/quiz.tsx`'in `goToSummary()`'si artık `learned` param'ı da gönderiyor (virgülle ayrılmış, sadece DOĞRU cevaplanan hedef kelimeler).
+- `learn/summary.tsx`, `newWords` (tier-bazlı, quiz'den bağımsız) hesaplamasını kaldırıp `correctWords`'e geçti — `learned` param'ından türetiliyor. Recap bölümü artık `correctWords.length === 0` iken TAMAMEN gizleniyor (başlığıyla birlikte); "Yeni Kelime" istatistiği de `correctWords.length` gösteriyor.
+- `/learn/summary` iki kez ziyaret edildiği için (quiz sonrası checkpoint + kartlar sonrası final, 1A'nın sözleşmesi), `learned` de tıpkı `xp` gibi `learn/summary.tsx`'in "Kelime Kartlarına Geç" push'undan ve `learn/flashcards.tsx`'in kendi son push'undan geçirildi — aksi hâlde final ziyarette veri kaybolur, recap her zaman boş görünürdü.
+
+`npx tsc --noEmit`: 0 hata. **Cihazda doğrulanmalı:** recap'in gerçekten boş/dolu geçişi ve iki ziyaret arasında tutarlılığı.
