@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
+  Easing,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,6 +17,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
+import { getWordTier, isNewWord, mockStoryCountForIndex, TIER_COLORS } from '@/data/mock';
 
 export default function StoryLearnScreen() {
   const colors = useColors();
@@ -28,7 +31,25 @@ export default function StoryLearnScreen() {
   }
 
   const { title, levelName, paragraphs, targetWords } = currentSession;
-  const targetSet = new Set(targetWords.map((w) => w.en.toLowerCase()));
+
+  // storyCount is mocked per target word (no real per-user story history yet) —
+  // same generator/tier rules as the legacy StoryReader, so the "NEW" badge and
+  // tier color can never contradict each other (both derive from storyCount).
+  const wordTierByKey = new Map(
+    targetWords.map((w, i) => {
+      const storyCount = mockStoryCountForIndex(i);
+      return [w.en.toLowerCase(), { storyCount, tier: getWordTier(storyCount) }] as const;
+    }),
+  );
+  // Tracks which storyCount===0 words have already claimed their NEW badge in
+  // this render pass, so only the word's first occurrence in the story gets it.
+  const seenNewWords = new Set<string>();
+  const claimNewWordBadge = (word: string): boolean => {
+    const key = word.toLowerCase();
+    if (seenNewWords.has(key)) return false;
+    seenNewWords.add(key);
+    return true;
+  };
 
   return (
     <GradientBackground>
@@ -73,7 +94,7 @@ export default function StoryLearnScreen() {
         {paragraphs.map((p, i) => (
           <GlowCard key={i} style={styles.para}>
             <Text style={[styles.enText, { color: colors.foreground }]}>
-              {highlight(p.en, targetSet, colors.accent)}
+              {highlight(p.en, wordTierByKey, claimNewWordBadge)}
             </Text>
             {showTr ? (
               <Text style={[styles.trText, { color: colors.mutedForeground }]}>
@@ -115,18 +136,67 @@ export default function StoryLearnScreen() {
   );
 }
 
-function highlight(text: string, set: Set<string>, color: string) {
+function highlight(
+  text: string,
+  wordTierByKey: Map<string, { storyCount: number; tier: ReturnType<typeof getWordTier> }>,
+  claimNewWordBadge: (word: string) => boolean,
+) {
   const parts = text.split(/(\b)/);
   return parts.map((part, i) => {
-    if (set.has(part.toLowerCase())) {
-      return (
-        <Text key={i} style={{ color, fontFamily: 'Inter_600SemiBold' }}>
-          {part}
-        </Text>
-      );
+    const meta = wordTierByKey.get(part.toLowerCase());
+    if (meta) {
+      return <WordPill key={i} word={part} storyCount={meta.storyCount} tier={meta.tier} claimNewWordBadge={claimNewWordBadge} />;
     }
     return part;
   });
+}
+
+function WordPill({
+  word,
+  storyCount,
+  tier,
+  claimNewWordBadge,
+}: {
+  word: string;
+  storyCount: number;
+  tier: ReturnType<typeof getWordTier>;
+  claimNewWordBadge: (word: string) => boolean;
+}) {
+  const starOpacity = useRef(new Animated.Value(0.65)).current;
+  // Decided once per mount (lazy initializer) so a re-render (e.g. TR toggle)
+  // never re-queries the seen-set and hides an already-shown badge.
+  const [showBadge] = useState(() => isNewWord(storyCount) && claimNewWordBadge(word));
+
+  useEffect(() => {
+    if (!showBadge) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(starOpacity, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(starOpacity, { toValue: 0.65, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [showBadge, starOpacity]);
+
+  const tierColors = TIER_COLORS[tier];
+
+  return (
+    <Text
+      style={[
+        styles.pill,
+        { backgroundColor: tierColors.background, borderColor: tierColors.borderColor, color: tierColors.color },
+      ]}
+    >
+      {word}
+      {showBadge ? (
+        <View style={styles.newBadge}>
+          <Text style={styles.newBadgeText}>NEW</Text>
+          <Animated.Text style={[styles.newBadgeStar, { opacity: starOpacity }]}>★</Animated.Text>
+        </View>
+      ) : null}
+    </Text>
+  );
 }
 
 function StepDot({
@@ -257,6 +327,43 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
     fontSize: 14,
     lineHeight: 21,
+  },
+  pill: {
+    paddingHorizontal: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 16,
+    position: 'relative',
+  },
+  newBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -7,
+    height: 10,
+    paddingHorizontal: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fde047',
+    borderRadius: 3,
+    gap: 1,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.35,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  newBadgeText: {
+    fontSize: 7,
+    fontWeight: '800',
+    color: '#5c3d00',
+    lineHeight: 8,
+  },
+  newBadgeStar: {
+    fontSize: 6,
+    color: '#1e3a8a',
+    lineHeight: 7,
   },
   wordsCard: {
     gap: 12,
