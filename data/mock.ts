@@ -757,6 +757,12 @@ export const RECENT_WORDS: Word[] = RECENT_SEED.map((en, i) =>
   makeWord(en, Math.max(15, 95 - i * 4)),
 );
 
+/** Parses the comma-separated "raw" word list session-scoped practice routes pass each other (Aşama 1A.2 practice hub). */
+export function parseRawWordList(value: string | undefined): string[] {
+  const words = (value ?? '').split(',').map((w) => w.trim()).filter(Boolean);
+  return words.length > 0 ? words : RECENT_WORDS.slice(0, 10).map((w) => w.en);
+}
+
 // ---------------------------------------------------------------------------
 // Word list entries (Kelimelerim screens) — status is derived from reviewCount,
 // which counts distinct stories a word has appeared in. It is NEVER incremented

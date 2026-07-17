@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -96,11 +96,11 @@ export default function SummaryScreen() {
     router.replace('/home');
   };
   const goDifferentTheme = () => router.push('/themes');
-  const goPracticeHub = () => {
-    // 1A audit report §5: PostStoryFlow's practice-methods hub is orphaned — no
-    // route reaches it anymore. Kept passive rather than left as a dead link.
-    Alert.alert('Kelime Öğrenme Yöntemleri', 'Bu özellik demo sürümünde yakında eklenecek.');
-  };
+  const goPracticeHub = () =>
+    router.push({
+      pathname: '/explore/practice-methods',
+      params: { source: 'raw', value: targetWords.map((w) => w.en).join(','), title: currentSession?.title ?? '' },
+    });
   const goNewStorySameWords = () =>
     router.push({ pathname: '/words-entry', params: { prefillWords: targetWords.map((w) => w.en).join(',') } });
 
@@ -163,11 +163,8 @@ export default function SummaryScreen() {
                   <Text style={styles.ctaPrimaryText}>Farklı Tema Farklı Hikâyeler</Text>
                 </LinearGradient>
               </Pressable>
-              <Pressable style={styles.ctaSecondaryDisabled} onPress={goPracticeHub}>
-                <Text style={styles.ctaSecondaryDisabledText}>Bu Kelimelerin Uzmanı Olmak İstiyorum</Text>
-                <View style={styles.soonBadge}>
-                  <Text style={styles.soonBadgeText}>Yakında</Text>
-                </View>
+              <Pressable style={styles.ctaSecondary} onPress={goPracticeHub}>
+                <Text style={styles.ctaSecondaryText}>Bu Kelimelerin Uzmanı Olmak İstiyorum</Text>
               </Pressable>
               <Pressable style={styles.ctaTertiary} onPress={goNewStorySameWords}>
                 <Text style={styles.ctaTertiaryText}>Aynı Kelimelerden Farklı Hikâye Oluştur</Text>
@@ -245,20 +242,15 @@ const styles = StyleSheet.create({
   ctaRow: { width: '100%', gap: 10 },
   ctaPrimary: { padding: 14, borderRadius: 15, alignItems: 'center' },
   ctaPrimaryText: { fontFamily: 'Inter_700Bold', fontSize: 14, color: '#FFFFFF' },
-  ctaSecondaryDisabled: {
+  ctaSecondary: {
     padding: 12.5,
     borderRadius: 15,
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
     borderWidth: 1,
-    borderColor: 'rgba(139,92,246,0.2)',
-    backgroundColor: 'rgba(139,92,246,0.05)',
+    borderColor: 'rgba(139,92,246,0.35)',
+    backgroundColor: 'rgba(139,92,246,0.1)',
   },
-  ctaSecondaryDisabledText: { fontFamily: 'Inter_700Bold', fontSize: 13, color: TOKENS.textLow },
-  soonBadge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 999, backgroundColor: 'rgba(139,92,246,0.18)' },
-  soonBadgeText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: TOKENS.violet300 },
+  ctaSecondaryText: { fontFamily: 'Inter_700Bold', fontSize: 13, color: TOKENS.violet300 },
   ctaTertiary: { padding: 11.5, borderRadius: 15, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.02)' },
   ctaTertiaryText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: TOKENS.textMid },
 });

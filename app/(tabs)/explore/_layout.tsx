@@ -13,6 +13,7 @@ export default function ExploreStackLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="word-cards-hub" />
       <Stack.Screen name="word-dna" />
+      <Stack.Screen name="practice-methods" />
     </Stack>
   );
 }

@@ -52,6 +52,10 @@ function RootLayoutNav() {
       <Stack.Screen name="recent-words" />
       <Stack.Screen name="word-network" />
       <Stack.Screen name="flashcards-practice" options={{ animation: 'fade' }} />
+      <Stack.Screen name="word-match-practice" options={{ animation: 'fade' }} />
+      <Stack.Screen name="fill-blank-practice" options={{ animation: 'fade' }} />
+      <Stack.Screen name="memory-game-practice" options={{ animation: 'fade' }} />
+      <Stack.Screen name="speed-round-practice" options={{ animation: 'fade' }} />
       <Stack.Screen name="story/[id]" />
       <Stack.Screen name="legal/[doc]" />
     </Stack>
