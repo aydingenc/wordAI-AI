@@ -30,12 +30,12 @@ export default function PracticeMethodsRoute() {
       learnedWords={words}
       storyTitle={title ?? ''}
       onClose={() => {
-        // Reached from learn/summary.tsx, a root-stack screen sitting above the
-        // (tabs) group — router.back() here isn't reliable, since focusing (tabs)
-        // to enter this tab-nested route pops the deep learn/* stack it came
-        // from (same cross-tree issue already solved for word-dna.tsx in 1A.2).
-        // Going to home is the explicit, contract-preserving fallback the task
-        // allows ("özet ekranına veya ana sayfaya").
+        // Reached from learn/quiz.tsx's results screen (now the session's final
+        // screen), a root-stack screen sitting above the (tabs) group —
+        // router.back() here isn't reliable, since focusing (tabs) to enter this
+        // tab-nested route pops the deep learn/* stack it came from (same
+        // cross-tree issue already solved for word-dna.tsx in 1A.2). Going to
+        // home is the explicit, contract-preserving fallback the task allows.
         clearSession();
         router.dismissAll();
         router.replace('/home');

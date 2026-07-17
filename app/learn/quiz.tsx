@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
@@ -275,6 +275,7 @@ export default function QuizScreen() {
         correctCount={correctCount}
         targetWords={targetWords}
         wordResults={wordResults}
+        storyTitle={currentSession.title}
         insetsTop={insets.top}
         insetsBottom={insets.bottom}
       />
@@ -413,6 +414,7 @@ function ResultsScreen({
   correctCount,
   targetWords,
   wordResults,
+  storyTitle,
   insetsTop,
   insetsBottom,
 }: {
@@ -420,10 +422,12 @@ function ResultsScreen({
   correctCount: number;
   targetWords: TargetWordLite[];
   wordResults: Record<string, boolean>;
+  storyTitle: string;
   insetsTop: number;
   insetsBottom: number;
 }) {
   const router = useRouter();
+  const { clearSession } = useProgress();
   const pct = correctCount / questions.length;
   const isLowTier = pct < 0.4;
   const tier = useMemo(() => getResultTier(pct), [pct]);
@@ -464,30 +468,38 @@ function ResultsScreen({
 
   const strokeDashoffset = ringProgress.interpolate({ inputRange: [0, 1], outputRange: [RING_CIRCUMFERENCE, 0] });
 
-  const goToSummary = () => {
-    const learnedWords = targetWords.filter((tw) => wordResults[tw.word]).map((tw) => tw.word);
-    router.push({
-      pathname: '/learn/summary',
-      params: {
-        correct: String(correctCount),
-        total: String(questions.length),
-        xp: String(xp),
-        learned: learnedWords.join(','),
-      },
-    });
-  };
+  // This results screen is now the session's final screen (flow-end change) —
+  // no more forced hop to a separate learn/summary.tsx. Every tier shows the
+  // same CTA list; only which one reads as "primary" changes with the tier.
+  const wordList = targetWords.map((tw) => tw.word);
 
-  const handleCta = () => {
-    if (isLowTier) {
-      router.replace('/learn/story');
-      return;
-    }
-    goToSummary();
+  const goBackToStory = () => router.replace('/learn/story');
+  const goToFlashcards = () => router.push('/learn/flashcards');
+  const goDifferentTheme = () => router.push('/themes');
+  const goPracticeHub = () =>
+    router.push({
+      pathname: '/explore/practice-methods',
+      params: { source: 'raw', value: wordList.join(','), title: storyTitle },
+    });
+  const goNewStorySameWords = () =>
+    router.push({ pathname: '/words-entry', params: { prefillWords: wordList.join(',') } });
+  const closeSession = () => {
+    clearSession();
+    router.dismissAll();
+    router.replace('/home');
   };
 
   return (
     <View style={styles.resultsRoot}>
-      <View style={[styles.resultsContent, { paddingTop: insetsTop + 44, paddingBottom: insetsBottom + 24 }]}>
+      <Pressable style={styles.resultsCloseBtn} onPress={closeSession}>
+        <Feather name="x" size={15} color="#A3A0B8" />
+      </Pressable>
+
+      <ScrollView
+        style={styles.resultsScroll}
+        contentContainerStyle={[styles.resultsContent, { paddingTop: insetsTop + 44, paddingBottom: insetsBottom + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.ringWrap}>
           <View style={[styles.ringGlow, { backgroundColor: tier.ringGlow }]} />
           <Svg width={140} height={140} viewBox="0 0 132 132" style={styles.ringSvg}>
@@ -521,19 +533,44 @@ function ResultsScreen({
           ))}
         </View>
 
-        <Animated.View style={{ opacity: btnOpacity, width: '100%' }}>
-          <Pressable onPress={handleCta}>
-            <LinearGradient colors={tier.btnGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.resultsBtn}>
-              <Text style={styles.resultsBtnText}>{tier.btnText}</Text>
-            </LinearGradient>
-          </Pressable>
+        <Animated.View style={{ opacity: btnOpacity, width: '100%', gap: 10 }}>
           {isLowTier ? (
-            <Pressable onPress={goToSummary} style={styles.resultsBtnSecondary}>
-              <Text style={styles.resultsBtnSecondaryText}>Devam Et</Text>
+            <Pressable onPress={goBackToStory}>
+              <LinearGradient colors={tier.btnGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.resultsBtn}>
+                <Text style={styles.resultsBtnText}>{tier.btnText}</Text>
+              </LinearGradient>
             </Pressable>
           ) : null}
+
+          <Pressable onPress={goToFlashcards}>
+            {isLowTier ? (
+              <View style={styles.ctaSecondary}>
+                <Text style={styles.ctaSecondaryText}>Kelime Kartlarıyla Pekiştir</Text>
+              </View>
+            ) : (
+              <LinearGradient colors={[TOKENS.violet400, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.resultsBtn}>
+                <Text style={styles.resultsBtnText}>Kelime Kartlarıyla Pekiştir</Text>
+              </LinearGradient>
+            )}
+          </Pressable>
+
+          {!isLowTier ? (
+            <Pressable onPress={goBackToStory} style={styles.ctaGhost}>
+              <Text style={styles.ctaGhostText}>Hikâye’ye Geri Dön</Text>
+            </Pressable>
+          ) : null}
+
+          <Pressable onPress={goDifferentTheme} style={styles.ctaSecondary}>
+            <Text style={styles.ctaSecondaryText}>Farklı Tema Farklı Hikâyeler</Text>
+          </Pressable>
+          <Pressable onPress={goPracticeHub} style={styles.ctaSecondary}>
+            <Text style={styles.ctaSecondaryText}>Bu Kelimelerin Uzmanı Olmak İstiyorum</Text>
+          </Pressable>
+          <Pressable onPress={goNewStorySameWords} style={styles.ctaTertiary}>
+            <Text style={styles.ctaTertiaryText}>Aynı Kelimelerden Farklı Hikâye Oluştur</Text>
+          </Pressable>
         </Animated.View>
-      </View>
+      </ScrollView>
 
       <ConfettiBurst burstKey={confettiKey} count={20} />
     </View>
@@ -611,7 +648,22 @@ const styles = StyleSheet.create({
   nextBtnText: { fontFamily: 'Inter_700Bold', fontSize: 14.5, color: '#FFFFFF' },
 
   resultsRoot: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: TOKENS.bg },
-  resultsContent: { flex: 1, paddingHorizontal: 20, alignItems: 'center' },
+  resultsCloseBtn: {
+    position: 'absolute',
+    top: 28,
+    right: 26,
+    zIndex: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultsScroll: { flex: 1 },
+  resultsContent: { paddingHorizontal: 20, alignItems: 'center', flexGrow: 1 },
 
   ringWrap: { width: 140, height: 140, marginBottom: 8, alignItems: 'center', justifyContent: 'center' },
   ringGlow: { position: 'absolute', width: 180, height: 180, borderRadius: 90, opacity: 0.5 },
@@ -635,15 +687,27 @@ const styles = StyleSheet.create({
 
   resultsBtn: { width: '100%', padding: 16, borderRadius: 16, alignItems: 'center' },
   resultsBtnText: { fontFamily: 'Inter_700Bold', fontSize: 15, color: '#FFFFFF' },
-  resultsBtnSecondary: {
+
+  ctaSecondary: {
     width: '100%',
-    padding: 14,
+    padding: 13,
     borderRadius: 16,
     alignItems: 'center',
-    marginTop: 10,
     borderWidth: 1,
     borderColor: 'rgba(139,92,246,0.35)',
     backgroundColor: 'rgba(139,92,246,0.1)',
   },
-  resultsBtnSecondaryText: { fontFamily: 'Inter_700Bold', fontSize: 13.5, color: TOKENS.violet300 },
+  ctaSecondaryText: { fontFamily: 'Inter_700Bold', fontSize: 13.5, color: TOKENS.violet300 },
+  ctaTertiary: {
+    width: '100%',
+    padding: 12,
+    borderRadius: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.02)',
+  },
+  ctaTertiaryText: { fontFamily: 'Inter_600SemiBold', fontSize: 12, color: TOKENS.textMid },
+  ctaGhost: { width: '100%', padding: 10, alignItems: 'center' },
+  ctaGhostText: { fontFamily: 'Inter_600SemiBold', fontSize: 12.5, color: TOKENS.textLow, textDecorationLine: 'underline' },
 });
