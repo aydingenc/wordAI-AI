@@ -123,6 +123,12 @@ export default function WordDnaScreen() {
       router.replace({ pathname: '/flashcards-practice', params: { source: 'raw', value: params.returnWords ?? '' } });
       return;
     }
+    if (params.returnTo === 'learn-flashcards') {
+      // learn/flashcards.tsx reads currentSession.targetWords directly (no route
+      // params needed) — same cross-tree issue, same replace()-based fix.
+      router.replace('/learn/flashcards');
+      return;
+    }
     router.back();
   };
 

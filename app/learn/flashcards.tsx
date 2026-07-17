@@ -1,240 +1,328 @@
-import React, { useState } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  interpolate,
-} from 'react-native-reanimated';
+import React, { useRef, useState } from 'react';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GradientBackground } from '@/components/GradientBackground';
-import { PrimaryButton } from '@/components/PrimaryButton';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
+import { getThemeById } from '@/data/mock';
+import { PracticeCompleteScreen } from '@/components/PracticeCompleteScreen';
 import { EmptySession } from './story';
 
+const TOKENS = {
+  bg: '#08070D',
+  violet300: '#C4B5FD',
+  violet400: '#A78BFA',
+  green: '#4ADE80',
+  red: '#F87171',
+  blue: '#60A5FA',
+  textHi: '#F5F3FF',
+  textMid: '#B9B3D1',
+  textLow: '#6F6A8A',
+};
+
+// Same rotation mock.ts's wordsByType()/WORD_TYPE_ROTATION already uses elsewhere
+// in the app — no real per-word part-of-speech data exists, so this keeps the
+// (already-accepted) mock convention instead of a fixed "noun" for every word.
+const WORD_TYPES_EN = ['verb', 'noun', 'adjective', 'adverb', 'pronoun'];
+const WORD_TYPES_TR = ['fiil', 'isim', 'sıfat', 'zarf', 'zamir'];
+
+function highlight(sentence: string, word: string) {
+  const re = new RegExp(`\\b${word}\\b`, 'i');
+  const match = sentence.match(re);
+  if (!match) return { before: sentence, hit: '', after: '' };
+  const idx = match.index ?? 0;
+  return { before: sentence.slice(0, idx), hit: match[0], after: sentence.slice(idx + match[0].length) };
+}
+
 export default function FlashcardsScreen() {
-  const colors = useColors();
-  const router = useRouter();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { currentSession, addLearnedWords } = useProgress();
-  const { xp, learned } = useLocalSearchParams<{ xp?: string; learned?: string }>();
+  const [index, setIndex] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [results, setResults] = useState<(boolean | null)[]>([]);
+  const [showInfoFront, setShowInfoFront] = useState(false);
+  const [showInfoBack, setShowInfoBack] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const flip = useRef(new Animated.Value(0)).current;
+  const cardX = useRef(new Animated.Value(0)).current;
+  const cardRotate = useRef(new Animated.Value(0)).current;
+  const cardOpacity = useRef(new Animated.Value(1)).current;
 
   const words = currentSession?.targetWords ?? [];
-  const [index, setIndex] = useState(0);
-  const [known, setKnown] = useState(0);
-  const flip = useSharedValue(0);
-  const [flipped, setFlipped] = useState(false);
-
-  const frontStyle = useAnimatedStyle(() => ({
-    transform: [{ perspective: 1000 }, { rotateY: `${interpolate(flip.value, [0, 1], [0, 180])}deg` }],
-    opacity: flip.value < 0.5 ? 1 : 0,
-  }));
-  const backStyle = useAnimatedStyle(() => ({
-    transform: [{ perspective: 1000 }, { rotateY: `${interpolate(flip.value, [0, 1], [180, 360])}deg` }],
-    opacity: flip.value >= 0.5 ? 1 : 0,
-  }));
 
   if (!currentSession || words.length === 0) return <EmptySession />;
 
   const word = words[index];
+  const wordType = WORD_TYPES_EN[index % WORD_TYPES_EN.length];
+  const wordTypeTr = WORD_TYPES_TR[index % WORD_TYPES_TR.length];
+  const sentEn = highlight(word.example, word.en);
+  const sentTr = highlight(word.exampleTr, word.tr.split(' ')[0]);
+  // Real session data, not the source's hardcoded "✈ Travel" / cycled level —
+  // only shown when it resolves to something real, never a made-up label.
+  const theme = currentSession.origin === 'theme' ? getThemeById(currentSession.themeId) : undefined;
+  const levelLabel = currentSession.levelName;
+
+  const frontStyle = {
+    opacity: flip.interpolate({ inputRange: [0, 0.5, 0.5001, 1], outputRange: [1, 1, 0, 0] }),
+    transform: [
+      { perspective: 1400 },
+      { rotateY: flip.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] }) },
+    ],
+  };
+  const backStyle = {
+    opacity: flip.interpolate({ inputRange: [0, 0.5, 0.5001, 1], outputRange: [0, 0, 1, 1] }),
+    transform: [
+      { perspective: 1400 },
+      { rotateY: flip.interpolate({ inputRange: [0, 1], outputRange: ['180deg', '360deg'] }) },
+    ],
+  };
 
   const doFlip = () => {
-    const to = flipped ? 0 : 1;
-    flip.value = withTiming(to, { duration: 400 });
-    setFlipped(!flipped);
+    Animated.timing(flip, { toValue: flipped ? 0 : 1, duration: 500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }).start();
+    setFlipped((v) => !v);
+    setShowInfoFront(false);
+    setShowInfoBack(false);
   };
 
-  const advance = (didKnow: boolean) => {
-    if (didKnow) setKnown((k) => k + 1);
-    if (index + 1 >= words.length) {
-      addLearnedWords(words);
-      router.push({
-        pathname: '/learn/summary',
-        params: {
-          fromCards: '1',
-          known: String(known + (didKnow ? 1 : 0)),
-          total: String(words.length),
-          xp: xp ?? '0',
-          learned: learned ?? '',
-        },
-      });
+  const goToDNA = () => {
+    router.push({
+      pathname: '/explore/word-dna',
+      params: { word: word.en, returnTo: 'learn-flashcards' },
+    });
+  };
+
+  const exitToStart = () => router.replace('/home');
+
+  const judge = (known: boolean) => {
+    setResults((prev) => {
+      const next = [...prev];
+      next[index] = known;
+      return next;
+    });
+
+    Animated.parallel([
+      Animated.timing(cardX, { toValue: known ? 420 : -420, duration: 380, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+      Animated.timing(cardRotate, { toValue: known ? 14 : -14, duration: 380, useNativeDriver: true }),
+      Animated.timing(cardOpacity, { toValue: 0, duration: 380, useNativeDriver: true }),
+    ]).start(() => {
+      if (index + 1 >= words.length) {
+        addLearnedWords(words);
+        // The final learn/* screen is now learn/quiz.tsx's own results screen
+        // (this session's flow-end change) — flashcards was pushed from there,
+        // so back() returns to it intact (its state survives the push/pop,
+        // same as any other stack screen). No separate summary route anymore.
+        setDone(true);
+        return;
+      }
+      cardX.setValue(0);
+      cardRotate.setValue(0);
+      cardOpacity.setValue(1);
+      flip.setValue(0);
+      setFlipped(false);
+      setShowInfoFront(false);
+      setShowInfoBack(false);
+      setIndex((i) => i + 1);
+    });
+  };
+
+  const goBackToResults = () => {
+    if (router.canGoBack()) {
+      router.back();
       return;
     }
-    flip.value = 0;
-    setFlipped(false);
-    setIndex((i) => i + 1);
+    exitToStart();
   };
 
+  if (done) {
+    const knownCount = results.filter((r) => r === true).length;
+    const hardCount = results.filter((r) => r === false).length;
+    return (
+      <View style={[styles.root, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 16 }]}>
+        <PracticeCompleteScreen
+          title={`${words.length} Kart Tamamlandı!`}
+          stats={[
+            { n: knownCount, label: 'Biliyorum', color: TOKENS.green },
+            { n: hardCount, label: 'Zorlandım', color: TOKENS.red },
+          ]}
+          ctaLabel="Devam Et"
+          onCta={goBackToResults}
+        />
+      </View>
+    );
+  }
+
   return (
-    <GradientBackground>
-      <ScreenHeader title="Kelime Kartları" subtitle={`${index + 1} / ${words.length}`} />
+    <View style={[styles.root, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 16 }]}>
+      <View style={styles.topbar}>
+        <Pressable style={styles.iconBtn} onPress={goBackToResults}>
+          <Feather name="chevron-left" size={16} color={TOKENS.violet300} />
+        </Pressable>
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${(index / words.length) * 100}%` }]} />
+        </View>
+        <Text style={styles.counter}>{index + 1}/{words.length}</Text>
+        <Pressable style={styles.iconBtn} onPress={exitToStart}>
+          <Feather name="x" size={15} color="#A3A0B8" />
+        </Pressable>
+      </View>
 
-      <View style={styles.body}>
-        <Pressable style={styles.cardArea} onPress={doFlip}>
-          <Animated.View
-            style={[
-              styles.card,
-              { backgroundColor: colors.card, borderColor: colors.primary, borderRadius: colors.radius, shadowColor: colors.primaryGlow },
-              frontStyle,
-            ]}
-          >
-            <Text style={[styles.tapHint, { color: colors.mutedForeground }]}>
-              Anlamı için dokun
-            </Text>
-            <Text style={[styles.front, { color: colors.foreground }]}>{word.en}</Text>
-            {word.phonetic ? (
-              <Text style={[styles.phonetic, { color: colors.accent }]}>
-                {word.phonetic}
+      <View style={styles.stage}>
+        <View style={styles.glow} pointerEvents="none" />
+        <Pressable onPress={doFlip}>
+          <Animated.View style={[styles.card, { transform: [{ translateX: cardX }, { rotate: cardRotate.interpolate({ inputRange: [-14, 14], outputRange: ['-14deg', '14deg'] }) }], opacity: cardOpacity }]}>
+            <Animated.View style={[styles.cardFace, styles.cardFront, frontStyle]}>
+              <Text style={[styles.cardTag, { color: TOKENS.violet400 }]}>İNGİLİZCE</Text>
+              <View style={styles.metaRow}>
+                {theme ? (
+                  <View style={styles.metaChipTheme}>
+                    <Feather name="tag" size={9} color="#60A5FA" />
+                    <Text style={styles.metaChipThemeText}>{theme.nameEn}</Text>
+                  </View>
+                ) : null}
+                <View style={styles.metaChipLevel}><Text style={styles.metaChipLevelText}>{levelLabel}</Text></View>
+              </View>
+              <Text style={styles.cardWord}>{word.en}</Text>
+              <Text style={styles.cardExample}>
+                {sentEn.before}
+                <Text style={styles.cardExampleHl}>{sentEn.hit}</Text>
+                {sentEn.after}
               </Text>
-            ) : null}
-            <Feather name="rotate-cw" size={20} color={colors.mutedForeground} />
-          </Animated.View>
+              <Text style={styles.wordTypeLine}>{wordType}</Text>
+              <DnaRow onDna={goToDNA} showInfo={showInfoFront} onToggleInfo={() => setShowInfoFront((v) => !v)} />
+              {showInfoFront ? (
+                <View style={styles.infoPanel}>
+                  <Text style={styles.infoPanelText}>Bu kelime hakkında daha fazla bilgiye ve örneğe ihtiyacım var.</Text>
+                </View>
+              ) : null}
+              <View style={styles.cardHint}>
+                <Feather name="arrow-right" size={13} color={TOKENS.textLow} />
+                <Text style={styles.cardHintText}>Anlamı görmek için dokun</Text>
+              </View>
+            </Animated.View>
 
-          <Animated.View
-            style={[
-              styles.card,
-              styles.cardBack,
-              { backgroundColor: colors.cardAlt, borderColor: colors.accent, borderRadius: colors.radius, shadowColor: colors.primaryGlow },
-              backStyle,
-            ]}
-          >
-            <Text style={[styles.back, { color: colors.foreground }]}>{word.tr}</Text>
-            <View style={[styles.exampleBox, { backgroundColor: colors.secondary }]}>
-              <Text style={[styles.exampleEn, { color: colors.foreground }]}>
-                {word.example}
+            <Animated.View style={[styles.cardFace, styles.cardBack, backStyle]}>
+              <Text style={[styles.cardTag, { color: TOKENS.green }]}>TÜRKÇE</Text>
+              <View style={styles.metaRow}>
+                {theme ? (
+                  <View style={styles.metaChipTheme}>
+                    <Feather name="tag" size={9} color="#60A5FA" />
+                    <Text style={styles.metaChipThemeText}>{theme.nameEn}</Text>
+                  </View>
+                ) : null}
+                <View style={styles.metaChipLevel}><Text style={styles.metaChipLevelText}>{levelLabel}</Text></View>
+              </View>
+              <Text style={styles.cardMeaning}>{word.tr}</Text>
+              <Text style={styles.cardExampleTr}>
+                {sentTr.before}
+                <Text style={styles.cardExampleTrHl}>{sentTr.hit || word.tr}</Text>
+                {sentTr.after}
               </Text>
-              <Text style={[styles.exampleTr, { color: colors.mutedForeground }]}>
-                {word.exampleTr}
-              </Text>
-            </View>
-            <Pressable
-              onPress={() => router.push('/word-network')}
-              style={styles.dnaLink}
-            >
-              <Feather name="activity" size={15} color={colors.accent} />
-              <Text style={[styles.dnaText, { color: colors.accent }]}>
-                Word DNA'yı gör
-              </Text>
-            </Pressable>
+              <Text style={styles.wordTypeLine}>{wordTypeTr}</Text>
+              <DnaRow onDna={goToDNA} showInfo={showInfoBack} onToggleInfo={() => setShowInfoBack((v) => !v)} />
+              {showInfoBack ? (
+                <View style={styles.infoPanel}>
+                  <Text style={styles.infoPanelText}>Bu kelime hakkında daha fazla bilgiye ve örneğe ihtiyacım var.</Text>
+                </View>
+              ) : null}
+            </Animated.View>
           </Animated.View>
         </Pressable>
       </View>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 16 }]}>
-        <Pressable
-          onPress={() => advance(false)}
-          style={[styles.judgeBtn, { backgroundColor: colors.secondary, borderColor: colors.border }]}
-        >
-          <Feather name="rotate-ccw" size={20} color={colors.warning} />
-          <Text style={[styles.judgeText, { color: colors.foreground }]}>Tekrar</Text>
+      <View style={styles.dots}>
+        {words.map((_, i) => {
+          const result = results[i];
+          const style = i === index ? styles.dotCurrent : result === true ? styles.dotKnown : result === false ? styles.dotHard : styles.dot;
+          return <View key={i} style={[styles.dot, style]} />;
+        })}
+      </View>
+
+      <View style={styles.actionRow}>
+        <Pressable style={styles.hardBtn} onPress={() => judge(false)}>
+          <Feather name="x" size={16} color={TOKENS.red} />
+          <Text style={[styles.actionText, { color: TOKENS.red }]}>Zorlandım</Text>
         </Pressable>
-        <Pressable
-          onPress={() => advance(true)}
-          style={[styles.judgeBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
-        >
-          <Feather name="check" size={20} color={colors.primaryForeground} />
-          <Text style={[styles.judgeText, { color: colors.primaryForeground }]}>
-            Biliyorum
-          </Text>
+        <Pressable style={styles.knownBtn} onPress={() => judge(true)}>
+          <Feather name="check" size={16} color={TOKENS.green} />
+          <Text style={[styles.actionText, { color: TOKENS.green }]}>Biliyorum</Text>
         </Pressable>
       </View>
-    </GradientBackground>
+    </View>
+  );
+}
+
+function DnaRow({ onDna, showInfo, onToggleInfo }: { onDna: () => void; showInfo: boolean; onToggleInfo: () => void }) {
+  return (
+    <View style={styles.dnaRow}>
+      <Pressable style={styles.dnaBtn} onPress={onDna}>
+        <MaterialCommunityIcons name="dna" size={17} color={TOKENS.violet300} />
+        <Text style={styles.dnaText}>SentenceLab + WordDNA</Text>
+        <Feather name="chevron-right" size={14} color={TOKENS.violet300} />
+      </Pressable>
+      <Pressable style={styles.infoIconBtn} onPress={onToggleInfo}>
+        <Feather name="info" size={15} color={TOKENS.violet300} />
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  body: {
-    flex: 1,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-  },
-  cardArea: {
-    height: 420,
-  },
-  card: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 1.5,
+  root: { flex: 1, backgroundColor: TOKENS.bg, paddingHorizontal: 20 },
+
+  topbar: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 6 },
+  iconBtn: { width: 36, height: 36, borderRadius: 11, backgroundColor: 'rgba(139,92,246,0.12)', borderWidth: 1, borderColor: 'rgba(139,92,246,0.25)', alignItems: 'center', justifyContent: 'center' },
+  progressTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 3, backgroundColor: TOKENS.violet400 },
+  counter: { fontFamily: 'Inter_700Bold', fontSize: 12, color: TOKENS.textMid },
+
+  stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  glow: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: 'rgba(139,92,246,0.28)', opacity: 0.6 },
+
+  card: { width: 280, height: 440 },
+  cardFace: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    borderRadius: 26,
+    padding: 26,
+    paddingTop: 32,
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 16,
-    padding: 28,
-    backfaceVisibility: 'hidden',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
-    shadowRadius: 24,
-    elevation: 10,
-  },
-  cardBack: {},
-  tapHint: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-  },
-  front: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 42,
-    textAlign: 'center',
-  },
-  phonetic: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 18,
-  },
-  back: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 30,
-    textAlign: 'center',
-  },
-  exampleBox: {
-    borderRadius: 16,
-    padding: 16,
-    gap: 8,
-    width: '100%',
-  },
-  exampleEn: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  exampleTr: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  dnaLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  dnaText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-  },
-  footer: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-  },
-  judgeBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
     borderWidth: 1,
-    borderRadius: 18,
-    paddingVertical: 16,
   },
-  judgeText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-  },
+  cardFront: { backgroundColor: '#1A1230', borderColor: 'rgba(139,92,246,0.3)' },
+  cardBack: { backgroundColor: '#0E1411', borderColor: 'rgba(74,222,128,0.3)' },
+  cardTag: { fontFamily: 'Inter_700Bold', fontSize: 10, letterSpacing: 0.4, marginBottom: 16 },
+  metaRow: { flexDirection: 'row', gap: 6, marginBottom: 16, flexWrap: 'wrap', justifyContent: 'center' },
+  metaChipTheme: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(96,165,250,0.14)', borderWidth: 1, borderColor: 'rgba(96,165,250,0.3)' },
+  metaChipThemeText: { fontFamily: 'Inter_700Bold', fontSize: 9.5, color: '#60A5FA' },
+  metaChipLevel: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 999, backgroundColor: 'rgba(139,92,246,0.14)', borderWidth: 1, borderColor: 'rgba(139,92,246,0.3)' },
+  metaChipLevelText: { fontFamily: 'Inter_700Bold', fontSize: 9.5, color: TOKENS.violet400 },
+  cardWord: { fontFamily: 'Inter_700Bold', fontSize: 32, color: TOKENS.textHi, marginBottom: 14, textAlign: 'center' },
+  cardExample: { fontFamily: 'Inter_400Regular', fontSize: 12.5, color: TOKENS.textMid, lineHeight: 19, textAlign: 'center', marginBottom: 14, paddingHorizontal: 4 },
+  cardExampleHl: { color: TOKENS.violet300, fontFamily: 'Inter_700Bold' },
+  cardMeaning: { fontFamily: 'Inter_700Bold', fontSize: 26, color: TOKENS.green, marginBottom: 14, textAlign: 'center' },
+  cardExampleTr: { fontFamily: 'Inter_400Regular', fontSize: 12.5, color: TOKENS.textMid, lineHeight: 19, textAlign: 'center', marginBottom: 14, paddingHorizontal: 4 },
+  cardExampleTrHl: { color: '#86EFAC', fontFamily: 'Inter_700Bold' },
+  wordTypeLine: { fontFamily: 'Inter_400Regular', fontSize: 10.5, color: TOKENS.textLow, fontStyle: 'italic', marginBottom: 16 },
+
+  dnaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, width: '100%' },
+  dnaBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 12, borderRadius: 16, backgroundColor: 'rgba(139,92,246,0.08)', borderWidth: 1.5, borderColor: 'rgba(167,139,250,0.5)' },
+  dnaText: { flex: 1, fontFamily: 'Inter_700Bold', fontSize: 11.5, color: '#E9E0FF' },
+  infoIconBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: 'rgba(139,92,246,0.1)', borderWidth: 1.5, borderColor: 'rgba(167,139,250,0.45)', alignItems: 'center', justifyContent: 'center' },
+  infoPanel: { width: '100%', marginTop: 10, padding: 10, borderRadius: 12, backgroundColor: 'rgba(139,92,246,0.08)', borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(167,139,250,0.4)' },
+  infoPanelText: { fontFamily: 'Inter_400Regular', fontSize: 10.5, color: TOKENS.violet300, lineHeight: 15 },
+  cardHint: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 16 },
+  cardHintText: { fontFamily: 'Inter_400Regular', fontSize: 11, color: TOKENS.textLow },
+
+  dots: { flexDirection: 'row', gap: 6, justifyContent: 'center', marginVertical: 16 },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.15)' },
+  dotCurrent: { backgroundColor: TOKENS.violet400, width: 20, borderRadius: 4 },
+  dotKnown: { backgroundColor: TOKENS.green },
+  dotHard: { backgroundColor: TOKENS.red },
+
+  actionRow: { flexDirection: 'row', gap: 12 },
+  hardBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 15, borderRadius: 16, backgroundColor: 'rgba(248,113,113,0.14)', borderWidth: 1.5, borderColor: 'rgba(248,113,113,0.35)' },
+  knownBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 15, borderRadius: 16, backgroundColor: 'rgba(34,197,94,0.14)', borderWidth: 1.5, borderColor: 'rgba(74,222,128,0.35)' },
+  actionText: { fontFamily: 'Inter_700Bold', fontSize: 14 },
 });
