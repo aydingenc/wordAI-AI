@@ -1013,3 +1013,42 @@ export function sessionFromGalleryItem(item: GalleryItem): LearnSession {
     origin: 'words',
   };
 }
+
+// ---------------------------------------------------------------------------
+// Reading-comprehension quiz questions (Aşama 1A.2, learn/quiz.tsx) — grounded
+// in the session's own real paragraphs, never fabricated. Correct answer is a
+// verbatim sentence from THIS story; wrong choices are verbatim sentences from
+// OTHER real generated stories (real text, just the wrong story), so nothing
+// shown to the user is invented.
+// ---------------------------------------------------------------------------
+
+export interface ComprehensionQuestionSeed {
+  text: string;
+  choices: string[];
+  correctIndex: number;
+  hint: string;
+}
+
+export function buildComprehensionQuestions(session: LearnSession): ComprehensionQuestionSeed[] {
+  const ownSentences = session.paragraphs.map((p) => p.en).filter(Boolean);
+  if (ownSentences.length === 0) return [];
+
+  const otherPool = THEME_STORIES.flatMap((s) => s.paragraphs.map((p) => p.en)).filter(
+    (s) => !ownSentences.includes(s),
+  );
+  if (otherPool.length < 3) return [];
+
+  const count = Math.min(2, ownSentences.length);
+  const picks = shuffle(ownSentences).slice(0, count);
+
+  return picks.map((correct) => {
+    const distractors = shuffle(otherPool.filter((s) => s !== correct)).slice(0, 3);
+    const choices = shuffle([correct, ...distractors]);
+    return {
+      text: 'Bu cümlelerden hangisi bu hikayede geçiyor?',
+      choices,
+      correctIndex: choices.indexOf(correct),
+      hint: 'İpucu: Hikayenin paragraflarını tekrar okuyarak doğru cümleyi bulabilirsin.',
+    };
+  });
+}
