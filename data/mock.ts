@@ -510,6 +510,40 @@ export function sessionFromScene(scene: Scene): LearnSession {
 }
 
 // ---------------------------------------------------------------------------
+// Target-word pill/tier contract (WL-004 2a) — single source of truth for
+// both the tier color and the "NEW" badge, so they can never contradict
+// each other: both are derived from the same storyCount.
+// ---------------------------------------------------------------------------
+
+export type WordTier = 'red' | 'green' | 'amber' | 'blue';
+
+export function getWordTier(storyCount: number): WordTier {
+  if (storyCount === 0) return 'red';
+  if (storyCount >= 1 && storyCount <= 3) return 'green';
+  if (storyCount >= 4 && storyCount <= 8) return 'amber';
+  return 'blue';
+}
+
+export function isNewWord(storyCount: number): boolean {
+  return storyCount === 0;
+}
+
+export const TIER_COLORS: Record<WordTier, { background: string; borderColor: string; color: string }> = {
+  red: { background: 'rgba(248,113,113,0.16)', color: '#f87171', borderColor: 'rgba(248,113,113,0.4)' },
+  green: { background: 'rgba(34,197,94,0.16)', color: '#4ade80', borderColor: 'rgba(74,222,128,0.4)' },
+  amber: { background: 'rgba(240,180,41,0.16)', color: '#facc15', borderColor: 'rgba(250,204,21,0.4)' },
+  blue: { background: 'rgba(56,146,255,0.16)', color: '#60a5fa', borderColor: 'rgba(96,165,250,0.4)' },
+};
+
+// Test storyCount values covering all four buckets: 0 (new), 1-3 (green), 4-8 (amber), 9+ (blue).
+const STORY_COUNT_TEST_VALUES = [0, 2, 6, 12, 5];
+
+/** Deterministic mock storyCount per word position, until a real per-user story history exists. */
+export function mockStoryCountForIndex(index: number): number {
+  return STORY_COUNT_TEST_VALUES[index % STORY_COUNT_TEST_VALUES.length];
+}
+
+// ---------------------------------------------------------------------------
 // StoryReader mock content (12 pages / 3 chapters, until a real content
 // pipeline exists)
 // ---------------------------------------------------------------------------
@@ -541,14 +575,11 @@ const STORY_READER_CHAPTER_TITLES: [string, string, string] = [
 ];
 const STORY_READER_PAGE_COUNT = 12;
 
-// Test storyCount values covering all four buckets: 0 (new), 1-3 (green), 4-8 (amber), 9+ (blue).
-const STORY_COUNT_TEST_VALUES = [0, 2, 6, 12, 5];
-
 export function buildStoryReaderData(title: string, words: Word[], paragraphs: StoryParagraph[]): StoryReaderData {
   const wordPool = words.length ? words : SAMPLE_WORDS.slice(0, 5).map((w) => makeWord(w));
   const targetWords: StoryReaderTargetWord[] = wordPool.map((w, i) => ({
     word: w.en,
-    storyCount: STORY_COUNT_TEST_VALUES[i % STORY_COUNT_TEST_VALUES.length],
+    storyCount: mockStoryCountForIndex(i),
   }));
 
   const basePs = paragraphs.length ? paragraphs : buildParagraphs(wordPool);
