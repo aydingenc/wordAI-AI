@@ -245,3 +245,30 @@ Final: `npx tsc --noEmit` ve `npx tsc -p tsconfig.json --noEmit` → ikisi de 0 
 - `/learn/summary` iki kez ziyaret edildiği için (quiz sonrası checkpoint + kartlar sonrası final, 1A'nın sözleşmesi), `learned` de tıpkı `xp` gibi `learn/summary.tsx`'in "Kelime Kartlarına Geç" push'undan ve `learn/flashcards.tsx`'in kendi son push'undan geçirildi — aksi hâlde final ziyarette veri kaybolur, recap her zaman boş görünürdü.
 
 `npx tsc --noEmit`: 0 hata. **Cihazda doğrulanmalı:** recap'in gerçekten boş/dolu geçişi ve iki ziyaret arasında tutarlılığı.
+
+### Ek: Akış sonu değişikliği + learn/story.tsx ve learn/flashcards.tsx eski tasarım parçalarının geri getirilmesi
+
+Kullanıcı talebiyle: öğrenme akışının sonu değişti. `learn/summary.tsx` artık zorunlu zincirde değil; `learn/quiz.tsx`'in kademeli sonuç ekranı oturumun kendisinin final ekranı oldu (eski PostStoryFlow düzeni). Ayrıca `learn/story.tsx` ve `learn/flashcards.tsx`'e, kaynak koddan (icat edilmeden) eksik kalan tasarım parçaları geri getirildi.
+
+**Akış sonu değişikliği (`learn/quiz.tsx`, `learn/flashcards.tsx`, `learn/summary.tsx`):**
+
+- `learn/quiz.tsx`'in sonuç ekranı (halka, skor, XP, kademe başlığı/alt metni, doğru=yeşil/yanlış=kırmızı kelime pil listesi) AYNEN korundu; sadece CTA bölümü değişti. Artık HER kademede aynı 5 öğe: "Hikâye'ye Geri Dön" (%40 altında birincil/vurgulu — `router.replace('/learn/story')`; üst kademelerde küçük/alt-çizili "ghost" stil), "Kelime Kartlarıyla Pekiştir" (%40 üstünde birincil — `router.push('/learn/flashcards')`), "Farklı Tema Farklı Hikâyeler" (`/themes`), "Bu Kelimelerin Uzmanı Olmak İstiyorum" (pratik hub, 1A.2'de zaten aktifti), "Aynı Kelimelerden Farklı Hikâye Oluştur" (`/words-entry` + `prefillWords`). Sağ üstte X (top:28/right:26): `clearSession()+dismissAll()+replace('/home')`.
+- `learn/summary.tsx` **silinmedi** — içeriği `app/story-reader.tsx`'teki 1A Redirect deseniyle birebir aynı şekilde `<Redirect href="/home" />` ile değiştirildi. `grep -rn "learn/summary" app components` ile doğrulandı: sadece `app/_layout.tsx`'teki route kaydı ve açıklayıcı yorumlar kaldı, hiçbir yerden artık oraya push/replace edilmiyor.
+- `learn/flashcards.tsx`'in bitiş navigasyonu değişti: kartlar bitince artık `/learn/summary`'ye gitmiyor. `PracticeCompleteScreen`'in "Devam Et" CTA'sı `router.canGoBack() ? router.back() : replace('/home')` çağırıyor — flashcards, quiz'in sonuç ekranından `push` edilmiş olduğundan, `back()` o AYNI component instance'ına (state'i bozulmadan) geri dönüyor. Döngü yok, dead-end yok.
+- Kart değerlendirme butonları (Zorlandım/Biliyorum) ve `addLearnedWords(words)` çağrısı davranışsal olarak dokunulmadan korundu — sadece bitişteki hedef route değişti.
+
+**Görev A — `learn/story.tsx`** (kaynak: `components/StoryReader.tsx`):
+- Sağ üst header'a iki ikon: ses (hoparlör) ve çeviri. **Ses ikonu için çalışan bir implementasyon projede yok** (`package.json`'da `expo-speech` yok; kaynaktaki `StoryReader.tsx` butonunun da `onPress`'i yok) — bu yüzden ikon PASİF gösteriliyor (`Pressable` değil, düz `View`, basınca hiçbir şey yapmıyor ve öyle görünüyor). **Blocker olarak işaretlendi**, aşağıya not düşüldü. Çeviri ikonu: TR panel açma/kapama davranışı (sayfa değişince otomatik kapanma dahil) AYNEN korunarak, önceki "görselin altındaki ayrı pill buton" konumundan header'a taşındı.
+- Meta blok kaynakla birebir hizalandı: eyebrow satırındaki (1A.2 Görev 1'de eklenmiş) " · levelName" ek metni kaldırıldı — kaynakta yoktu.
+- Sayfa içeriğinin altına üç stat kartı (Yeni Kelime/Öğreniliyor/Mastered) eklendi — kaynaktaki `StatItem`'la birebir. Değerler artık storyCount sözleşmesinden GERÇEK hesaplanıyor (kırmızı / yeşil+amber / mavi tier sayıları), sabit değer yok. (Not: `buildStoryReaderData()`'nın kendi `stats` alanı `word.strength`'e dayanıyordu, tier'e değil — bu görev için KULLANILMADI, tier-bazlı taze hesaplama yapıldı.)
+
+**Görev B — `learn/flashcards.tsx`** (kaynak: `components/FlashcardsPractice.tsx`, zaten `app/flashcards-practice.tsx` üzerinden aktif):
+- Ön/arka kart tasarımı (İNGİLİZCE/TÜRKÇE etiketleri, tema+seviye chip'leri, büyük kelime, bold örnek cümle, sözcük türü, "SentenceLab + WordDNA" butonu + ⓘ, "Anlamı görmek için dokun") birebir taşındı.
+- Kaynaktaki iki sahte/sabit değer GERÇEK veriyle değiştirildi (görsel birebir korunarak): tema chip'i (kaynakta HER kelime için sabit "✈ Travel" — artık `currentSession.origin==='theme'` ise gerçek tema adı, çözülmüyorsa chip hiç yok) ve seviye chip'i (kaynakta index'e göre rastgele döngü — artık gerçek `currentSession.levelName`). Sözcük türü, projede zaten var olan `mock.ts` döngüsüyle (yeni icat değil) gösteriliyor.
+- "SentenceLab + WordDNA" → `/explore/word-dna` route'u ZATEN VAR ve çalışıyor, pasif bırakılmadı. Geri dönüşü için word-dna.tsx'e `returnTo='learn-flashcards'` dalı eklendi (aynı cross-tree-navigasyon çözümü, 1A.2'de kurulan desenle).
+- **Dört değerlendirme butonu için kaynak bulunamadı** — kullanıcıyla doğrulandı, mevcut ikili (Zorlandım/Biliyorum, hem `FlashcardsPractice.tsx` hem `flashcards-demo-v12.html`'de böyle) korundu, icat edilmedi.
+
+**Route zinciri yeniden doğrulandı (route route, üç giriş noktası):**
+`words-entry.tsx` / `images-info.tsx` / `scene-transition.tsx` → `/learn/story` (değişmedi) → (12 sayfa) → `/learn/quiz` → sonuç ekranı (FİNAL) → [X→home] veya [Hikâye'ye Geri Dön→/learn/story] veya [Kelime Kartlarıyla Pekiştir→/learn/flashcards→(bitince)→geri quiz sonucuna] veya [Farklı Tema→/themes] veya [Pratik Hub→/explore/practice-methods] veya [Yeni Hikaye→/words-entry]. `scene/[id].tsx` → `/story-loading` → `/learn/story` (değişmedi). Hiçbir dead-end veya döngü yok.
+
+`npx tsc --noEmit` ve `npx tsc -p tsconfig.json --noEmit`: ikisi de 0 hata. **Blocker (1B için):** learn/story.tsx'teki ses/TTS ikonu — gerçek implementasyon için `expo-speech` (veya benzeri) paketi kurulması gerekir, bu oturumun "yeni paket kurma" yasağı kapsamında yapılmadı. **Cihazda doğrulanmalı:** quiz sonuç ekranının kademeye göre buton hiyerarşisi; flashcards→quiz sonucu geri dönüşünün görsel akıcılığı; story.tsx'in yeni header/stat düzeni.
