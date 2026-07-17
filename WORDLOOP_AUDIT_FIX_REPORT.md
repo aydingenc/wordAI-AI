@@ -148,3 +148,64 @@ WL-004 ve WL-005 bu listeden çıkarılabilir — ikisi de bu oturumda tamamland
 - `images-info.tsx`'in "Kendi Görselini Yükle" adımı hâlâ `SAMPLE_WORDS` mock verisiyle çalışıyor (gerçek görsel analizi yok) — bu oturumda sadece route hedefi düzeltildi, veri hâlâ dummy.
 - Bu oturumda cihazda/simülatörde hiçbir görsel doğrulama yapılmadı — 1B'ye başlamadan önce `npx expo start --clear` ile en azından üç zincirin manuel testi önerilir.
 - `audit-phase-1a` branch'i lokal kaldı; remote'a push edilmedi, PR açılmadı (görev talimatı gereği).
+
+## Aşama 1A.2
+
+Kapsam: `WORDLOOP_ASAMA_1A2_PROMPT.md` — kanonik `learn/*` ekranlarına finalize edilmiş görsel/etkileşim katmanının taşınması. 1A'nın kurduğu route zinciri, parametre sözleşmesi ve pill mantığı korunmuştur; bu oturum SADECE görsel/etkileşim katmanını değiştirdi.
+
+### Önemli bulgu: kaynak kod zaten büyük ölçüde hazırdı
+
+Görev, `learn/story.tsx`'in görsel/etkileşim katmanının kaynağının `story-reader.tsx`'teki (fiilen `components/StoryReader.tsx`) RN kodu olduğunu belirtiyordu. İncelemede, 1A'da "sadece import edilmez hâle getirildi, silinmedi" notuyla bırakılan üç component'in aslında Görev 2 ve Görev 3'ün spesifikasyonuyla neredeyse birebir örtüştüğü görüldü:
+
+- `components/QuizScreen.tsx` — dinamik kelime+anlama sorusu, `WORD_QUIZ_BANK` ile kelimeye özel ipucu, kademeli sonuç ekranı (kırmızı/amber/yeşil, XP çarpanı, confetti, streak) — quiz-screen-demo-v6.html ile pratikte aynı.
+- `components/SessionSummaryScreen.tsx` — pop-in rozet, 2x2 istatistik grid'i, seri banner'ı, kelime recap'i, 3 CTA'lı satır, sağ üst X (top:28/right:26) — session-summary-demo-v6.html ile pratikte aynı.
+- `components/Confetti.tsx` — hazır, tekrar kullanılabilir `ConfettiBurst` component'i.
+
+Bu üç ekranın kodu SIFIRDAN yazılmadı; mevcut, çalışan kod PORT edildi (adapte edilip `learn/*`'e taşındı), böylece hem "taşı, yeniden yazma" talimatına uyuldu hem de gereksiz risk/diff önlendi.
+
+### Görev 1 — `learn/story.tsx`
+
+`buildStoryReaderData()` (1A'da zaten `mockStoryCountForIndex`'e bağlanmıştı) kullanılarak 12 sayfa/3 bölüm yapısı, kaynak koddaki mantıkla birebir kuruldu — kısa hikâye verisi zaten orantılı şekilde 12 sayfaya dağıtılıyor, sahte içerik üretilmedi. Değişenler: çeviri artık görselin altındaki bir ikonla açılıp kapanıyor (global switch ve sabit TR bloğu kaldırıldı), sayfa değişince panel otomatik kapanıyor; alt bar scroll dışında sabit; 12. sayfada "Quize Devam Et" yeşile dönüyor; eski 3 nokta stepper kaldırıldı, başlık/hedef kelime sayısı/seviye bilgisi header'da korundu. Bölüm numarası dairelerinin "bilinen kontrast bug"ı için: üç durumun (aktif/tamamlanmış/gelecek) her biri artık kendi metin rengini bağımsız ve açıkça set ediyor (önceki koddan miras kalmış olası bir stil-sızıntısı ihtimaline karşı) — **gerçek cihazda doğrulanmalı**, statik incelemede ek bir kontrast sorunu bulunamadı. Pill/NEW sistemi kural olarak değişmedi; NEW-rozeti "kimin gösterildiği" takibi tek-seferlik render Set'inden, sayfalar artık mount/unmount olduğu için kalıcı ref-Set'e taşındı (kural aynı, mekanizma paginasyona uyarlandı).
+
+### Görev 2 — `learn/quiz.tsx`
+
+`components/QuizScreen.tsx` port edildi. **Kritik düzeltme:** o component'in `COMPREHENSION_QUESTIONS`'ı, bu projenin veri modelinde hiç var olmayan kurgusal bir "Sara" hikâyesi hakkında sabit sorular içeriyordu — birebir taşınsaydı HER oturumda, okunan gerçek hikâyeden bağımsız olarak sahte bir hikâye hakkında soru sorulmuş olurdu. Bunun yerine `data/mock.ts#buildComprehensionQuestions` yazıldı: doğru cevap her zaman GEÇERLİ oturumun gerçek paragraflarından birebir bir cümle, yanlış şıklar başka gerçek üretilmiş hikâyelerden (`THEME_STORIES`) birebir cümleler — hiçbir şey uydurulmadı, ve soru artık gerçekten "bu hikâyeyi okudun mu?" test ediyor. Kelime sorularının ipucu sistemi: küçük bir el yazımı `WORD_QUIZ_BANK` (yaygın tema/galeri kelimeleri için) korundu, ama onun dışındaki JENERİK tek-tip fallback ipucu, her kelimenin KENDİ gerçek örnek cümlesinden (kelime gizlenerek) üretilen özel bir ipucuyla değiştirildi — "ne fazla ele veren ne jenerik" kuralı, bankada olmayan yüzlerce olası kelime için de karşılanmış oldu. HTML'de olup component'te olmayan intro ekranı eklendi. Kademeli sonuç ekranı, XP, pill dönüşü, düşük skorda `/learn/story`'ye dönüş — spesifikasyonla birebir.
+
+### Görev 3 — `learn/summary.tsx`
+
+`components/SessionSummaryScreen.tsx` port edildi, gerçek-veri kuralları uygulandı:
+
+- **Seri banner'ı KALDIRILDI** (görev talimatı gereği) — uygulamada hiç gerçek seri/aktivite takibi yok (1A raporu WL-001). Sabit sahte "N günlük seri" göstermek, denetimin tam da eleştirdiği dummy-metrik sorununu tekrar üretirdi. 1B'nin kalıcılık işiyle birlikte gerçek veriyle geri eklenmesi öneriliyor.
+- İkincil CTA ("Bu Kelimelerin Uzmanı Olmak İstiyorum"): 1A raporu §5 kontrol edildi — PostStoryFlow'un pratik-hub'ı hâlâ hiçbir route'tan erişilemiyor (doğrulandı). Ölü link bırakmak yerine pasif/"Yakında" rozetli, uygulamanın var olan `showSoon()` tarzı Alert'iyle işaretlendi.
+- Toplam XP: quiz'in kademeli sonuç ekranından (`xp = doğru sayısı × kademe çarpanı`) route param'ıyla taşınıyor; `learn/flashcards.tsx`'e de (tasarımına dokunulmadan, sadece parametre ekleyip iletecek şekilde) uğratılıp son `learn/summary` ziyaretinde de doğru kalması sağlandı.
+- Yeni Kelime / Toplam Kelime / Quiz Skoru: gerçek oturum verisinden (storyCount kırmızı-tier sayısı, `recentWords.length`, mevcut correct/total param'ları).
+- Layout: tek `ScrollView`, `justify-content:center` + `margin-top:auto` kombinasyonu hiçbir yerde kullanılmadı.
+
+**Route zinciri/parametre sözleşmesi üzerindeki karar:** `/learn/summary` hâlâ 1A'dan beri olduğu gibi İKİ kez ziyaret ediliyor (quiz sonrası checkpoint + kartlar sonrası final) — bu talimatın "route zinciri değişmeyecek" kuralına birebir uyar. Yeni v6 tasarımı HER İKİ ziyarete de uygulandı; `fromCards` bayrağı artık hangi başlık/CTA setinin gösterileceğini seçiyor (checkpoint'te tek "Kelime Kartlarına Geç" CTA'sı, finalde tam 3'lü CTA satırı) — çünkü quiz'in kendi yeni sonuç ekranı zaten "quiz'i bitirdin" kutlama anını üstleniyor, checkpoint ziyaretinin bunu tekrarlamasına gerek yok. Parametre sözleşmesine sadece EKLEME yapıldı (`xp`), mevcut hiçbir param adı değişmedi/kaldırılmadı.
+
+### Değiştirilen dosyalar (1A.2)
+
+| Dosya | Değişiklik |
+| --- | --- |
+| `app/learn/story.tsx` | Tam yeniden yazım — 12 sayfa/3 bölüm okuma deneyimi |
+| `app/learn/quiz.tsx` | Tam yeniden yazım — dinamik soru, kademeli sonuç ekranı |
+| `app/learn/summary.tsx` | Tam yeniden yazım — v6 özet tasarımı, gerçek veri |
+| `app/learn/flashcards.tsx` | Minimal: `xp` param'ını okuyup `learn/summary`'ye iletiyor (tasarımına dokunulmadı) |
+| `data/mock.ts` | `buildComprehensionQuestions()` eklendi |
+
+### Test sonuçları (1A.2)
+
+Baseline (bu görevin başında, 1A'nın bıraktığı temiz durum): `npx tsc --noEmit` → 0 hata.
+Final: `npx tsc --noEmit` ve `npx tsc -p tsconfig.json --noEmit` → ikisi de 0 hata. Yeni paket eklenmedi.
+
+Üç giriş noktasının zinciri yeniden statik olarak doğrulandı (route route):
+- `words-entry.tsx` / `images-info.tsx` / `scene-transition.tsx` → `/learn/story` (1A'dan değişmedi, doğrulandı) → `/learn/quiz` → (başarı) `/learn/summary` → `/learn/flashcards` → `/learn/summary` → `/home`, veya (düşük skor) → `/learn/story`'ye geri.
+- `scene/[id].tsx` → `/story-loading` → `/learn/story` (1A'dan değişmedi, doğrulandı).
+
+**Cihazda doğrulanmalı** (bu ortamda simülatör/cihaz çalıştırılamadı): üç ekranın tamamının görsel sonucu; bölüm numarası dairelerindeki kontrast; marquee animasyonu; confetti/rozet/streak-badge animasyon zamanlamaları; `learn/summary`'nin iki farklı ziyaretteki (checkpoint/final) görünümü.
+
+### 1B'nin dikkat etmesi gereken ek noktalar
+
+- Seri banner'ının gerçek veriyle geri eklenmesi, 1B'nin kalıcılık/local-first kullanıcı modeli işine bağlı.
+- İkincil "pratik hub" CTA'sı hâlâ pasif/"Yakında" — 1B veya sonraki bir aşama PostStoryFlow'un oyun modlarını (WordMatch/FillBlank/MemoryGame/SpeedRound) gerçek bir route'a bağlarsa bu CTA aktifleştirilebilir.
+- `learn/quiz.tsx`'in kelime ipuçları hâlâ mock/generatif (gerçek sözlük API'si yok, kural gereği eklenmedi).
