@@ -176,7 +176,7 @@ Bu üç ekranın kodu SIFIRDAN yazılmadı; mevcut, çalışan kod PORT edildi (
 `components/SessionSummaryScreen.tsx` port edildi, gerçek-veri kuralları uygulandı:
 
 - **Seri banner'ı KALDIRILDI** (görev talimatı gereği) — uygulamada hiç gerçek seri/aktivite takibi yok (1A raporu WL-001). Sabit sahte "N günlük seri" göstermek, denetimin tam da eleştirdiği dummy-metrik sorununu tekrar üretirdi. 1B'nin kalıcılık işiyle birlikte gerçek veriyle geri eklenmesi öneriliyor.
-- İkincil CTA ("Bu Kelimelerin Uzmanı Olmak İstiyorum"): 1A raporu §5 kontrol edildi — PostStoryFlow'un pratik-hub'ı hâlâ hiçbir route'tan erişilemiyor (doğrulandı). Ölü link bırakmak yerine pasif/"Yakında" rozetli, uygulamanın var olan `showSoon()` tarzı Alert'iyle işaretlendi.
+- İkincil CTA ("Bu Kelimelerin Uzmanı Olmak İstiyorum"): 1A raporu §5 kontrol edildi — PostStoryFlow'un pratik-hub'ı o an hiçbir route'tan erişilemiyordu (doğrulandı). Ölü link bırakmak yerine pasif/"Yakında" rozetli, uygulamanın var olan `showSoon()` tarzı Alert'iyle işaretlendi. **Güncelleme:** bu CTA aynı 1A.2 fazı içinde bir sonraki talep üzerine aktifleştirildi — ayrıntı için aşağıdaki "Ek: Pratik Hub Aktifleştirme" bölümüne bakın.
 - Toplam XP: quiz'in kademeli sonuç ekranından (`xp = doğru sayısı × kademe çarpanı`) route param'ıyla taşınıyor; `learn/flashcards.tsx`'e de (tasarımına dokunulmadan, sadece parametre ekleyip iletecek şekilde) uğratılıp son `learn/summary` ziyaretinde de doğru kalması sağlandı.
 - Yeni Kelime / Toplam Kelime / Quiz Skoru: gerçek oturum verisinden (storyCount kırmızı-tier sayısı, `recentWords.length`, mevcut correct/total param'ları).
 - Layout: tek `ScrollView`, `justify-content:center` + `margin-top:auto` kombinasyonu hiçbir yerde kullanılmadı.
@@ -207,5 +207,28 @@ Final: `npx tsc --noEmit` ve `npx tsc -p tsconfig.json --noEmit` → ikisi de 0 
 ### 1B'nin dikkat etmesi gereken ek noktalar
 
 - Seri banner'ının gerçek veriyle geri eklenmesi, 1B'nin kalıcılık/local-first kullanıcı modeli işine bağlı.
-- İkincil "pratik hub" CTA'sı hâlâ pasif/"Yakında" — 1B veya sonraki bir aşama PostStoryFlow'un oyun modlarını (WordMatch/FillBlank/MemoryGame/SpeedRound) gerçek bir route'a bağlarsa bu CTA aktifleştirilebilir.
 - `learn/quiz.tsx`'in kelime ipuçları hâlâ mock/generatif (gerçek sözlük API'si yok, kural gereği eklenmedi).
+
+### Ek: Pratik Hub Aktifleştirme (aynı 1A.2 fazı içinde, sonradan talep edildi)
+
+`learn/summary.tsx`'in ikincil CTA'sı ("Bu Kelimelerin Uzmanı Olmak İstiyorum") aktifleştirildi. 1A raporu §5'te bahsedilen pratik-hub bulundu ve incelendi:
+
+- `components/PracticeMethodsScreen.tsx` — yöntem seçim ekranı (Kelime Kartları/Kelime Eşleştir/Cümle Tamamlama/Hafıza Oyunu/Hızlı Tekrar).
+- `components/WordMatchPractice.tsx`, `FillBlankPractice.tsx`, `MemoryGamePractice.tsx`, `SpeedRoundPractice.tsx` — dört pratik oyunu. Hepsi incelendi: tamamı local/mock veriyle (kelime sözlüğü, hazır cümle bankaları + fallback) çalışan, gerçek client-side mantığa sahip, AI veya network GEREKTİRMEYEN, genuine çalışan mini-oyunlar. **Çalışmayan/AI gerektiren aksiyon bulunamadı** — 5 yöntemin de "Yakında" işaretlenmesi gerekmedi.
+- `components/FlashcardsPractice.tsx` zaten aktifti (`app/flashcards-practice.tsx` üzerinden, Kelime Kartları hub'ından); pratik-hub'ın "Kelime Kartlarıyla Pekiştir" seçeneği bu MEVCUT route'a bağlandı, tekrar yazılmadı.
+
+**Route yapısı:**
+
+| Route | Konum | Tab bar |
+| --- | --- | --- |
+| `app/(tabs)/explore/practice-methods.tsx` (yeni) | Keşfet tab'ının kendi Stack hiyerarşisi (`word-cards-hub`/`word-dna` ile aynı seviye) | Görünür, Keşfet aktif |
+| `app/flashcards-practice.tsx` (mevcut, dokunulmadı) | Kök stack | Yok (immersive) |
+| `app/word-match-practice.tsx`, `fill-blank-practice.tsx`, `memory-game-practice.tsx`, `speed-round-practice.tsx` (yeni) | Kök stack, `flashcards-practice.tsx` ile birebir aynı desen | Yok (immersive) |
+
+**Parametre sözleşmesi:** 1A'nın `flashcards-practice.tsx`'te kurduğu `{source:'raw', value:'kelime1,kelime2,...'}` deseni aynen kullanıldı; `data/mock.ts#parseRawWordList` ortak küçük bir yardımcı olarak eklendi (tek satırlık mantığın 5 route'ta tekrarlanmasını önlemek için). `learn/summary.tsx`'in CTA'sı oturumun `targetWords` + `title`'ını bu sözleşmeyle hub'a taşıyor.
+
+**Navigasyon riski ve çözümü:** `learn/summary.tsx` kök-stack'te, `practice-methods.tsx` ise tab-nested — bu sınırı `router.push` ile geçmek, 1A.2'de `word-dna.tsx` için çözülen AYNI riski taşıyor: `(tabs)`'ı yeniden odaklamak, üstündeki tüm `learn/*` stack'ini düşürebilir. Bu yüzden hub'ın kendi kapatma butonu `router.back()`'e güvenmiyor; açıkça `clearSession() + dismissAll() + replace('/home')` yapıyor — görevin izin verdiği "özet ekranına veya ana sayfaya" seçeneklerinden ana sayfa. Hub içinden bir oyuna girip geri/kapat/tamamla ise güvenle hub'a dönüyor (aynı stack dalı içinde normal push/back — flashcards-practice.tsx'in zaten kullandığı, önceden var olan desenle birebir aynı). Döngü veya dead-end doğrulanmadı.
+
+`story-reader.tsx` (Redirect) dokunulmadı; hub'a ondan geçilmiyor, doğrudan gidiliyor.
+
+`npx tsc --noEmit`: 0 hata. **Cihazda doğrulanmalı:** hub'ın Keşfet tab'ı içinde tab bar'la birlikte görünümü; 5 pratik ekranının tamamının görsel/etkileşim sonucu.
