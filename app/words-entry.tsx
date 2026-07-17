@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,12 +10,17 @@ import {
 } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '@/components/GradientBackground';
+import { StoryGenerationCooldown } from '@/components/StoryGenerationCooldown';
+import { StoryReader } from '@/components/StoryReader';
+import { PostStoryFlow } from '@/components/PostStoryFlow';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
-import { buildSessionFromWords, LEVEL_NAMES, makeWord } from '@/data/mock';
+import { buildSessionFromWords, buildStoryReaderData, LEVEL_NAMES, makeWord, type LearnSession } from '@/data/mock';
+
+const COOLDOWN_MOCK_READY_DELAY = 9000;
 
 const MIN_WORDS = 3;
 const MAX_WORDS = 10;
@@ -33,20 +39,49 @@ const REPEAT_OPTIONS = [
   { id: 'triple', title: '3 Kere', subtitle: 'Yoğun' },
 ];
 
+type OverlayStage =
+  | { kind: 'cooldown'; session: LearnSession }
+  | { kind: 'reader'; session: LearnSession }
+  | { kind: 'postStory'; session: LearnSession }
+  | null;
+
 export default function WordsEntryScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { startSession } = useProgress();
+  const { prefillWords } = useLocalSearchParams<{ prefillWords?: string }>();
 
   const [words, setWords] = useState<string[]>([]);
   const [input, setInput] = useState('');
   const [theme, setTheme] = useState(THEMES[0].id);
   const [repeatCount, setRepeatCount] = useState('once');
   const [notice, setNotice] = useState('');
+  const [overlay, setOverlay] = useState<OverlayStage>(null);
+  const [cooldownReady, setCooldownReady] = useState(false);
+  const readyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const canCreate = words.length >= MIN_WORDS;
   const reachedMax = words.length >= MAX_WORDS;
+
+  useEffect(() => {
+    return () => {
+      if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!prefillWords) return;
+    const incoming: string[] = [];
+    prefillWords.split(',').forEach((raw) => {
+      const word = raw.trim().toLowerCase();
+      if (word && !incoming.includes(word) && incoming.length < MAX_WORDS) {
+        incoming.push(word);
+      }
+    });
+    if (incoming.length) setWords(incoming);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const addWord = (raw: string) => {
     const nextWord = raw.trim().toLowerCase();
@@ -79,7 +114,25 @@ export default function WordsEntryScreen() {
     const wordObjs = words.map((word) => makeWord(word));
     const session = buildSessionFromWords(wordObjs, LEVEL_NAMES[0]);
     startSession(session);
-    router.push('/story-loading');
+    if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
+    setCooldownReady(false);
+    setOverlay({ kind: 'cooldown', session });
+    readyTimerRef.current = setTimeout(() => setCooldownReady(true), COOLDOWN_MOCK_READY_DELAY);
+  };
+
+  const proceedFromCooldown = () => {
+    if (!overlay) return;
+    setCooldownReady(false);
+    setOverlay({ kind: 'reader', session: overlay.session });
+  };
+
+  const finishReading = () => {
+    if (!overlay) return;
+    setOverlay({ kind: 'postStory', session: overlay.session });
+  };
+
+  const closeReader = () => {
+    setOverlay(null);
   };
 
   return (
@@ -88,6 +141,8 @@ export default function WordsEntryScreen() {
         style={styles.scroller}
         contentContainerStyle={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 158 }]}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!overlay}
+        pointerEvents={overlay ? 'none' : 'auto'}
       >
         <View style={styles.topBar}>
           <Pressable onPress={() => router.replace('/home')} style={[styles.circleButton, styles.backButton]}>
@@ -193,6 +248,45 @@ export default function WordsEntryScreen() {
           </LinearGradient>
         </Pressable>
       </View>
+
+      <Modal visible={!!overlay} animationType="none" transparent onRequestClose={() => {}} statusBarTranslucent>
+        {overlay?.kind === 'cooldown' ? (
+          <StoryGenerationCooldown
+            targetWords={overlay.session.targetWords.map((w) => ({ word: w.en, meaning: w.tr }))}
+            storyPreview={overlay.session.paragraphs[0]?.en ?? ''}
+            isReady={cooldownReady}
+            onProceed={proceedFromCooldown}
+          />
+        ) : null}
+
+        {overlay?.kind === 'reader' ? (
+          <StoryReader
+            {...buildStoryReaderData(overlay.session.title, overlay.session.targetWords, overlay.session.paragraphs)}
+            onFinish={finishReading}
+            onBack={closeReader}
+          />
+        ) : null}
+
+        {overlay?.kind === 'postStory' ? (
+          <PostStoryFlow
+            storyTitle={overlay.session.title}
+            targetWords={buildStoryReaderData(overlay.session.title, overlay.session.targetWords, overlay.session.paragraphs).targetWords}
+            onExit={() => {
+              setOverlay(null);
+              router.replace('/home');
+            }}
+            onBackToStory={() => setOverlay({ kind: 'reader', session: overlay.session })}
+            onDifferentTheme={() => {
+              setOverlay(null);
+              router.push('/images-gallery');
+            }}
+            onNewStorySameWords={(newWords) => {
+              setOverlay(null);
+              router.push({ pathname: '/words-entry', params: { prefillWords: newWords.join(',') } });
+            }}
+          />
+        ) : null}
+      </Modal>
     </GradientBackground>
   );
 }

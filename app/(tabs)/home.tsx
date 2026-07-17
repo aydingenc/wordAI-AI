@@ -321,7 +321,7 @@ export default function HomeScreen() {
             </Text>
             <WordNetwork />
             <Pressable
-              onPress={() => router.push('/worddna/love')}
+              onPress={() => router.push('/word-network')}
               style={[
                 styles.storyBtn,
                 { backgroundColor: 'rgba(255,255,255,0.1)' },

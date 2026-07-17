@@ -114,7 +114,7 @@ export default function FlashcardsScreen() {
               </Text>
             </View>
             <Pressable
-              onPress={() => router.push(`/worddna/${word.en}`)}
+              onPress={() => router.push('/word-network')}
               style={styles.dnaLink}
             >
               <Feather name="activity" size={15} color={colors.accent} />

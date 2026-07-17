@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import {
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -17,8 +18,9 @@ import { GradientBackground } from '@/components/GradientBackground';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { KelimelerFlow } from '@/components/KelimelerFlow';
 import { GorsellerFlow } from '@/components/GorsellerFlow';
-import { TemalarMarquee } from '@/components/TemalarMarquee';
+import { CategoryChipRow } from '@/components/CategoryChipRow';
 import { useColors } from '@/hooks/useColors';
+import { getFeaturedGalleryItem } from '@/data/mock';
 
 // Dark translucent interior so the AI ring reads as a floating neon disc.
 const AI_FILL = 'rgba(11, 7, 19, 0.72)';
@@ -26,11 +28,9 @@ const AI_OUTER_RING = 'rgba(192, 132, 252, 0.55)';
 // Premium glass surface — dark translucent fill + hairline violet border.
 const GLASS_FILL = 'rgba(28, 20, 50, 0.62)';
 const GLASS_BORDER = 'rgba(139, 92, 246, 0.30)';
-// Target-word colors — shared with the flow cards: green (nouns/feelings),
-// orange (verbs), blue (places).
+// Target-word colors — shared with the flow cards.
 const GREEN = '#34D399';
 const ORANGE = '#FB923C';
-const BLUE = '#60A5FA';
 
 function withAlpha(hex: string, alpha: string) {
   return hex + alpha;
@@ -39,6 +39,10 @@ function withAlpha(hex: string, alpha: string) {
 function clamp(v: number, min: number, max: number) {
   return Math.min(max, Math.max(min, v));
 }
+
+// Same gallery item the "Hazır Görseller" screen leads with — keeps this
+// preview and the gallery card's "Özet" fed from one shared data source.
+const FEATURED = getFeaturedGalleryItem();
 
 type St = ReturnType<typeof makeStyles>['st'];
 
@@ -106,7 +110,10 @@ export default function CreateScreen() {
   return (
     <GradientBackground>
       <ScreenHeader />
-      <View style={[st.content, { paddingBottom: insets.bottom + 16 }]}>
+      <ScrollView
+        contentContainerStyle={[st.content, { paddingBottom: insets.bottom + 32 }]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Hero */}
         <View style={st.hero}>
           <View style={[st.eyebrow, { backgroundColor: GLASS_FILL, borderColor: GLASS_BORDER }]}>
@@ -235,22 +242,13 @@ export default function CreateScreen() {
           <View style={[st.dividerLine, { backgroundColor: colors.border }]} />
         </View>
 
-        <Pressable
-          testID="create-themes"
-          onPress={() => {
-            if (Platform.OS !== 'web') {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }
-            router.push('/themes');
-          }}
-          style={({ pressed }) => [
+        <View
+          style={[
             st.themesCard,
             {
               backgroundColor: GLASS_FILL,
               borderColor: GLASS_BORDER,
               shadowColor: colors.primaryGlow,
-              opacity: pressed ? 0.92 : 1,
-              transform: [{ scale: pressed ? 0.99 : 1 }],
             },
           ]}
         >
@@ -273,25 +271,46 @@ export default function CreateScreen() {
               </Text>
               <Text style={[st.ctaSub, { color: colors.accent }]}>Gerçek hayat hikayeleri</Text>
             </View>
-            <View style={[st.ctaChevron, { borderColor: GLASS_BORDER }]}>
+            <Pressable
+              testID="create-gallery-all"
+              onPress={() => {
+                if (Platform.OS !== 'web') {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                router.push('/images-gallery');
+              }}
+              style={[st.ctaChevron, { borderColor: GLASS_BORDER }]}
+            >
               <Feather name="arrow-right" size={18} color={colors.accent} />
-            </View>
+            </Pressable>
           </View>
 
           <View style={[st.storyBlock, { borderColor: colors.border }]}>
             <Text style={[st.storyEn, { color: colors.foreground }]}>
-              With her newly bought <HL st={st} color={GREEN}>book</HL> in hand, she{' '}
-              <HL st={st} color={ORANGE}>walked</HL> from <HL st={st} color={BLUE}>Sahaflar</HL>{' '}
-              toward <HL st={st} color={BLUE}>Gülhane Park</HL>.
+              {FEATURED.preview.before}
+              <HL st={st} color={GREEN}>{FEATURED.preview.wordA}</HL>
+              {FEATURED.preview.middle}
+              <HL st={st} color={ORANGE}>{FEATURED.preview.wordB}</HL>
+              {FEATURED.preview.after}
             </Text>
             <Text style={[st.storyTr, { color: colors.mutedForeground }]}>
-              Elinde yeni aldığı kitap ile Sahaflardan Gülhane Parkı'na doğru yürüyordu.
+              {FEATURED.preview.tr}
             </Text>
           </View>
 
-          <TemalarMarquee />
-        </Pressable>
-      </View>
+          <CategoryChipRow
+            activeId={null}
+            showAll={false}
+            variant="photo"
+            onSelect={(id) => {
+              if (Platform.OS !== 'web') {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }
+              router.push(id ? { pathname: '/images-gallery', params: { category: id } } : '/images-gallery');
+            }}
+          />
+        </View>
+      </ScrollView>
     </GradientBackground>
   );
 }
@@ -314,7 +333,6 @@ function makeStyles(s: number) {
 
   const st = StyleSheet.create({
     content: {
-      flex: 1,
       paddingHorizontal: 18,
       paddingTop: 4,
       gap: 18,

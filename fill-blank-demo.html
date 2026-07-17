@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Cümle Tamamlama — Canlı Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,600&display=swap');
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ width:100%; height:100%; overflow:hidden; background:#050409; }
+  body{ font-family:'Inter',sans-serif; display:flex; justify-content:center; align-items:center; }
+  :root{
+    --violet-400:#a78bfa; --violet-500:#8b5cf6; --violet-600:#7c3aed;
+    --green-fg:#4ade80; --red-fg:#f87171; --text-hi:#f5f3ff; --text-mid:#b9b3d1; --text-low:#6f6a8a;
+  }
+  .device{
+    width:390px; height:844px; position:relative; overflow:hidden;
+    background:radial-gradient(120% 50% at 50% 0%, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0) 55%), #08070d;
+    border-radius:36px; box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    display:flex; flex-direction:column; padding:30px 20px 26px;
+  }
+  .topbar{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .back-btn{ width:36px; height:36px; border-radius:11px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.25); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; }
+  .back-btn svg{ width:16px; height:16px; }
+  .progress-track{ flex:1; height:6px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .progress-fill{ height:100%; background:linear-gradient(90deg, var(--violet-400), var(--violet-500)); border-radius:3px; transition:width 0.4s ease; }
+  .counter{ font-size:12px; font-weight:700; color:var(--text-mid); flex:0 0 auto; }
+
+  .kicker{ font-size:11px; font-weight:800; color:var(--violet-400); letter-spacing:0.03em; margin-bottom:14px; text-align:center; }
+  .sentence-card{
+    border-radius:22px; padding:28px 22px; margin-bottom:26px;
+    background:rgba(139,92,246,0.06); border:1px solid rgba(139,92,246,0.22);
+  }
+  .sentence-text{ font-family:'Fraunces',serif; font-size:19px; line-height:1.65; color:var(--text-hi); text-align:center; }
+  .blank-slot{
+    display:inline-block; min-width:78px; padding:2px 8px; border-bottom:2.5px solid var(--violet-400);
+    color:var(--violet-300,#c4b5fd); font-weight:800; font-family:'Inter',sans-serif; font-size:17px; text-align:center;
+  }
+  .blank-slot.filled.correct{ border-color:var(--green-fg); color:var(--green-fg); }
+  .blank-slot.filled.wrong{ border-color:var(--red-fg); color:var(--red-fg); }
+
+  .word-bank{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:auto; }
+  .bank-tile{
+    padding:13px 20px; border-radius:14px; font-size:15px; font-weight:700;
+    background:rgba(255,255,255,0.03); border:1.5px solid rgba(255,255,255,0.1); color:var(--text-hi);
+    cursor:pointer; transition:all 0.15s ease;
+  }
+  .bank-tile:active{ transform:scale(0.95); }
+  .bank-tile.used{ opacity:0.25; pointer-events:none; }
+
+  .feedback-banner{ margin-top:20px; padding:12px 14px; border-radius:12px; font-size:13px; font-weight:700; display:none; align-items:center; gap:8px; justify-content:center; }
+  .feedback-banner.show{ display:flex; animation:fadeUp 0.3s ease; }
+  .feedback-banner.correct{ background:rgba(34,197,94,0.14); color:#4ade80; }
+  .feedback-banner.wrong{ background:rgba(248,113,113,0.14); color:#f87171; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .next-btn{ margin-top:16px; padding:15px; border-radius:14px; border:none; font-size:14.5px; font-weight:800; color:#fff; background:linear-gradient(135deg, var(--violet-400), var(--violet-600)); box-shadow:0 12px 26px -10px rgba(124,58,237,0.8); cursor:pointer; display:none; }
+  .next-btn.show{ display:block; }
+
+  #complete{ display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; flex:1; }
+  #complete.show{ display:flex; }
+  .complete-badge{ width:76px; height:76px; border-radius:24px; margin-bottom:16px; background:linear-gradient(155deg, var(--violet-400), var(--violet-600)); display:flex; align-items:center; justify-content:center; box-shadow:0 16px 34px -10px rgba(124,58,237,0.85); animation:popIn 0.5s cubic-bezier(.34,1.56,.64,1); }
+  .complete-badge svg{ width:34px; height:34px; }
+  @keyframes popIn{ 0%{ transform:scale(0); opacity:0;} 60%{ transform:scale(1.15);} 100%{ transform:scale(1); opacity:1;} }
+  .complete-title{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--text-hi); margin-bottom:10px; }
+  .complete-num{ font-size:36px; font-weight:900; color:#4ade80; margin-bottom:6px; }
+  .complete-cta{ width:100%; max-width:280px; padding:15px; border-radius:15px; border:none; font-size:14.5px; font-weight:800; color:#fff; cursor:pointer; background:linear-gradient(135deg, var(--violet-400), var(--violet-600)); box-shadow:0 14px 30px -10px rgba(124,58,237,0.8); margin-top:26px; }
+
+  .confetti-layer{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:50; }
+  .confetti-piece{ position:absolute; top:-10px; width:7px; height:11px; opacity:0.9; animation:confettiFall linear forwards; }
+  @keyframes confettiFall{ 0%{ transform:translateY(0) rotate(0deg); opacity:1; } 100%{ transform:translateY(760px) rotate(540deg); opacity:0; } }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topbar" id="topbar">
+    <div class="back-btn" onclick="alert('Geri dönülecek')"><svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="counter" id="counter">1/5</div>
+  </div>
+
+  <div id="gameArea">
+    <div class="kicker">CÜMLEYİ TAMAMLA</div>
+    <div class="sentence-card">
+      <div class="sentence-text" id="sentenceText"></div>
+    </div>
+    <div class="word-bank" id="wordBank"></div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="next-btn" id="nextBtn">Sonraki Cümle →</button>
+  </div>
+
+  <div id="complete">
+    <div class="complete-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.6L21 9.3l-5 4.5L17.4 21 12 17.4 6.6 21 8 13.8l-5-4.5 6.4-0.7z" fill="white"/></svg></div>
+    <div class="complete-title">Tüm Cümleler Tamamlandı!</div>
+    <div class="complete-num" id="scoreNum">5/5</div>
+    <div style="font-size:12.5px; color:var(--text-low);">doğru cevap</div>
+    <button class="complete-cta" onclick="alert('Devam edilecek')">Harika, Devam Et</button>
+  </div>
+
+  <div class="confetti-layer" id="confettiLayer"></div>
+</div>
+
+<script>
+var items = [
+  {sentence:'Every step felt like the start of a new ___.', answer:'adventure', options:['adventure','fear','tiredness']},
+  {sentence:'It was going to be a long ___.', answer:'journey', options:['journey','hotel','ticket']},
+  {sentence:'Carrying her ___ became harder every hour.', answer:'luggage', options:['luggage','document','map']},
+  {sentence:'She had to show her ___ at the counter.', answer:'passport', options:['passport','key','card']},
+  {sentence:'He checked the ___ number one more time.', answer:'gate', options:['gate','lounge','carousel']}
+];
+
+var current = 0, score = 0, answered = false;
+
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+
+function renderItem(){
+  answered = false;
+  var it = items[current];
+  document.getElementById('progressFill').style.width = (current/items.length*100)+'%';
+  document.getElementById('counter').textContent = (current+1)+'/'+items.length;
+  var parts = it.sentence.split('___');
+  document.getElementById('sentenceText').innerHTML = parts[0] + '<span class="blank-slot" id="blankSlot">?</span>' + parts[1];
+  var bank = document.getElementById('wordBank');
+  bank.innerHTML = shuffle(it.options).map(function(opt){
+    return '<div class="bank-tile" data-word="'+opt+'">'+opt+'</div>';
+  }).join('');
+  bank.querySelectorAll('.bank-tile').forEach(function(el){
+    el.addEventListener('click', function(){ pickWord(el, el.dataset.word); });
+  });
+  var fb = document.getElementById('feedbackBanner');
+  fb.className = 'feedback-banner'; fb.innerHTML = '';
+  document.getElementById('nextBtn').classList.remove('show');
+}
+renderItem();
+
+function pickWord(el, word){
+  if(answered) return;
+  answered = true;
+  var it = items[current];
+  var slot = document.getElementById('blankSlot');
+  slot.textContent = word;
+  slot.classList.add('filled');
+  var fb = document.getElementById('feedbackBanner');
+  if(word === it.answer){
+    slot.classList.add('correct');
+    score++;
+    fb.className = 'feedback-banner correct show';
+    fb.innerHTML = '✓ Doğru!';
+    burstConfettiSmall();
+  } else {
+    slot.classList.add('wrong');
+    fb.className = 'feedback-banner wrong show';
+    fb.innerHTML = '✗ Doğrusu: "'+it.answer+'"';
+  }
+  document.querySelectorAll('.bank-tile').forEach(function(t){ t.classList.add('used'); });
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+document.getElementById('nextBtn').addEventListener('click', function(){
+  current++;
+  if(current >= items.length){
+    document.getElementById('progressFill').style.width = '100%';
+    showComplete();
+  } else {
+    renderItem();
+  }
+});
+
+function burstConfettiSmall(){
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#8b5cf6','#4ade80','#fbbf24'];
+  for(var i=0;i<12;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (20 + Math.random()*60) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1 + Math.random()*0.6) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 1800); })(p);
+  }
+}
+
+function showComplete(){
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('complete').classList.add('show');
+  document.getElementById('scoreNum').textContent = score+'/'+items.length;
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#8b5cf6','#4ade80','#fbbf24','#60a5fa','#f87171'];
+  for(var i=0;i<28;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (5 + Math.random()*90) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1.3 + Math.random()*0.9) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 2400); })(p);
+  }
+}
+</script>
+</body>
+</html>
