@@ -705,3 +705,56 @@ Yok. Beş görev de (Görev 1-3 + Görev 4-5) talimatların verdiği net kararla
 ### Sonuç
 
 5 commit (`610b17e`, `70925ce`, `027a2a8`, `d59ea7c`, `8bdd17c`), 8 dosya değişti (`data/mock.ts`, `app/(tabs)/stories.tsx`, `app/story/[id].tsx`, `app/learn/story.tsx`, `components/TextMarquee.tsx`, `components/StoryGenerationCooldown.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir metin/renk/layout değişmedi. Push/PR yapılmadı. `audit-phase-1e` branch'i lokal kaldı.
+
+## Aşama 1F
+
+Kapsam: `PROMPT_1F.md` — kullanıcının ekran görüntüsüyle doğruladığı yeni, ayrı bir yönlendirme hatası: Hikayelerim'deki "Yeni Hikayeler Keşfet" / "Hazır Tema Hikayeler" kartları belirli bir sahneyi (ör. "Dağ Gölü") önizliyor ama dokununca kullanıcıyı o sahneye değil, temanın genel sahne listesine (`/theme/{themeId}`) götürüyordu. `audit-phase-1e` (HEAD `d5d7cc4`) üzerinden `audit-phase-1f` branch'i açılarak devam edildi.
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1e
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        PROMPT_1F.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e-v2.zip
+        wordloop-1e.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+d5d7cc4 Asama 1E rapor guncellemesi: Gorev 4 ve Gorev 5 alt bolumleri eklendi
+8bdd17c Gorev 5: Kesfet kartlarindaki etiket satirina sabit minHeight, kart boylari artik hizali
+d59ea7c Gorev 4: Hikaye yazilma ekranindaki daktilo kutusu artik tasan metni kaydiriyor
+```
+
+`audit-phase-1e` temiz, `d5d7cc4` HEAD'de doğrulandı. `git checkout -b audit-phase-1f` ile buradan dallandı.
+
+### Görev — Keşfet kartları artık önizlenen sahneye doğrudan gidiyor
+
+**Doğrulama:** `THEME_STORIES`'in (`data/mock.ts`, `THEMES.flatMap(...)`) her `Story`'yi belirli bir temanın belirli bir sahnesinden türettiği, ama `app/(tabs)/stories.tsx`'teki `openTheme(story)`'nin yalnızca `router.push('/theme/${story.themeId}')` çağırdığı (sahne bilgisini hiç kullanmadığı) doğrulandı — kart önizlemesiyle (sahnenin gerçek başlık/metni) açılan yer (temanın genel sahne listesi) eşleşmiyordu. `app/scene/[id].tsx`'in zaten `getSceneById(id)` ile doğrudan bir sahneyi açtığı ve kilit kontrolü yapmadığı (deep-link zaten var olan, `theme/[id].tsx`'teki kilit ikonlarının yalnızca liste görünümünde uyarı amaçlı olduğu) doğrulandı — yani doğrudan bağlamak ekstra bir erişim sorunu yaratmıyor.
+
+**Düzeltme:**
+- `data/mock.ts`: `Story` interface'ine opsiyonel `sceneId?: string;` eklendi; `THEME_STORIES` üretilirken her story'ye `sceneId: scene.id` eklendi.
+- `app/(tabs)/stories.tsx`: `openTheme(story)`, `story.sceneId` varsa `router.push('/scene/${story.sceneId}')`'e gidiyor; `sceneId` yoksa (güvenlik ağı) eskisi gibi `router.push('/theme/${story.themeId}')`'e düşüyor. Fonksiyon adı ve iki çağıran yeri (Hikayelerim'deki "Yeni Hikayeler Keşfet" yatay listesi + "Hazır Tema Hikayeler" grid'i) aynı kaldı.
+- `app/theme/[id].tsx` (temanın kendi sahne-listesi hub ekranı) hiç değiştirilmedi — grep ile teyit edildi, `openTheme` dışında `/theme/` route'una giden başka bir yer (ör. temaya "+" akışından girme) bu değişiklikten etkilenmiyor.
+
+Değişen dosyalar: `data/mock.ts`, `app/(tabs)/stories.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. Hiçbir metin/renk/layout değişmedi (saf yönlendirme/veri düzeltmesi). **Cihazda doğrulanmalı:** Hikayelerim → "Yeni Hikayeler Keşfet" veya "Hazır Tema Hikayeler" sekmesindeki bir karta dokununca artık doğrudan önizlenen sahnenin (`/scene/{id}`) açıldığı, temanın sahne listesine düşülmediği; temaya başka bir yoldan (ör. "+" akışından) girildiğinde sahne listesi ekranının hâlâ normal çalıştığı — bu ortamda `expo start` çalışmadığından görsel doğrulama yapılamadı.
+
+### Yeni blocker / ürün kararı
+
+Yok.
+
+### Sonuç
+
+1 commit (`3317f81`), 2 dosya değişti (`data/mock.ts`, `app/(tabs)/stories.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1f` branch'i lokal kaldı.
