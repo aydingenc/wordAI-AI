@@ -1053,6 +1053,11 @@ export const GALLERY_ITEMS_ROUND_ROBIN: GalleryItem[] = CARD_LEVELS.map((_, roun
   (round) => GALLERY_ITEMS.filter((_, idx) => idx % CARD_LEVELS.length === round),
 );
 
+/** One representative item per category (its first/A2-level card) — powers Hikayelerim's "Yeni Hikayeler Keşfet" cards. */
+export const DISCOVER_GALLERY_ITEMS: GalleryItem[] = GALLERY_CATEGORIES.map(
+  (cat) => GALLERY_ITEMS.find((item) => item.categoryId === cat.id)!,
+);
+
 export function sessionFromGalleryItem(item: GalleryItem): LearnSession {
   const words = item.targetWords.map((w) => makeWord(w));
   return {

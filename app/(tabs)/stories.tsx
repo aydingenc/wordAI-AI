@@ -10,7 +10,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { BookIcon, SparkleIcon } from '@/components/WordStatusIcons';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
-import { buildSessionFromStory, Story, THEME_STORIES } from '@/data/mock';
+import { buildSessionFromStory, DISCOVER_GALLERY_ITEMS, GalleryItem, sessionFromGalleryItem, Story } from '@/data/mock';
 
 type TabKey = 'all' | 'own' | 'theme';
 
@@ -40,6 +40,24 @@ const DISCOVER_GRADIENTS: [string, string, string][] = [
 function themeLabelFor(story: Story): string {
   if (story.themeName) return `${story.themeName} / ${story.themeNameEn ?? story.themeName}`;
   return 'Kendi Kelimelerim';
+}
+
+// View-only adaptor: DiscoverCard renders Story-shaped data, but the real 16
+// categories live as GalleryItem (images-gallery.tsx's own system). Neither
+// `image` nor `paragraphs` is used by DiscoverCard (it only reads `gradient`
+// and text fields), so this is safe to leave sparse.
+function discoverStoryFromGalleryItem(item: GalleryItem): Story {
+  return {
+    id: item.id,
+    title: item.title,
+    level: item.level,
+    levelCode: item.level,
+    category: 'theme',
+    themeName: item.categoryName,
+    themeNameEn: item.categoryName,
+    paragraphs: [],
+    targetWords: item.targetWords,
+  };
 }
 
 export default function StoriesScreen() {
@@ -76,6 +94,10 @@ export default function StoriesScreen() {
       return;
     }
     if (story.themeId) router.push(`/theme/${story.themeId}`);
+  };
+  const openGalleryItem = (item: GalleryItem) => {
+    startSession(sessionFromGalleryItem(item));
+    router.push('/learn/story');
   };
 
   return (
@@ -194,13 +216,13 @@ export default function StoriesScreen() {
         {showDiscover ? (
           activeTab === 'theme' ? (
             <View style={styles.discoverGrid}>
-              {THEME_STORIES.map((story, i) => (
+              {DISCOVER_GALLERY_ITEMS.map((item, i) => (
                 <DiscoverCard
-                  key={story.id}
-                  story={story}
+                  key={item.id}
+                  story={discoverStoryFromGalleryItem(item)}
                   gradient={DISCOVER_GRADIENTS[i % DISCOVER_GRADIENTS.length]}
                   style={styles.discoverGridItem}
-                  onPress={() => openTheme(story)}
+                  onPress={() => openGalleryItem(item)}
                 />
               ))}
             </View>
@@ -217,13 +239,13 @@ export default function StoriesScreen() {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.discoverScroll}
               >
-                {THEME_STORIES.map((story, i) => (
+                {DISCOVER_GALLERY_ITEMS.map((item, i) => (
                   <DiscoverCard
-                    key={story.id}
-                    story={story}
+                    key={item.id}
+                    story={discoverStoryFromGalleryItem(item)}
                     gradient={DISCOVER_GRADIENTS[i % DISCOVER_GRADIENTS.length]}
                     style={styles.discoverScrollItem}
-                    onPress={() => openTheme(story)}
+                    onPress={() => openGalleryItem(item)}
                   />
                 ))}
               </ScrollView>
