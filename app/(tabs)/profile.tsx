@@ -15,17 +15,43 @@ import { GlowCard } from '@/components/GlowCard';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
 
+// Words-per-milestone used for the "next milestone" progress card below —
+// a real, derivable number (recentWords.length), not a fabricated level/XP system.
+const WORDS_PER_MILESTONE = 25;
+
 export default function ProfileScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { recentWords, customStories } = useProgress();
+  const { recentWords, customStories, streak, profileName, resetAllData } = useProgress();
 
   const stats = [
     { icon: 'book' as const, value: `${recentWords.length}`, label: 'Kelime' },
     { icon: 'feather' as const, value: `${customStories.length}`, label: 'Hikaye' },
-    { icon: 'zap' as const, value: '7', label: 'Gün seri' },
+    { icon: 'zap' as const, value: `${streak}`, label: 'Gün seri' },
   ];
+
+  const progressInStep = recentWords.length % WORDS_PER_MILESTONE;
+  const milestonePct = Math.round((progressInStep / WORDS_PER_MILESTONE) * 100);
+  const wordsToMilestone = WORDS_PER_MILESTONE - progressInStep;
+
+  const handleResetData = () => {
+    Alert.alert(
+      'Verileri Sıfırla',
+      'Bu cihazda kayıtlı tüm ilerleme (öğrenilen kelimeler, hikayeler, seviyeler) silinecek. Bu işlem geri alınamaz.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Sıfırla',
+          style: 'destructive',
+          onPress: async () => {
+            await resetAllData();
+            router.replace('/');
+          },
+        },
+      ],
+    );
+  };
 
   const menu: {
     key: string;
@@ -54,9 +80,11 @@ export default function ProfileScreen() {
           <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
             <Feather name="user" size={34} color={colors.primaryForeground} />
           </View>
-          <Text style={[styles.name, { color: colors.foreground }]}>Öğrenci</Text>
+          <Text style={[styles.name, { color: colors.foreground }]}>
+            {profileName || 'Misafir Kullanıcı'}
+          </Text>
           <Text style={[styles.email, { color: colors.mutedForeground }]}>
-            ogrenci@wordloop.app
+            Yerel profil · bu cihazda saklanır
           </Text>
         </View>
 
@@ -79,24 +107,24 @@ export default function ProfileScreen() {
           ))}
         </GlowCard>
 
-        {/* Progress toward next level */}
+        {/* Progress toward next milestone — real recentWords.length, no fabricated level/XP */}
         <GlowCard style={styles.progressCard}>
           <View style={styles.progressHead}>
             <Text style={[styles.progressTitle, { color: colors.foreground }]}>
-              Sonraki seviyeye
+              Sonraki kilometre taşına
             </Text>
-            <Text style={[styles.progressPct, { color: colors.accent }]}>%68</Text>
+            <Text style={[styles.progressPct, { color: colors.accent }]}>%{milestonePct}</Text>
           </View>
           <View style={[styles.track, { backgroundColor: colors.secondary }]}>
             <View
               style={[
                 styles.fill,
-                { backgroundColor: colors.primary, width: '68%' },
+                { backgroundColor: colors.primary, width: `${milestonePct}%` },
               ]}
             />
           </View>
           <Text style={[styles.progressHint, { color: colors.mutedForeground }]}>
-            32 kelime daha, Lv 5'e ulaş!
+            {wordsToMilestone} kelime daha öğren, yeni bir kilometre taşına ulaş!
           </Text>
         </GlowCard>
 
@@ -125,15 +153,18 @@ export default function ProfileScreen() {
         </View>
 
         <Pressable
-          onPress={() => router.replace('/')}
+          onPress={handleResetData}
+          accessibilityRole="button"
+          accessibilityLabel="Verileri sıfırla"
+          accessibilityHint="Bu cihazdaki tüm ilerlemeyi kalıcı olarak siler"
           style={({ pressed }) => [
             styles.logout,
             { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
           ]}
         >
-          <Feather name="log-out" size={18} color={colors.destructive} />
+          <Feather name="trash-2" size={18} color={colors.destructive} />
           <Text style={[styles.logoutText, { color: colors.destructive }]}>
-            Çıkış Yap
+            Verileri Sıfırla
           </Text>
         </Pressable>
       </ScrollView>
