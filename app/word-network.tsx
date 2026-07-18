@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { LayoutChangeEvent, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -216,9 +216,12 @@ export default function WordNetworkScreen() {
               <MaterialCommunityIcons name="graph-outline" size={15} color={TOKENS.violet400} />
               <Text style={styles.networkTitle}>Kelime Ağı</Text>
             </View>
-            <LivePill />
+            <SampleDataPill />
           </View>
           <Text style={styles.networkSub}>{theme.name} temasındaki bağlantıları incele</Text>
+          <Text style={styles.networkSampleNote}>
+            Bu ağ örnek/gösterim amaçlıdır; henüz senin gerçek kelime geçmişine bağlı değil.
+          </Text>
 
           <NetworkGraph centerWord={theme.words[0] ?? theme.name.toLowerCase()} words={theme.networkWords} />
         </View>
@@ -239,23 +242,14 @@ export default function WordNetworkScreen() {
   );
 }
 
-function LivePill() {
-  const opacity = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.3, duration: 700, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [opacity]);
-
+// Renamed from the earlier "LivePill" (CANLI/pulsing-green): this network is
+// static sample content, not a live/real-time feed, so the badge must not
+// imply otherwise (WL-009 dummy-data honesty).
+function SampleDataPill() {
   return (
     <View style={styles.livePill}>
-      <Animated.View style={[styles.liveDot, { opacity }]} />
-      <Text style={styles.livePillText}>CANLI</Text>
+      <View style={styles.liveDot} />
+      <Text style={styles.livePillText}>ÖRNEK</Text>
     </View>
   );
 }
@@ -296,29 +290,43 @@ function WordListScroll({ words, height }: { words: string[]; height: number }) 
   );
 }
 
+// The graph's internal coordinates are all authored against a fixed
+// NET_BOX_W×NET_BOX_H box. On phones narrower than that box (320-360px
+// devices, once screen padding is subtracted) it used to overflow/clip
+// (WL-009). Instead of rewriting the node-position math, the whole box is
+// measured and uniformly scaled down to fit — the same technique already
+// used for the onboarding screen's responsive scale factor.
 function NetworkGraph({ centerWord, words }: { centerWord: string; words: string[] }) {
+  const [containerWidth, setContainerWidth] = useState(NET_BOX_W);
+  const scale = Math.min(1, containerWidth / NET_BOX_W);
+  const onLayout = (e: LayoutChangeEvent) => setContainerWidth(e.nativeEvent.layout.width);
+
   return (
-    <View style={styles.networkSvgWrap}>
-      <Svg width={NET_BOX_W} height={NET_BOX_H} viewBox={`0 0 ${NET_BOX_W} ${NET_BOX_H}`}>
-        {NET_POSITIONS.map((p, i) => (
-          <Line
-            key={i}
-            x1={NET_CENTER.x}
-            y1={NET_CENTER.y}
-            x2={p.x}
-            y2={p.y}
-            stroke="rgba(167,139,250,0.35)"
-            strokeWidth={1.5}
-          />
-        ))}
-      </Svg>
-      {NET_POSITIONS.map((p, i) => (
-        <View key={i} style={[styles.netNode, { left: p.x - 41, top: p.y - 15 }]}>
-          <Text style={styles.netNodeText} numberOfLines={1}>{words[i] ?? ''}</Text>
+    <View style={styles.networkSvgOuter} onLayout={onLayout}>
+      <View style={[styles.networkSvgWrap, { width: NET_BOX_W * scale, height: NET_BOX_H * scale }]}>
+        <View style={{ width: NET_BOX_W, height: NET_BOX_H, transform: [{ scale }] }}>
+          <Svg width={NET_BOX_W} height={NET_BOX_H} viewBox={`0 0 ${NET_BOX_W} ${NET_BOX_H}`}>
+            {NET_POSITIONS.map((p, i) => (
+              <Line
+                key={i}
+                x1={NET_CENTER.x}
+                y1={NET_CENTER.y}
+                x2={p.x}
+                y2={p.y}
+                stroke="rgba(167,139,250,0.35)"
+                strokeWidth={1.5}
+              />
+            ))}
+          </Svg>
+          {NET_POSITIONS.map((p, i) => (
+            <View key={i} style={[styles.netNode, { left: p.x - 41, top: p.y - 15 }]}>
+              <Text style={styles.netNodeText} numberOfLines={1}>{words[i] ?? ''}</Text>
+            </View>
+          ))}
+          <View style={[styles.netNodeCenter, { left: NET_CENTER.x - 55, top: NET_CENTER.y - 25 }]}>
+            <Text style={styles.netNodeCenterText} numberOfLines={1}>{centerWord}</Text>
+          </View>
         </View>
-      ))}
-      <View style={[styles.netNodeCenter, { left: NET_CENTER.x - 55, top: NET_CENTER.y - 25 }]}>
-        <Text style={styles.netNodeCenterText} numberOfLines={1}>{centerWord}</Text>
       </View>
     </View>
   );
@@ -414,11 +422,13 @@ const styles = StyleSheet.create({
   networkTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   networkTitle: { fontFamily: 'Inter_700Bold', fontSize: 13.5, color: TOKENS.textHi },
   livePill: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: TOKENS.green },
-  livePillText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: TOKENS.green },
-  networkSub: { fontFamily: 'Inter_400Regular', fontSize: 10, color: TOKENS.textLow, marginTop: 3, marginBottom: 10 },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: TOKENS.violet400 },
+  livePillText: { fontFamily: 'Inter_700Bold', fontSize: 9, color: TOKENS.violet300 },
+  networkSub: { fontFamily: 'Inter_400Regular', fontSize: 10, color: TOKENS.textLow, marginTop: 3, marginBottom: 4 },
+  networkSampleNote: { fontFamily: 'Inter_400Regular', fontSize: 10, color: TOKENS.textLow, fontStyle: 'italic', marginBottom: 10 },
 
-  networkSvgWrap: { width: NET_BOX_W, height: NET_BOX_H, alignSelf: 'center', position: 'relative' },
+  networkSvgOuter: { width: '100%', alignItems: 'center' },
+  networkSvgWrap: { alignSelf: 'center', position: 'relative', overflow: 'hidden' },
   netNode: { position: 'absolute', width: 82, paddingVertical: 7, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(20,14,34,0.9)', borderWidth: 1.5, borderColor: 'rgba(139,92,246,0.5)' },
   netNodeText: { fontFamily: 'Inter_700Bold', fontSize: 10.5, color: TOKENS.textHi },
   netNodeCenter: { position: 'absolute', width: 110, paddingVertical: 14, borderRadius: 999, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(139,92,246,0.28)', borderWidth: 2, borderColor: TOKENS.violet400 },

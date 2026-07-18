@@ -56,7 +56,10 @@ export default function ImagesInfoScreen() {
   }, []);
 
   const showDemoAlert = () => {
-    Alert.alert('Görsel Yükle', 'Bu demo ekranda geçici yükleme aksiyonu gösterilir.');
+    Alert.alert(
+      'Görsel Yükle',
+      'Bu sürümde gerçek görsel analizi henüz yok. Devam edersen örnek kelimelerle bir ders hazırlanır.',
+    );
   };
 
   const startCooldown = () => {
