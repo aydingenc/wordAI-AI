@@ -758,3 +758,71 @@ Yok.
 ### Sonuç
 
 1 commit (`3317f81`), 2 dosya değişti (`data/mock.ts`, `app/(tabs)/stories.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1f` branch'i lokal kaldı.
+
+## Aşama 1G
+
+Kapsam: `PROMPT_1G.md` — kullanıcıyla birlikte kod okunarak netleştirilen daha büyük bir mimari bulgu. `audit-phase-1f` (HEAD `addde26`) üzerinden `audit-phase-1g` branch'i açılarak devam edildi.
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1f
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        PROMPT_1F.md
+        PROMPT_1G.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e-v2.zip
+        wordloop-1e.zip
+        wordloop-1f.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+addde26 Asama 1F rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1F" bolumu eklendi
+3317f81 Gorev (Asama 1F): Hikayelerim'deki kesfet kartlari artik onizlenen sahneye dogrudan gidiyor
+d5d7cc4 Asama 1E rapor guncellemesi: Gorev 4 ve Gorev 5 alt bolumleri eklendi
+```
+
+`audit-phase-1f` temiz, `addde26` HEAD'de doğrulandı. `git checkout -b audit-phase-1g` ile buradan dallandı.
+
+### Bulgunun özeti — iki ayrı, birbirinden habersiz "hazır tema" sistemi
+
+Kod okunarak doğrulandı: projede paralel iki içerik sistemi var.
+1. **`GALLERY_CATEGORIES`/`GALLERY_ITEMS`** (`data/mock.ts`) — 16 gerçek kategori × 3 seviye (A2/B1/C1) = 48 gerçek içerik, kullanıcının asıl tasarladığı sistem. `+` → "Hazır Temalardan Öğren" zaten `images-gallery.tsx` → `scene-transition.tsx` → `sessionFromGalleryItem()` → `learn/story.tsx` akışıyla doğru bağlı — bu akışa dokunulmadı.
+2. **`THEME_STORIES`/`THEMES`/`THEME_SEEDS`** (`data/mock.ts`) — 5 yer tutucu tema × 3 sahne (Dağ Gölü, Sessiz Orman, Vadi Nehri, Gece Işıkları vb.), geliştirme sürecinden kalmış örnek veri. Yalnızca Hikayelerim ekranındaki "Yeni Hikayeler Keşfet" / "Hazır Tema Hikayeler" kartlarını besliyordu (grep ile teyit edildi: `THEME_STORIES`'e başka hiçbir dosyadan erişilmiyor, `buildComprehensionQuestions`'daki quiz-distractor havuzu hariç).
+
+**Kullanıcı kararı:** Hikayelerim'deki kartlar artık gerçek 16 kategoriden (kategori başına 1 temsilci, 16 kart) beslenecek. `THEME_STORIES`/`THEMES`/`THEME_SEEDS`/`app/theme/[id].tsx`/`app/scene/[id].tsx` **silinmedi** (projenin "devre dışı bırak, silme" prensibiyle tutarlı) — sadece Hikayelerim artık onlardan beslenmiyor.
+
+### Yapılan
+
+- `data/mock.ts`: `DISCOVER_GALLERY_ITEMS` eklendi — `GALLERY_CATEGORIES.map((cat) => GALLERY_ITEMS.find((item) => item.categoryId === cat.id)!)`, her kategorinin ilk/A2-seviye temsilcisini seçiyor (`GALLERY_ITEMS`'in kategori-major sıralaması sayesinde `.find` her zaman doğru temsilciyi döner).
+- `app/(tabs)/stories.tsx`:
+  - `THEME_STORIES` import'u kaldırıldı; `DISCOVER_GALLERY_ITEMS`, `GalleryItem`, `sessionFromGalleryItem` eklendi.
+  - `discoverStoryFromGalleryItem(item)` adaptörü eklendi (component'in hemen üstünde) — bir `GalleryItem`'ı `DiscoverCard`'ın beklediği `Story` şekline çeviriyor, SADECE görüntüleme amaçlı. `DiscoverCard` `story.image`/`paragraphs`'ı hiç render etmediğinden (yalnızca `gradient` prop'unu ve metin alanlarını kullanıyor, kod okumayla doğrulandı) bu alanlar boş/sparse bırakılabildi.
+  - İki `THEME_STORIES.map(...)` bloğu ("Hazır Tema Hikayeler" grid'i ve "Yeni Hikayeler Keşfet" yatay listesi) `DISCOVER_GALLERY_ITEMS.map((item, i) => ...)`'a çevrildi — `gradient`/`style` prop'ları aynen kaldı, yalnızca veri kaynağı ve `onPress` değişti.
+  - `openTheme(story)` silinmedi, hâlâ tanımlı ama artık hiçbir yerden çağrılmıyor. Yerine `openGalleryItem(item)` eklendi: `startSession(sessionFromGalleryItem(item)); router.push('/learn/story')` — `scene-transition.tsx`'in yaptığının birebir aynısı. `startSession` zaten `useProgress()`'ten import ediliyordu (Aşama 1E'den kalma), yeni bir import gerekmedi.
+  - Aşama 1F'te eklenen `Story.sceneId`/`THEME_STORIES`'teki `sceneId: scene.id` alanına dokunulmadı (zararsız, artık kullanılmıyor ama kaldırılması istenmedi).
+
+### Bilinen yan etki — `unlockNextLevel` artık tetiklenmeyen ölü kod
+
+Doğrulandı: `unlockNextLevel(themeId, levelIndex)` (`app/learn/quiz.tsx`, `ResultsScreen` içindeki `useEffect`) yalnızca session'ın `origin === 'theme'` VE `themeId`/`levelIndex` set olduğunda tetikleniyor — bu alanları yalnızca `sessionFromScene()` (`app/scene/[id].tsx`) dolduruyor. `app/scene/[id].tsx`'e artık Hikayelerim'den (eski `openTheme`) erişilmiyor ve PROMPT_1G'nin bulgu özetine göre `THEME_STORIES`/tema sistemine zaten başka hiçbir ekrandan erişilmiyordu — yani bu değişiklikten sonra `origin:'theme'` session'ı üreten canlı bir UI yolu kalmadı. Sonuç: `unlockNextLevel`/`isLevelUnlocked`/`themeProgress` (Aşama 1C, `ProgressContext.tsx`) kod olarak hâlâ doğru ve derlenebilir durumda ama artık hiçbir ekrandan tetiklenmeyen ölü kod haline geldi. Talimat gereği bu koda dokunulmadı/silinmedi, yalnızca burada not düşülüyor.
+
+Değişen dosyalar: `data/mock.ts`, `app/(tabs)/stories.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. Kartların görsel tasarımı (renk/font/layout/gradient) değişmedi, yalnızca veri kaynağı ve dokunma davranışı değişti. **Cihazda doğrulanmalı:** Hikayelerim'deki "Yeni Hikayeler Keşfet" / "Hazır Tema Hikayeler" sekmesinde artık 16 kartın (Travel, Entertainment, Art, Politics, Nature, Daily Life, Business, Health, Emotions, Relationships & Dating, Food, Science, Technology, Shopping, Sports, Education) gerçek kategori adı ve hedef kelimelerini gösterdiği; bir karta dokununca gerçekten o kategorinin içeriğiyle `learn/story.tsx`'in (TTS, bölüm daireleri, hedef-kelime pilleri) açıldığı — bu ortamda `expo start` çalışmadığından görsel doğrulama yapılamadı.
+
+### Yeni blocker / ürün kararı
+
+Yok — kullanıcı kararı zaten bu prompt'un başında netleşti (THEME_STORIES dosyaları silinmeden Hikayelerim'in veri kaynağı değiştirildi).
+
+### Sonuç
+
+1 commit (`fe04edc`), 2 dosya değişti (`data/mock.ts`, `app/(tabs)/stories.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir şey (renk/font/layout) değişmedi. Push/PR yapılmadı. `audit-phase-1g` branch'i lokal kaldı.
