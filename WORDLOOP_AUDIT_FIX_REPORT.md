@@ -890,3 +890,67 @@ Yok. İki görev de talimatın verdiği net kararlarla tamamlandı.
 ### Sonuç
 
 2 commit (`17eecf3`, `f577199`), 1 dosya değişti (`app/(tabs)/stories.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1h` branch'i lokal kaldı.
+
+## Aşama 1I
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1h
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        PROMPT_1F.md
+        PROMPT_1G.md
+        PROMPT_1H.md
+        PROMPT_1I.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e-v2.zip
+        wordloop-1e.zip
+        wordloop-1f.zip
+        wordloop-1g.zip
+        wordloop-1h.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+3447801 Asama 1H rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1H" bolumu eklendi
+f577199 Gorev 2: "Hazir Tema Hikayeler" sekmesi artik 48 hikayenin hepsini listeliyor
+17eecf3 Gorev 1: Kesfet karti basligina sabit minHeight, uzun kategori adlari kart boyunu artik bozmuyor
+```
+
+`audit-phase-1h` temiz, `3447801` HEAD'de doğrulandı. `git checkout -b audit-phase-1i` ile buradan dallandı.
+
+### Görev 1 — DNA butonu artık doğru sayfaya gidiyor
+
+**Doğrulama:** `components/RecentWordsScreen.tsx`'teki `handleWordPress`'in parametresinin `_entry` olarak işaretlenip hiç kullanılmadığı, her satırda basılan kelimeden bağımsız olarak sabit şekilde `router.push('/word-network')` çağırdığı doğrulandı. Doğru hedefin `word-dna` sayfası olduğu ve `word` parametresi beklediği, `app/(tabs)/explore/index.tsx`'teki benzer kullanımla (satır ~78) teyit edildi.
+
+**Düzeltme:** `handleWordPress` artık kullanılan `entry: WordListEntry` parametresini alıp `entry.en` ile `/explore/word-dna`'ya `word` parametresiyle yönlendiriyor.
+
+Değişen dosya: `components/RecentWordsScreen.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+### Görev 2 — Marquee kayması artık çok daha erken başlıyor
+
+**Doğrulama:** `components/TextMarquee.tsx`'teki kayma döngüsünün `Animated.delay(1200)` ile başladığı, bunun uzun içerikli sütunlarda (özellikle Kelimelerim tablosundaki "ÖRNEK CÜMLE" sütunu) kullanıcının animasyon başlamadan önce sadece cümlenin ilk 1-2 kelimesini görmesine yol açtığı kod okumayla doğrulandı.
+
+**Düzeltme:** Başlangıç gecikmesi `Animated.delay(1200)`'den `Animated.delay(400)`'e düşürüldü. Scroll süresi (2600ms), sonda bekleme (900ms) ve geri dönüş süresi (1000ms) değiştirilmedi — sadece kaymanın ne kadar hızlı başladığı değişti. Renk/boyut/konum değişikliği olmadığından görsel onay gerektirmiyor.
+
+Değişen dosya: `components/TextMarquee.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+**Cihazda doğrulanmalı (her iki görev için):** Kelimelerim ekranındaki bir satırın DNA/kelime butonuna basınca artık o satırın kelimesiyle (örn. "beautiful") WordDNA/SentenceLab sayfasının (`/explore/word-dna`) açıldığı, farklı satırlara basıldığında farklı kelimelerin geldiği; tablodaki marquee'lerin (özellikle "ÖRNEK CÜMLE" sütunu) artık ekrana geldikten ~400ms sonra kaymaya başladığı, önceki 1200ms'lik "neredeyse hiç kaymıyor" hissinin ortadan kalktığı — bu ortamda `expo start` çalışmadığından görsel doğrulama yapılamadı.
+
+### Yeni blocker / ürün kararı
+
+Yok. İki görev de talimatın verdiği net kararlarla tamamlandı.
+
+### Sonuç
+
+2 commit (`c7cf506`, `af23c7c`), 2 dosya değişti (`components/RecentWordsScreen.tsx`, `components/TextMarquee.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1i` branch'i lokal kaldı.
