@@ -10,7 +10,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { BookIcon, SparkleIcon } from '@/components/WordStatusIcons';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
-import { buildSessionFromStory, DISCOVER_GALLERY_ITEMS, GalleryItem, sessionFromGalleryItem, Story } from '@/data/mock';
+import { buildSessionFromStory, DISCOVER_GALLERY_ITEMS, GALLERY_ITEMS, GalleryItem, sessionFromGalleryItem, Story } from '@/data/mock';
 
 type TabKey = 'all' | 'own' | 'theme';
 
@@ -216,7 +216,7 @@ export default function StoriesScreen() {
         {showDiscover ? (
           activeTab === 'theme' ? (
             <View style={styles.discoverGrid}>
-              {DISCOVER_GALLERY_ITEMS.map((item, i) => (
+              {GALLERY_ITEMS.map((item, i) => (
                 <DiscoverCard
                   key={item.id}
                   story={discoverStoryFromGalleryItem(item)}
