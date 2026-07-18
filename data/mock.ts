@@ -319,10 +319,13 @@ const DICT: Record<string, Omit<Word, 'id' | 'strength'>> = {
   customer: { en: 'customer', tr: 'müşteri', example: 'The customer asked for a full refund.', exampleTr: 'Müşteri tam iade istedi.', phonetic: '/ˈkʌstəmə/' },
 };
 
-let wordIdCounter = 0;
+// A plain in-memory counter reset to 0 on every app restart, while
+// customStories (built with this same id via buildCustomStoryFromSession)
+// persist to disk across restarts — two sessions could easily land on the
+// same counter value and produce a duplicate id (React "duplicate key").
+// Time + random makes a collision practically impossible even across restarts.
 function nextId(prefix: string) {
-  wordIdCounter += 1;
-  return `${prefix}-${wordIdCounter}`;
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 /** Build a Word from a raw english string, using the dictionary when possible. */
