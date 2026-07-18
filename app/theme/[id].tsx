@@ -95,6 +95,9 @@ export default function ThemeDetailScreen() {
                   disabled={!unlocked}
                   onPress={() => router.push(`/scene/${scene.id}`)}
                   style={{ flex: 1, opacity: unlocked ? 1 : 0.55 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${scene.levelName} · ${scene.name}${unlocked ? '' : ', kilitli'}`}
+                  accessibilityState={{ disabled: !unlocked }}
                 >
                   <GlowCard style={styles.sceneCard} active={unlocked && i === 0} padded={false}>
                     <Image source={scene.image} style={styles.sceneImg} />

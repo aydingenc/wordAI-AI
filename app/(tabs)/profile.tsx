@@ -138,6 +138,8 @@ export default function ProfileScreen() {
                   : Alert.alert(m.label, 'Bu bölüm demo sürümünde yakında eklenecek.')
               }
               style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]}
+              accessibilityRole="button"
+              accessibilityLabel={m.label}
             >
               <GlowCard style={styles.menuItem}>
                 <View style={[styles.menuIcon, { backgroundColor: colors.secondary }]}>
