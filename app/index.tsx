@@ -12,6 +12,7 @@ import { ProgressRail } from '@/components/ProgressRail';
 import { CompareCard, getCompareMetrics } from '@/components/CompareCard';
 import { AnimatedReveal, AnimatedPop } from '@/components/AnimatedReveal';
 import { useColors } from '@/hooks/useColors';
+import { useProgress } from '@/context/ProgressContext';
 import { IMAGES } from '@/data/mock';
 
 // Stage order (source of truth):
@@ -33,13 +34,27 @@ export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const [stage, setStage] = useState(0);
+  const { onboarded } = useProgress();
+
+  // Returning user: skip the onboarding animation entirely instead of
+  // showing it again on every cold start (WL-019). SplashGate in
+  // app/_layout.tsx already waits for hydration, so `onboarded` here is
+  // never a stale pre-load default.
+  useEffect(() => {
+    if (onboarded) {
+      router.replace('/home');
+    }
+  }, [onboarded, router]);
 
   useEffect(() => {
+    if (onboarded) return;
     const timers = STAGE_DELAYS.map((delay, i) =>
       setTimeout(() => setStage((s) => Math.max(s, i + 1)), delay),
     );
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [onboarded]);
+
+  if (onboarded) return null;
 
   // Rail lights up progressively as later stages fire (stages 4→7).
   const railActive = Math.min(3, Math.max(-1, stage - 4));

@@ -17,6 +17,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { Logo } from '@/components/Logo';
 import { useColors } from '@/hooks/useColors';
+import { useProgress } from '@/context/ProgressContext';
 import { APP_NAME } from '@/constants/app';
 
 type Mode = 'login' | 'register';
@@ -25,6 +26,7 @@ export default function AuthScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { completeOnboarding } = useProgress();
   const [mode, setMode] = useState<Mode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -42,8 +44,20 @@ export default function AuthScreen() {
       (name.trim().length > 1 && confirm.length >= 4 && passwordsMatch));
 
   const submit = () => {
-    // Frontend-only prototype: no real auth, just enter the app.
+    // Frontend-only prototype: no real auth. This creates/confirms the local
+    // device profile (see CLAUDE.md local-first model) and enters the app.
+    completeOnboarding(isRegister && name.trim().length > 0 ? name.trim() : null);
     router.replace('/home');
+  };
+
+  const submitGoogle = () => {
+    // Google Sign-In is not implemented (no real OAuth) — do not silently
+    // treat this as a working login method (WL-002). Same demo-Alert
+    // pattern already used for "Şifreni mi unuttun?" on this screen.
+    Alert.alert(
+      'Google ile Giriş',
+      'Google ile giriş bu sürümde henüz aktif değil. E-posta ile devam edebilirsin.',
+    );
   };
 
   const switchMode = (m: Mode) => {
@@ -181,7 +195,7 @@ export default function AuthScreen() {
         </View>
 
         <Pressable
-          onPress={submit}
+          onPress={submitGoogle}
           testID="auth-google"
           style={({ pressed }) => [
             styles.googleBtn,

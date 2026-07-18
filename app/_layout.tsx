@@ -6,7 +6,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { ProgressProvider } from '@/context/ProgressContext';
+import { ProgressProvider, useProgress } from '@/context/ProgressContext';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -21,6 +21,22 @@ import * as SplashScreen from 'expo-splash-screen';
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
+
+/**
+ * Keeps the native splash screen up until BOTH fonts and the persisted local
+ * state have loaded, so `index.tsx` never gets a chance to render its
+ * onboarding animation for a single frame before redirecting an already-
+ * onboarded user straight to /home.
+ */
+function SplashGate({ fontsReady }: { fontsReady: boolean }) {
+  const { isHydrated } = useProgress();
+  useEffect(() => {
+    if (fontsReady && isHydrated) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsReady, isHydrated]);
+  return null;
+}
 
 function RootLayoutNav() {
   return (
@@ -73,12 +89,6 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
-
-  useEffect(() => {
     if (Platform.OS === 'web') {
       document.documentElement.style.overflow = 'hidden';
       document.documentElement.style.height = '100%';
@@ -101,6 +111,7 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <ProgressProvider>
+                <SplashGate fontsReady={fontsLoaded || !!fontError} />
                 <StatusBar style="light" />
                 <RootLayoutNav />
               </ProgressProvider>
