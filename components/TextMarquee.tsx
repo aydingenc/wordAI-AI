@@ -81,6 +81,7 @@ export function TextMarquee({
         <Text
           style={style}
           numberOfLines={1}
+          ellipsizeMode="clip"
           onLayout={(e: LayoutChangeEvent) => setTextWidth(e.nativeEvent.layout.width)}
         >
           {text}
