@@ -17,7 +17,7 @@ const DOCS: Record<string, { title: string; intro: string; sections: Section[] }
     sections: [
       {
         heading: '1. Hizmetin Kapsamı',
-        body: 'WordLoop, dil öğrenmeni kolaylaştırmak için kelimeler ve görsellerden kişisel dersler oluşturan bir öğrenme aracıdır. Bu demo sürümünde gerçek bir hesap oluşturulmaz ve verilerin sunucuda saklanmaz.',
+        body: 'bigFather, dil öğrenmeni kolaylaştırmak için kelimeler ve görsellerden kişisel dersler oluşturan bir öğrenme aracıdır. Bu demo sürümünde gerçek bir hesap oluşturulmaz ve verilerin sunucuda saklanmaz.',
       },
       {
         heading: '2. Hesap ve Sorumluluk',

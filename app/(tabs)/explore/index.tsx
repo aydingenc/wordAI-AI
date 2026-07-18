@@ -85,7 +85,7 @@ export default function ExploreScreen() {
           />
         </View>
 
-        <Pressable onPress={() => showSoon('WordLoop Premium')} style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}>
+        <Pressable onPress={() => showSoon('bigFather Premium')} style={({ pressed }) => ({ opacity: pressed ? 0.92 : 1 })}>
           <LinearGradient
             colors={['rgba(250,204,21,0.1)', 'rgba(139,92,246,0.12)']}
             start={{ x: 0, y: 0 }}
@@ -98,7 +98,7 @@ export default function ExploreScreen() {
                   <MaterialCommunityIcons name="crown" size={16} color="#facc15" />
                 </View>
                 <View style={styles.premiumTextCol}>
-                  <Text style={styles.premiumTitle}>WordLoop Premium</Text>
+                  <Text style={styles.premiumTitle}>bigFather Premium</Text>
                   <Text style={[styles.premiumSub, { color: colors.mutedForeground }]}>
                     Daha hızlı öğren, daha fazlasını keşfet.
                   </Text>

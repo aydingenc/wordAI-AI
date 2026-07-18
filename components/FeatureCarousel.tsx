@@ -26,7 +26,7 @@ interface Slide {
 
 const SLIDES: Slide[] = [
   {
-    title: 'WordLoop ile kelimeleri hikâyeler, görseller ve tekrar sistemiyle öğren',
+    title: 'bigFather ile kelimeleri hikâyeler, görseller ve tekrar sistemiyle öğren',
     sub: 'En iyi nasıl faydalanırsın?',
     image: BOOK,
     play: true,

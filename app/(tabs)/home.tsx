@@ -20,7 +20,6 @@ import { WordNetwork } from '@/components/WordNetwork';
 import { FeatureCarousel } from '@/components/FeatureCarousel';
 import { useColors } from '@/hooks/useColors';
 import { IMAGES } from '@/data/mock';
-import { APP_NAME } from '@/constants/app';
 
 const STORY_IMG = require('@/assets/images/home-story.jpg');
 const PREMIUM_IMG = require('@/assets/images/home-premium.jpg');
@@ -67,10 +66,12 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [levelInfoOpen, setLevelInfoOpen] = useState(false);
 
-  // Two-tone wordmark (placeholder split; APP_NAME stays the single source).
-  const half = Math.ceil(APP_NAME.length / 2);
-  const brandHead = APP_NAME.slice(0, half);
-  const brandTail = APP_NAME.slice(half);
+  // Two-tone wordmark. Fixed at the natural camelCase boundary ("big" +
+  // "Father") instead of an automatic Math.ceil(length/2) split — a
+  // length-based split reads wrong for this name and would silently break
+  // again on any future rename, so it's spelled out directly.
+  const brandHead = 'big';
+  const brandTail = 'Father';
 
   return (
     <GradientBackground>
