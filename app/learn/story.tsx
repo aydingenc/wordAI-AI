@@ -12,6 +12,7 @@ import {
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import * as Speech from 'expo-speech';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '@/components/GradientBackground';
 import { PrimaryButton } from '@/components/PrimaryButton';
@@ -48,6 +49,7 @@ export default function StoryLearnScreen() {
 
   const [pageIndex, setPageIndex] = useState(0);
   const [showTranslation, setShowTranslation] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const textOpacity = useRef(new Animated.Value(1)).current;
   const textTranslateY = useRef(new Animated.Value(0)).current;
   // Tracks which storyCount===0 words have already had their NEW badge shown,
@@ -67,6 +69,11 @@ export default function StoryLearnScreen() {
 
   useEffect(() => {
     setShowTranslation(false);
+    // The narration is scoped to the page it started on — moving to another
+    // page while it's still playing would otherwise leave stale audio
+    // running under a "now playing" icon for content no longer on screen.
+    Speech.stop();
+    setIsSpeaking(false);
     textOpacity.setValue(0);
     textTranslateY.setValue(10);
     Animated.parallel([
@@ -74,6 +81,13 @@ export default function StoryLearnScreen() {
       Animated.timing(textTranslateY, { toValue: 0, duration: 320, easing: Easing.out(Easing.ease), useNativeDriver: true }),
     ]).start();
   }, [pageIndex, textOpacity, textTranslateY]);
+
+  // Never leave narration playing in the background after leaving this screen.
+  useEffect(() => {
+    return () => {
+      Speech.stop();
+    };
+  }, []);
 
   if (!currentSession || !readerData) {
     return <EmptySession />;
@@ -108,6 +122,23 @@ export default function StoryLearnScreen() {
     setPageIndex((p) => p - 1);
   };
 
+  const toggleSpeech = () => {
+    if (isSpeaking) {
+      Speech.stop();
+      setIsSpeaking(false);
+      return;
+    }
+    setIsSpeaking(true);
+    Speech.speak(page.paragraphs.join(' '), {
+      language: 'en-US',
+      pitch: 0.8,
+      rate: 0.85,
+      onDone: () => setIsSpeaking(false),
+      onStopped: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
+  };
+
   const goToNextPage = () => {
     if (isLastPage) {
       // NEW-002: save the user's own generated story once they've actually
@@ -136,19 +167,15 @@ export default function StoryLearnScreen() {
             <Feather name="arrow-left" size={19} color={TOKENS.textHi} />
           </Pressable>
           <View style={styles.topBarActions}>
-            {/* No working TTS implementation exists anywhere in this project (no
-                expo-speech dependency; the source StoryReader.tsx button this was
-                ported from has no onPress either) — shown passive rather than as
-                a dead-looking active button. Blocker: see report. */}
-            <View
-              style={[styles.topBarButton, styles.topBarButtonDisabled]}
+            <Pressable
+              style={[styles.topBarButton, isSpeaking && styles.topBarButtonActive]}
+              onPress={toggleSpeech}
               accessibilityRole="button"
-              accessibilityLabel="Sesli okuma"
-              accessibilityState={{ disabled: true }}
-              accessibilityHint="Bu sürümde henüz kullanılamıyor"
+              accessibilityLabel={isSpeaking ? 'Sesli okumayı durdur' : 'Sesli oku'}
+              accessibilityState={{ selected: isSpeaking }}
             >
-              <Feather name="volume-2" size={17} color={TOKENS.textLow} />
-            </View>
+              <Feather name={isSpeaking ? 'pause' : 'volume-2'} size={17} color={isSpeaking ? '#FFFFFF' : TOKENS.violet300} />
+            </Pressable>
             <Pressable
               style={[styles.topBarButton, showTranslation && styles.topBarButtonActive]}
               onPress={() => setShowTranslation((v) => !v)}
@@ -497,7 +524,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
   },
   topBarButtonActive: { backgroundColor: TOKENS.violet600, borderColor: 'transparent' },
-  topBarButtonDisabled: { opacity: 0.5 },
 
   scrollContent: { paddingBottom: 24, gap: 14 },
 
