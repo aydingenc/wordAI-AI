@@ -8,7 +8,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ConfettiBurst } from '@/components/Confetti';
 import { useProgress } from '@/context/ProgressContext';
-import { buildComprehensionQuestions, makeWord, mockStoryCountForIndex } from '@/data/mock';
+import { buildComprehensionQuestions, LearnSession, makeWord, mockStoryCountForIndex } from '@/data/mock';
 import { EmptySession } from './story';
 
 const TOKENS = {
@@ -278,6 +278,9 @@ export default function QuizScreen() {
         storyTitle={currentSession.title}
         insetsTop={insets.top}
         insetsBottom={insets.bottom}
+        origin={currentSession.origin}
+        themeId={currentSession.themeId}
+        levelIndex={currentSession.levelIndex}
       />
     );
   }
@@ -443,6 +446,9 @@ function ResultsScreen({
   storyTitle,
   insetsTop,
   insetsBottom,
+  origin,
+  themeId,
+  levelIndex,
 }: {
   questions: Question[];
   correctCount: number;
@@ -451,9 +457,12 @@ function ResultsScreen({
   storyTitle: string;
   insetsTop: number;
   insetsBottom: number;
+  origin: LearnSession['origin'];
+  themeId?: string;
+  levelIndex?: number;
 }) {
   const router = useRouter();
-  const { clearSession } = useProgress();
+  const { clearSession, unlockNextLevel } = useProgress();
   const pct = correctCount / questions.length;
   const isLowTier = pct < 0.4;
   const tier = useMemo(() => getResultTier(pct), [pct]);
@@ -465,8 +474,18 @@ function ResultsScreen({
   const btnOpacity = useRef(new Animated.Value(0)).current;
   const [confettiKey, setConfettiKey] = useState(0);
   const [revealedWords, setRevealedWords] = useState<Record<string, boolean>>({});
+  // Guards unlockNextLevel() to fire exactly once per ResultsScreen mount —
+  // an effect with an empty dep array already only runs once per mount, but
+  // React 18 Strict Mode double-invokes mount effects in dev, so this ref
+  // is the actual "only once, ever" guarantee (NEW-001).
+  const unlockAttemptedRef = useRef(false);
 
   useEffect(() => {
+    if (!unlockAttemptedRef.current && origin === 'theme' && themeId && levelIndex !== undefined && pct >= 0.4) {
+      unlockAttemptedRef.current = true;
+      unlockNextLevel(themeId, levelIndex);
+    }
+
     Animated.timing(ringProgress, { toValue: pct, duration: 1200, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
     const xpTimer = setTimeout(() => {
       Animated.timing(xpOpacity, { toValue: 1, duration: 400, useNativeDriver: true }).start();
