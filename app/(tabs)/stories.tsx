@@ -649,6 +649,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 12,
     lineHeight: 15.5,
+    minHeight: 33,
     marginBottom: 6,
   },
   discoverTagsRow: {
