@@ -14,9 +14,12 @@
       "backgroundColor": "#0B0713"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.aydingenc.bigfather"
     },
-    "android": {},
+    "android": {
+      "package": "com.aydingenc.bigfather"
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
