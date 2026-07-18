@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Stop } from 'react-native-svg';
@@ -323,12 +323,12 @@ export function StoryGenerationCooldown({ targetWords, storyPreview, isReady, on
                   </View>
                   <Feather name="feather" size={20} color={TOKENS.violet400} />
                 </View>
-                <View style={styles.typingBox}>
+                <ScrollView style={styles.typingBox} contentContainerStyle={styles.typingBoxContent}>
                   <Text style={styles.typingText}>
                     {storyPreview.slice(0, typedChars)}
                     <Animated.Text style={[styles.cursor, { opacity: cursorAnim }]}>|</Animated.Text>
                   </Text>
-                </View>
+                </ScrollView>
               </LinearGradient>
             ) : null}
           </Animated.View>
@@ -578,11 +578,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
     minHeight: 140,
     borderRadius: 14,
-    padding: 20,
     backgroundColor: 'rgba(0,0,0,0.22)',
     borderWidth: 1,
     borderColor: 'rgba(167,139,250,0.2)',
     width: '100%',
+  },
+  typingBoxContent: {
+    padding: 20,
   },
   typingText: { color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 14, lineHeight: 21 },
   cursor: { color: TOKENS.violet400 },
