@@ -591,3 +591,69 @@ Yok. Üç görev de talimatın verdiği net kararlarla tamamlandı.
 ### Sonuç
 
 3 commit (`c4436f1`, `6c4ceaa`, `6af12b0`), 8 dosya değişti (`app.json`, `constants/app.ts`, `app/(tabs)/explore/index.tsx`, `app/legal/[doc].tsx`, `components/FeatureCarousel.tsx`, `app/(tabs)/home.tsx`, `app/learn/story.tsx`, `package.json`+`package-lock.json`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Bu oturumda kurulan tek paket: `expo-speech` (yalnızca Görev 3 için açıkça yetkilendirilmişti). Backend/API eklenmedi, deploy yapılmadı, push/PR açılmadı. `audit-phase-1d` branch'i lokal kaldı.
+
+## Aşama 1E
+
+Kapsam: `PROMPT_1E.md` — kullanıcının gerçek cihazda ekran kaydından bulunup kaynak kodda doğrulanmış 3 gerçek hata: (1) `nextId()`'nin process-restart'lar arası ID çakışması (React "duplicate key"), (2) kendi hikayelerin eski/düz-metin okuyucuya gitmesi (TTS'siz), (3) kelime tablosunda kayan yazının animasyon başlamadan önce native "..." basması. Üçü de önceden onaylandı, `audit-phase-1d` (rapor commit'i `abd8faf`) üzerinden devam edildi.
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1d
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+abd8faf Aşama 1D rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Aşama 1D" bölümü eklendi
+6af12b0 Görev 3: TTS'i gerçek sesli okumaya bağla (expo-speech)
+6c4ceaa Görev 2 (WL-003): iOS bundleIdentifier / Android package eklendi
+```
+
+`audit-phase-1d` temiz, `abd8faf` HEAD'de doğrulandı. `git checkout -b audit-phase-1e` ile buradan dallandı. `npx tsc -p tsconfig.json --noEmit` → 0 hata (oturum baseline'ı).
+
+### Görev 1 — `nextId()` ID çakışması
+
+**Doğrulama:** `data/mock.ts`'teki `nextId(prefix)`'in gerçekten tek bir modül-seviyesi `wordIdCounter`'ı hem `nextId('w')` (kelimeler) hem `nextId('story')` (hikayeler) için paylaştığı grep ile doğrulandı — talimattaki kök neden analiziyle birebir örtüşüyor: bu sayaç yalnızca bellekte, her yeniden başlatmada 0'a dönüyor, ama `customStories` (`lib/storage.ts` ile) diske kalıcı yazılıyor.
+
+**Düzeltme:** `nextId()` artık `` `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}` `` üretiyor. Fonksiyonun iki çağıranı (`makeWord`, `buildCustomStoryFromSession`) kod okumayla doğrulandı — ikisi de yalnızca `id: string` bekliyor, hiçbir yerde id üzerinde parse/sort/split yapılmıyor (grep ile teyit edildi). İzole bir Node smoke-test'inde 100.000 ardışık çağrıda çakışma çıkmadı.
+
+Değişen dosya: `data/mock.ts`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. Var olan/persisted `customStories` eski ID formatıyla kaldı, migration yapılmadı (talimat gereği). **Cihazda doğrulanmalı:** yeni ID formatının gerçek cihazda, iki ayrı uygulama oturumunda üretilen hikayelerde artık çakışmadığı (bu ortamda uygulama yeniden başlatılarak test edilemedi).
+
+### Görev 2 — Kendi hikayeler artık zengin (TTS'li) okuyucuya gidiyor
+
+**Doğrulama:** `app/(tabs)/stories.tsx`'teki `openStory()`'nin gerçekten `router.push('/story/${story.id}')`'e gittiği, `app/story/[id].tsx`'in gerçekten TTS'siz/bölüm-sistemsiz düz bir okuyucu olduğu doğrulandı.
+
+**Yapılan:**
+- `data/mock.ts`: `LearnSession`'a `readOnly?: boolean` eklendi; `buildSessionFromStory(story)` eklendi (`buildCustomStoryFromSession`'ın tersi — `quiz:[]`, `origin:'words'`, `readOnly:true`).
+- `app/(tabs)/stories.tsx`: `openStory(story)`, yalnızca `story.category === 'custom'` ise `startSession(buildSessionFromStory(story))` + `router.push('/learn/story')` yapıyor. `openTheme()`/hazır tema akışına dokunulmadı.
+- `app/story/[id].tsx`: **silinmedi** — WL-004'te `story-reader.tsx`'e uygulanan "Redirect ile devre dışı bırak" pattern'iyle `<Redirect href="/learn/story" />`'a indirgendi, dosya arşiv olarak kaldı.
+- `app/learn/story.tsx`: `isReadOnly` bir session'da son sayfa butonu artık **"Hikayelerime Dön"** (mor gradient + `corner-up-left` ikonu — yeşil/check paleti "quiz'e hazırsın" anlamına geldiğinden burada uygun değildi, mevcut mor "Sonraki Sayfa" renginden devam edildi, yeni renk icat edilmedi), basınca `router.canGoBack() ? router.back() : router.replace('/stories')` ile Hikayelerim'e dönüyor. `addCustomStory(...)` çağrısına `&& !isReadOnly` eklendi (replay mükerrer kayıt oluşturmasın). `readOnly` olmayan session'larda (normal öğrenme akışı) davranış birebir aynı kaldı.
+
+Değişen dosyalar: `data/mock.ts`, `app/(tabs)/stories.tsx`, `app/story/[id].tsx`, `app/learn/story.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. **Cihazda doğrulanmalı:** Hikayelerim → kendi bir hikaye → artık gerçekten `learn/story.tsx`'e (bölüm daireleri, hedef-kelime pilleri, TTS butonu) gittiği; son sayfada "Hikayelerime Dön"e basınca Hikayelerim'e temiz döndüğü (döngü/dead-end yok); aynı hikaye tekrar tekrar açılıp okunsa bile `customStories`'e mükerrer eklenmediği.
+
+### Görev 3 — Kelime tablosunda kayan yazı "..." almadan çalışsın
+
+**Doğrulama:** `components/TextMarquee.tsx`'teki iç `<Text numberOfLines={1}>`'in gerçekten `ellipsizeMode` belirtmediği (RN varsayılanı `"tail"`) doğrulandı.
+
+**Düzeltme:** `ellipsizeMode="clip"` eklendi — metin artık "..." almadan kırpılıyor, var olan `translateX` kaydırma animasyonu görünürlüğü tek başına yönetiyor. `components/WordListTable.tsx`'in kullandığı 3 `TextMarquee` örneği (kelime/anlam/örnek cümle kolonları, grep ile doğrulandı) otomatik düzeldi, ayrıca dokunulmadı.
+
+Değişen dosya: `components/TextMarquee.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. **Cihazda doğrulanmalı:** uzun kelime/anlam/örnek cümlelerin artık "..." göstermeden kayarak okunabildiği (bu ortamda görsel doğrulama yapılamadı).
+
+### Yeni blocker / ürün kararı
+
+Yok. Üç görev de talimatın verdiği net kararlarla tamamlandı.
+
+### Sonuç
+
+3 commit (`610b17e`, `70925ce`, `027a2a8`), 6 dosya değişti (`data/mock.ts`, `app/(tabs)/stories.tsx`, `app/story/[id].tsx`, `app/learn/story.tsx`, `components/TextMarquee.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir metin/renk/layout değişmedi. Push/PR yapılmadı. `audit-phase-1e` branch'i lokal kaldı.
