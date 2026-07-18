@@ -626,6 +626,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 4,
     marginBottom: 8,
+    minHeight: 36,
   },
   discoverTag: {
     borderRadius: 10,
