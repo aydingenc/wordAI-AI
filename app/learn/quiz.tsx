@@ -297,7 +297,13 @@ export default function QuizScreen() {
 
       <View style={styles.kickerRow}>
         <Text style={styles.kicker}>{question.kicker}</Text>
-        <Pressable style={styles.helpBtn} onPress={() => setShowHelp((v) => !v)}>
+        <Pressable
+          style={styles.helpBtn}
+          onPress={() => setShowHelp((v) => !v)}
+          accessibilityRole="button"
+          accessibilityLabel="İpucu göster"
+          accessibilityState={{ selected: showHelp }}
+        >
           <Feather name="help-circle" size={12} color={TOKENS.textMid} />
           <Text style={styles.helpBtnText}>Yardım</Text>
         </Pressable>
@@ -328,8 +334,23 @@ export default function QuizScreen() {
               choiceStyle = { ...styles.choice, ...styles.choiceDim };
             }
           }
+          const stateLabel = answered
+            ? isCorrectChoice
+              ? ', doğru cevap'
+              : isChosen
+                ? ', yanlış, senin cevabın'
+                : ''
+            : '';
           return (
-            <Pressable key={choice + i} disabled={answered} onPress={() => selectAnswer(i)} style={choiceStyle}>
+            <Pressable
+              key={choice + i}
+              disabled={answered}
+              onPress={() => selectAnswer(i)}
+              style={choiceStyle}
+              accessibilityRole="button"
+              accessibilityLabel={`${choice}${stateLabel}`}
+              accessibilityState={{ selected: isChosen, disabled: answered }}
+            >
               <Text style={choiceTextStyle}>{choice}</Text>
             </Pressable>
           );
@@ -345,7 +366,12 @@ export default function QuizScreen() {
       ) : null}
 
       {answered ? (
-        <Pressable style={styles.nextBtnWrap} onPress={goNext}>
+        <Pressable
+          style={styles.nextBtnWrap}
+          onPress={goNext}
+          accessibilityRole="button"
+          accessibilityLabel={index + 1 >= total ? 'Sonuçları gör' : 'Sonraki soru'}
+        >
           <LinearGradient colors={[TOKENS.violet400, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.nextBtn}>
             <Text style={styles.nextBtnText}>{index + 1 >= total ? 'Sonuçları Gör →' : 'Sonraki Soru →'}</Text>
           </LinearGradient>
@@ -386,7 +412,7 @@ function IntroScreen({
       <Text style={styles.introMeta}>
         {totalQuestions} soru · ~{Math.max(1, Math.round(totalQuestions / 4))} dakika
       </Text>
-      <Pressable onPress={onStart}>
+      <Pressable onPress={onStart} accessibilityRole="button" accessibilityLabel="Quize başla">
         <LinearGradient colors={[TOKENS.violet400, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.introBtn}>
           <Text style={styles.introBtnText}>Başla</Text>
         </LinearGradient>
@@ -491,7 +517,12 @@ function ResultsScreen({
 
   return (
     <View style={styles.resultsRoot}>
-      <Pressable style={styles.resultsCloseBtn} onPress={closeSession}>
+      <Pressable
+        style={styles.resultsCloseBtn}
+        onPress={closeSession}
+        accessibilityRole="button"
+        accessibilityLabel="Kapat ve ana sayfaya dön"
+      >
         <Feather name="x" size={15} color="#A3A0B8" />
       </Pressable>
 
@@ -535,14 +566,14 @@ function ResultsScreen({
 
         <Animated.View style={{ opacity: btnOpacity, width: '100%', gap: 10 }}>
           {isLowTier ? (
-            <Pressable onPress={goBackToStory}>
+            <Pressable onPress={goBackToStory} accessibilityRole="button" accessibilityLabel={tier.btnText}>
               <LinearGradient colors={tier.btnGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.resultsBtn}>
                 <Text style={styles.resultsBtnText}>{tier.btnText}</Text>
               </LinearGradient>
             </Pressable>
           ) : null}
 
-          <Pressable onPress={goToFlashcards}>
+          <Pressable onPress={goToFlashcards} accessibilityRole="button" accessibilityLabel="Kelime kartlarıyla pekiştir">
             {isLowTier ? (
               <View style={styles.ctaSecondary}>
                 <Text style={styles.ctaSecondaryText}>Kelime Kartlarıyla Pekiştir</Text>
@@ -555,18 +586,18 @@ function ResultsScreen({
           </Pressable>
 
           {!isLowTier ? (
-            <Pressable onPress={goBackToStory} style={styles.ctaGhost}>
+            <Pressable onPress={goBackToStory} style={styles.ctaGhost} accessibilityRole="button" accessibilityLabel="Hikâyeye geri dön">
               <Text style={styles.ctaGhostText}>Hikâye’ye Geri Dön</Text>
             </Pressable>
           ) : null}
 
-          <Pressable onPress={goDifferentTheme} style={styles.ctaSecondary}>
+          <Pressable onPress={goDifferentTheme} style={styles.ctaSecondary} accessibilityRole="button" accessibilityLabel="Farklı tema farklı hikâyeler">
             <Text style={styles.ctaSecondaryText}>Farklı Tema Farklı Hikâyeler</Text>
           </Pressable>
-          <Pressable onPress={goPracticeHub} style={styles.ctaSecondary}>
+          <Pressable onPress={goPracticeHub} style={styles.ctaSecondary} accessibilityRole="button" accessibilityLabel="Bu kelimelerin uzmanı olmak istiyorum">
             <Text style={styles.ctaSecondaryText}>Bu Kelimelerin Uzmanı Olmak İstiyorum</Text>
           </Pressable>
-          <Pressable onPress={goNewStorySameWords} style={styles.ctaTertiary}>
+          <Pressable onPress={goNewStorySameWords} style={styles.ctaTertiary} accessibilityRole="button" accessibilityLabel="Aynı kelimelerden farklı hikâye oluştur">
             <Text style={styles.ctaTertiaryText}>Aynı Kelimelerden Farklı Hikâye Oluştur</Text>
           </Pressable>
         </Animated.View>

@@ -117,7 +117,12 @@ export default function StoryLearnScreen() {
     <View style={styles.root}>
       <View style={[styles.page, { paddingTop: insets.top + 10 }]}>
         <View style={styles.topBar}>
-          <Pressable onPress={() => router.back()} style={styles.topBarButton}>
+          <Pressable
+            onPress={() => router.back()}
+            style={styles.topBarButton}
+            accessibilityRole="button"
+            accessibilityLabel="Geri"
+          >
             <Feather name="arrow-left" size={19} color={TOKENS.textHi} />
           </Pressable>
           <View style={styles.topBarActions}>
@@ -125,12 +130,21 @@ export default function StoryLearnScreen() {
                 expo-speech dependency; the source StoryReader.tsx button this was
                 ported from has no onPress either) — shown passive rather than as
                 a dead-looking active button. Blocker: see report. */}
-            <View style={[styles.topBarButton, styles.topBarButtonDisabled]}>
+            <View
+              style={[styles.topBarButton, styles.topBarButtonDisabled]}
+              accessibilityRole="button"
+              accessibilityLabel="Sesli okuma"
+              accessibilityState={{ disabled: true }}
+              accessibilityHint="Bu sürümde henüz kullanılamıyor"
+            >
               <Feather name="volume-2" size={17} color={TOKENS.textLow} />
             </View>
             <Pressable
               style={[styles.topBarButton, showTranslation && styles.topBarButtonActive]}
               onPress={() => setShowTranslation((v) => !v)}
+              accessibilityRole="button"
+              accessibilityLabel="Türkçe çeviri"
+              accessibilityState={{ selected: showTranslation }}
             >
               <MaterialCommunityIcons name="translate" size={18} color={showTranslation ? '#FFFFFF' : TOKENS.violet300} />
             </Pressable>
@@ -181,10 +195,18 @@ export default function StoryLearnScreen() {
           onPress={goToPrevPage}
           disabled={pageIndex === 0}
           style={[styles.backPageButton, pageIndex === 0 && styles.backPageButtonDisabled]}
+          accessibilityRole="button"
+          accessibilityLabel="Önceki sayfa"
+          accessibilityState={{ disabled: pageIndex === 0 }}
         >
           <Feather name="chevron-left" size={20} color={pageIndex === 0 ? TOKENS.textLow : TOKENS.textHi} />
         </Pressable>
-        <Pressable style={styles.nextButtonWrap} onPress={goToNextPage}>
+        <Pressable
+          style={styles.nextButtonWrap}
+          onPress={goToNextPage}
+          accessibilityRole="button"
+          accessibilityLabel={isLastPage ? 'Quize devam et' : 'Sonraki sayfa'}
+        >
           <LinearGradient
             colors={isLastPage ? ['#22C55E', '#15803D'] : [TOKENS.violet400, TOKENS.violet600]}
             start={{ x: 0, y: 0 }}
