@@ -24,8 +24,8 @@ export function RecentWordsScreen() {
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([]);
 
-  const handleWordPress = (_entry: WordListEntry) => {
-    router.push('/word-network');
+  const handleWordPress = (entry: WordListEntry) => {
+    router.push({ pathname: '/explore/word-dna', params: { word: entry.en } });
   };
 
   return (
