@@ -97,6 +97,8 @@ export default function HomeScreen() {
           </Text>
           <Pressable
             onPress={() => router.push('/profile')}
+            accessibilityRole="button"
+            accessibilityLabel="Profilim"
             style={[
               styles.iconCircle,
               { backgroundColor: colors.card, borderColor: colors.border },
@@ -133,6 +135,8 @@ export default function HomeScreen() {
               style={styles.levelHead}
               onPress={() => setLevelInfoOpen(true)}
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Kelime seviyelerin hakkında bilgi"
             >
               <Text
                 style={[styles.cardHeadText, { color: colors.foreground }]}
@@ -174,6 +178,8 @@ export default function HomeScreen() {
             <Pressable
               style={styles.cardHead}
               onPress={() => router.push('/recent-words')}
+              accessibilityRole="button"
+              accessibilityLabel="Son öğrenilen kelimeler"
             >
               <Text
                 style={[styles.cardHeadText, { color: colors.foreground }]}
@@ -204,7 +210,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Search */}
-        <Pressable onPress={() => router.push('/explore')}>
+        <Pressable
+          onPress={() => router.push('/explore')}
+          accessibilityRole="button"
+          accessibilityLabel="Kelime veya tema ara"
+        >
           <View
             style={[
               styles.search,
@@ -286,6 +296,8 @@ export default function HomeScreen() {
             <Pressable
               style={styles.storyContent}
               onPress={() => router.push('/stories')}
+              accessibilityRole="button"
+              accessibilityLabel="Hikâyeye git"
             >
               <View style={styles.storyTop}>
                 <View style={styles.miniHead}>
@@ -322,6 +334,8 @@ export default function HomeScreen() {
             <WordNetwork />
             <Pressable
               onPress={() => router.push('/word-network')}
+              accessibilityRole="button"
+              accessibilityLabel="Kelime ağını gör"
               style={[
                 styles.storyBtn,
                 { backgroundColor: 'rgba(255,255,255,0.1)' },
@@ -336,7 +350,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Premium */}
-        <Pressable onPress={() => router.push('/profile')}>
+        <Pressable
+          onPress={() => router.push('/profile')}
+          accessibilityRole="button"
+          accessibilityLabel="Premium farklarını keşfet"
+        >
           <GlowCard padded={false} style={styles.premiumCard}>
             <Image source={PREMIUM_IMG} style={styles.premiumImg} />
             <LinearGradient
@@ -390,6 +408,8 @@ export default function HomeScreen() {
         <Pressable
           style={styles.sheetBackdrop}
           onPress={() => setLevelInfoOpen(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Kapat"
         >
           <Pressable
             style={[

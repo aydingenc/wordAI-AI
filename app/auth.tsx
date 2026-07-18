@@ -92,6 +92,9 @@ export default function AuthScreen() {
               <Pressable
                 key={m}
                 onPress={() => switchMode(m)}
+                accessibilityRole="tab"
+                accessibilityLabel={m === 'login' ? 'Giriş Yap' : 'Kayıt Ol'}
+                accessibilityState={{ selected: active }}
                 style={[
                   styles.switchBtn,
                   {
@@ -169,6 +172,8 @@ export default function AuthScreen() {
                   'Bu bir demo — şifre sıfırlama e-postası gönderildiğini varsayabilirsin.',
                 )
               }
+              accessibilityRole="button"
+              accessibilityLabel="Şifreni mi unuttun?"
             >
               <Text style={[styles.forgotText, { color: colors.accent }]}>
                 Şifreni mi unuttun?
@@ -197,6 +202,8 @@ export default function AuthScreen() {
         <Pressable
           onPress={submitGoogle}
           testID="auth-google"
+          accessibilityRole="button"
+          accessibilityLabel={isRegister ? 'Google ile kayıt ol' : 'Google ile giriş yap'}
           style={({ pressed }) => [
             styles.googleBtn,
             {
@@ -234,7 +241,12 @@ export default function AuthScreen() {
           </Text>
         ) : null}
 
-        <Pressable style={styles.skip} onPress={submit}>
+        <Pressable
+          style={styles.skip}
+          onPress={submit}
+          accessibilityRole="button"
+          accessibilityLabel="Şimdilik geç"
+        >
           <Text style={[styles.skipText, { color: colors.mutedForeground }]}>
             Şimdilik geç
           </Text>
@@ -273,10 +285,16 @@ function Field({
         style={[fieldStyles.input, { color: colors.foreground }]}
         autoCapitalize="none"
         secureTextEntry={secure && hidden}
+        accessibilityLabel={typeof props.placeholder === 'string' ? props.placeholder : undefined}
         {...props}
       />
       {secure ? (
-        <Pressable onPress={() => setHidden((h) => !h)} hitSlop={8}>
+        <Pressable
+          onPress={() => setHidden((h) => !h)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={hidden ? 'Şifreyi göster' : 'Şifreyi gizle'}
+        >
           <Feather
             name={hidden ? 'eye-off' : 'eye'}
             size={18}
