@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Easing, StyleSheet, View } from 'react-native';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const COLORS = ['#8B5CF6', '#4ADE80', '#FBBF24', '#60A5FA', '#F87171'];
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -21,9 +22,10 @@ let pieceIdCounter = 0;
  */
 export function ConfettiBurst({ burstKey, count = 24 }: { burstKey: number; count?: number }) {
   const [pieces, setPieces] = useState<Piece[]>([]);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    if (burstKey <= 0) return;
+    if (burstKey <= 0 || reducedMotion) return;
     const next: Piece[] = Array.from({ length: count }, () => ({
       id: pieceIdCounter++,
       left: 5 + Math.random() * 90,
