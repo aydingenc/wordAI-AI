@@ -453,3 +453,68 @@ Talimattaki 5 dosyanın hepsi ele alındı (detay Bölüm 8'de). Öne çıkan te
 ### Sonuç
 
 Tamamlanan bulgu ID'leri: **WL-001, WL-002, WL-006, WL-008, WL-009, WL-011, WL-017, WL-019** (tam liste ve dosya bazlı detay Bölüm 3). Ayrıca Görev 4 (Memory Engine sınırı — orijinal audit'te ayrı bir WL-ID'si yok, PROMPT_1B'nin kendi görev tanımı). Değiştirilen 29 dosya, 2 yeni dosya (`lib/storage.ts`, `hooks/useReducedMotion.ts`), 14 commit, `npx tsc -p tsconfig.json --noEmit` → 0 hata (baseline da 0 hata). Blocker'lar Bölüm 12'de: WL-003 (store config, ürün sahibi kararı), TTS ikonu (yeni paket), `home.tsx`/`words/all.tsx`'in kalan dummy içeriği (görsel değişiklik onayı gerektiriyor). `audit-phase-1b` branch'i lokal kaldı, remote'a push edilmedi, PR açılmadı.
+
+## Aşama 1C
+
+Kapsam: `PROMPT_1C.md` — `audit-phase-1b` (HEAD `3db1cf7`) üzerinde bağımsız yapılan bir incelemede bulunan ve kullanıcı tarafından onaylanmış 3 madde: bir güvenlik açığı (server/serve.js, SEC-001/SEC-002) ve iki "bağlı olmayan" ProgressContext fonksiyonu (unlockNextLevel — NEW-001, addCustomStory — NEW-002). Bu oturumda **görsel/tasarım hiçbir şey değişmedi** — kapsam tamamen mantık/veri akışı/güvenlik ile sınırlı tutuldu. `WORDLOOP_CLAUDE_REVIEW.md` repoda bulunmadı (prompt "varsa oku" diyordu) — bulgular doğrudan PROMPT_1C.md'nin kendi açıklamalarından doğrulanarak düzeltildi.
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1b
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        wordloop-1b.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+3db1cf7 Aşama 1B rapor güncellemesi: Bölüm 3/6/7/8/9/10/11/12/13/14 + yeni "Aşama 1B" bölümü
+bda58b8 WL-008: create.tsx öğrenme yolu kartlarına erişilebilirlik prop'ları
+33523af WL-008: Reduce Motion desteği (confetti + ortak reveal animasyonları)
+```
+
+`audit-phase-1b` temiz, `3db1cf7` HEAD'de doğrulandı (untracked `PROMPT_1B.md`/`wordloop-1b.zip` işle ilgisiz, dokunulmadı). `git checkout -b audit-phase-1c` ile buradan dallandı. `npx tsc -p tsconfig.json --noEmit` → 0 hata (oturum baseline'ı).
+
+### Görev 1 — Güvenlik: `server/serve.js` (SEC-001, SEC-002)
+
+**Doğrulama:** İddia kaynak koddan teyit edildi — `serveLandingPage()`, `x-forwarded-host`/`host` header'larını (saldırgan kontrolünde) hiçbir regex/allowlist kontrolünden geçirmeden `expsUrl`/`baseUrl`'e atıyordu; bu değerler `landing-page.html`'de hem `href="exps://EXPS_URL_PLACEHOLDER"` (HTML attribute) hem `const deepLink = "exps://EXPS_URL_PLACEHOLDER";` (ham inline `<script>` JS string literal) içine TEK bir global `.replace()` ile, kaçırma yapılmadan yerleştiriliyordu. `X-Forwarded-Host: x";alert(1);//` gibi bir header, JS string literal'ından çıkıp reflected XSS oluşturabiliyordu — `node -e` ile izole test edilip doğrulandı (bkz. aşağı).
+
+**Düzeltme:**
+- `SAFE_HOST_RE = /^[a-zA-Z0-9.-]+(:[0-9]+)?$/` ile host doğrulanıyor; uymuyorsa `localhost:${port}`'a düşüyor (`getSafeHost`). `x-forwarded-proto` da artık yalnızca tam olarak `"http"` ise kabul ediliyor, aksi halde `"https"` (`getSafeProtocol`) — bu header de aynı şekilde saldırgan kontrolündeydi ve önceden hiç doğrulanmıyordu.
+- İki ayrı kaçırma fonksiyonu: `escapeHtmlAttr()` (`&`,`"`,`'`,`<`,`>`) ve `escapeJsString()` (`\`,`"`,`'`,`<`,`>`,U+2028/U+2029,`\n`,`\r`). Tek bir global `.replace()` deseni iki farklı bağlam için yeterli değildi (talimatın işaret ettiği asıl kök neden) — bunu düzeltmek için `landing-page.html`'deki script içi kopyası ayrı bir token'a (`EXPS_URL_JS_PLACEHOLDER`) ayrıldı, ki href attribute'undaki (`EXPS_URL_PLACEHOLDER`) ve script'teki (`EXPS_URL_JS_PLACEHOLDER`) aynı `expsUrl` değeri artık bağlamına uygun ayrı fonksiyonla kaçırılabilsin. **Bu, template dosyasında görsel olmayan (kullanıcıya hiç görünmeyen, sadece kaynak koddaki) tek satırlık bir token yeniden adlandırmasıdır — render edilen sayfanın görünümünü etkilemez.**
+- `new URL(req.url || '/', ...)` artık `try/catch` içinde; bozuk/eksik Host header'ında `throw` ederse (izole test ile doğrulandı: `new URL('/', 'http://not a valid host!!!')` gerçekten throw ediyor) process çökmek yerine `400 Bad Request` dönüyor.
+
+**Test:** `node --check server/serve.js` (syntax OK) + izole bir smoke-test (helper fonksiyonları `new Function()` ile sandbox'ta çalıştırılıp): kötü niyetli host → `localhost:3000`'e düşüyor; meşru host (`example.com:8080`) → aynen geçiyor; `escapeJsString('x";alert(1);//')` → `x\";alert(1);//` (tırnak artık string'i sonlandırmıyor); `escapeHtmlAttr('x" onmouseover="alert(1)')` → `x&quot; onmouseover=&quot;alert(1)`; kötü `x-forwarded-proto` → `https`'e düşüyor. Gerçek bir HTTP sunucusu bu ortamda ayağa kaldırılıp uçtan uca istek atılmadı (yalnızca fonksiyon-seviyesi izole test) — **gerçek ortamda `curl -H "X-Forwarded-Host: x\";alert(1);//"` ile doğrulanması önerilir.**
+
+Değişen dosyalar: `server/serve.js`, `server/templates/landing-page.html`. `npx tsc -p tsconfig.json --noEmit`: 0 hata (bu dosyalar zaten tsconfig kapsamı dışı salt-JS/HTML, ama proje genelinde regresyon olmadığı teyit edildi).
+
+### Görev 2 — `unlockNextLevel` bağlantısı (NEW-001)
+
+**Doğrulama:** `context/ProgressContext.tsx`'te `unlockNextLevel` tanımlı ama repo genelinde hiçbir çağrısı olmadığı grep ile doğrulandı. `app/learn/quiz.tsx`'teki `ResultsScreen`'in gerçekten `themeId`/`levelIndex` prop'u almadığı, `currentSession`'ın yalnızca üstteki `QuizScreen`'de okunduğu doğrulandı.
+
+**Düzeltme:** `QuizScreen`, `ResultsScreen`'e `origin`/`themeId`/`levelIndex` prop'larını ekledi (`LearnSession` tipi `data/mock`'tan import edildi). `ResultsScreen`, zaten var olan mount `useEffect`'inin (ring/xp animasyonlarını başlatan, `[]` dep'li) İÇİNE, `pct` hesaplandıktan hemen sonra: `origin==='theme' && themeId && levelIndex!==undefined && pct>=0.4` ise `unlockNextLevel(themeId, levelIndex)` çağrısı eklendi. Onaylanan eşik **≥%40** (geçer not) kullanıldı. `unlockAttemptedRef` ile tekrar-çağrı guard'landı (React 18 Strict Mode'un dev'de mount effect'lerini iki kez tetikleyebilmesine karşı).
+
+`sessionFromScene()` (`data/mock.ts`, tema/sahne akışının session kurucusu) `origin:'theme'`, `themeId`, `levelIndex`'i zaten doğru dolduruyordu — doğrulandı, değişiklik gerekmedi.
+
+Değişen dosya: `app/learn/quiz.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. **Cihazda doğrulanmalı:** Hazır Temalar akışında (profil → Hazır Temalar → tema → sahne → hikaye → quiz) %40 ve üzeri skorla bitirilince bir sonraki seviyenin gerçekten `theme/[id].tsx`'te kilidinin açıldığı.
+
+### Görev 3 — `addCustomStory` bağlantısı (NEW-002)
+
+**Doğrulama:** `addCustomStory`'nin de hiçbir yerden çağrılmadığı grep ile doğrulandı. `app/learn/story.tsx`'teki `goToNextPage()`'in `isLastPage` dalının gerçekten `router.push('/learn/quiz')`'e bağlı olduğu (satır ~108-114) doğrulandı — bu, 1A.2'de `components/StoryReader.tsx`'ten port edilmiş, PROMPT_1C'nin tarif ettiği "onFinish tetiklenme noktası"yla aynı yer. `data/mock.ts`'te `LearnSession`'ı `Story`'ye çeviren hazır bir yardımcı fonksiyon YOKTU (`sessionFromScene`/`buildSessionFromWords` ters yöndeydi) — talimatın öngördüğü gibi minimal bir yenisi yazıldı.
+
+**Düzeltme:** `data/mock.ts`'e `buildCustomStoryFromSession(session)` eklendi (`nextId('story')` ile id, `category:'custom'`, `session.paragraphs`/`targetWords`'ten inşa). `app/learn/story.tsx`'te `goToNextPage()`'in `isLastPage` dalında, `router.push('/learn/quiz')`'den ÖNCE: yalnızca `currentSession.origin === 'words'` ise (hazır tema hikayeleri `THEME_STORIES`'te zaten var, tekrar kaydedilmemeli — talimatın açıkça belirttiği ayrım) `addCustomStory(buildCustomStoryFromSession(currentSession))` çağrılıyor. Onaylanan karar: **üretim bitince değil, kullanıcı hikayeyi sonuna kadar okuyunca** (zaten bu noktanın kendisi). `savedCustomStoryRef` ile guard'landı — kullanıcı geri gidip (`goToPrevPage`) son sayfaya tekrar gelip tekrar "Sonraki Sayfa"ya basarsa hikaye ikinci kez eklenmiyor.
+
+Değişen dosyalar: `data/mock.ts`, `app/learn/story.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. **Cihazda doğrulanmalı:** Kelimelerden öğren akışında (words-entry → learn/story, 12 sayfa okunup son sayfada "Quize Devam Et"e basılınca) hikayenin gerçekten `(tabs)/stories.tsx`'in "Kendi Oluşturduklarım" sekmesinde göründüğü; geri-ileri gidildiğinde tekrar eklenmediği.
+
+### Yeni blocker / ürün kararı
+
+Yok. Her üç görev de PROMPT_1C'nin onayladığı kararlarla (unlock eşiği ≥%40, kayıt anı "okuma bitince") net biçimde tamamlandı; ek bir ürün kararı gerektiren açık uç bırakılmadı.
+
+### Sonuç
+
+3 commit (`2b004f9`, `847b2ca`, `f5b306b`), 5 dosya değişti (`server/serve.js`, `server/templates/landing-page.html`, `app/learn/quiz.tsx`, `app/learn/story.tsx`, `data/mock.ts`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Hiçbir görsel/tasarım değişikliği yapılmadı (talimatın kesin kuralı). Yeni paket kurulmadı, backend/API eklenmedi, deploy yapılmadı, push/PR açılmadı. `audit-phase-1c` branch'i lokal kaldı.
