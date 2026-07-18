@@ -52,7 +52,7 @@ export function TextMarquee({
     translateX.setValue(0);
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.delay(1200),
+        Animated.delay(400),
         Animated.timing(translateX, {
           toValue: -overflow - 4,
           duration: 2600,
