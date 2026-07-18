@@ -67,6 +67,14 @@ export default function StoriesScreen() {
     router.push(`/story/${story.id}`);
   };
   const openTheme = (story: Story) => {
+    // THEME_STORIES cards preview one specific scene, so tapping one must
+    // deep-link straight into that scene (scene/[id].tsx) instead of the
+    // theme's scene-list hub — otherwise the previewed content doesn't match
+    // where the tap lands. Falls back to the hub if sceneId is ever missing.
+    if (story.sceneId) {
+      router.push(`/scene/${story.sceneId}`);
+      return;
+    }
     if (story.themeId) router.push(`/theme/${story.themeId}`);
   };
 

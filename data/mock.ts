@@ -48,6 +48,7 @@ export interface Story {
   themeId?: string;
   themeName?: string;
   themeNameEn?: string;
+  sceneId?: string;
   image?: ImageSourcePropType;
   paragraphs: StoryParagraph[];
   targetWords: string[];
@@ -779,6 +780,7 @@ export const THEME_STORIES: Story[] = THEMES.flatMap((theme) =>
     themeId: theme.id,
     themeName: theme.name,
     themeNameEn: theme.nameEn,
+    sceneId: scene.id,
     image: theme.image,
     paragraphs: scene.paragraphs,
     targetWords: scene.words.map((w) => w.en),
