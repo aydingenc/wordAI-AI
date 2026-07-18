@@ -826,3 +826,67 @@ Yok — kullanıcı kararı zaten bu prompt'un başında netleşti (THEME_STORIE
 ### Sonuç
 
 1 commit (`fe04edc`), 2 dosya değişti (`data/mock.ts`, `app/(tabs)/stories.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir şey (renk/font/layout) değişmedi. Push/PR yapılmadı. `audit-phase-1g` branch'i lokal kaldı.
+
+## Aşama 1H
+
+Kapsam: `PROMPT_1H.md` — kullanıcının gerçek cihazda test edip ekran görüntüsü + açıklamayla bulduğu 2 yeni sorun: (1) Aşama 1G'nin veri kaynağı değişiminin yan etkisi olarak keşfet kartlarının başlık uzunluğundan yeniden farklı boyda görünmesi, (2) "Hazır Tema Hikayeler" sekmesinin 48 hikayenin tamamı yerine yalnızca 16 temsilciyi listelemesi. `audit-phase-1g` (HEAD `fea272d`) üzerinden `audit-phase-1h` branch'i açılarak devam edildi.
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1g
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        PROMPT_1F.md
+        PROMPT_1G.md
+        PROMPT_1H.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e-v2.zip
+        wordloop-1e.zip
+        wordloop-1f.zip
+        wordloop-1g.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+fea272d Asama 1G rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1G" bolumu eklendi
+fe04edc Asama 1G: Hikayelerim artik yer tutucu THEME_STORIES yerine gercek 16 kategoriden besleniyor
+addde26 Asama 1F rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1F" bolumu eklendi
+```
+
+`audit-phase-1g` temiz, `fea272d` HEAD'de doğrulandı. `git checkout -b audit-phase-1h` ile buradan dallandı.
+
+### Görev 1 — Keşfet kartı başlığına sabit yükseklik
+
+**Doğrulama:** Aşama 1G'de veri kaynağı `THEME_STORIES`'in kısa Türkçe isimlerinden (`Doğa`, `Şehir`) gerçek 16 kategorinin İngilizce isimlerine (`Entertainment`, `Relationships & Dating`, `Daily Life`) geçince, `discoverTitle` stilinin (`numberOfLines={2}`, `lineHeight:15.5`, `minHeight` yok) kısa isimli kartlarda 1 satırda kalıp uzun isimli kartlarda 2 satıra sardığı, dolayısıyla kart yüksekliğinin yeniden farklılaştığı doğrulandı — Aşama 1E Görev 5'in `discoverTagsRow` için yaptığı düzeltmeyle aynı kökten, farklı bir alanda ortaya çıkan yeni bir örnek.
+
+**Düzeltme:** `discoverTitle`'a `minHeight: 33` eklendi (`lineHeight:15.5 × 2 = 31`, güvenli pay için 33). Renk/font/boyut değişmedi, yalnızca bu alanın rezerve ettiği yükseklik sabitlendi.
+
+Değişen dosya: `app/(tabs)/stories.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+### Görev 2 — "Hazır Tema Hikayeler" sekmesi artık 48 hikayenin tamamını listeliyor
+
+**Doğrulama:** `DISCOVER_GALLERY_ITEMS`'in (16, kategori başına 1 temsilci) hem "Yeni Hikayeler Keşfet" (Tümü sekmesindeki yatay önizleme şeridi) hem de "Hazır Tema Hikayeler" (`activeTab === 'theme'`, tam `discoverGrid` ızgarası) için kullanıldığı doğrulandı.
+
+**Düzeltme:** `GALLERY_ITEMS` `@/data/mock`'tan import edildi. `activeTab === 'theme'` dalındaki `discoverGrid` ızgarası artık `DISCOVER_GALLERY_ITEMS.map(...)` yerine `GALLERY_ITEMS.map(...)` kullanıyor (48 öğe, 16 kategori × 3 seviye). `activeTab !== 'theme'` dalındaki (Tümü sekmesinin yatay önizleme şeridi) `DISCOVER_GALLERY_ITEMS.map(...)` dokunulmadan kaldı (hâlâ 16 temsilci, teaser amaçlı). `discoverStoryFromGalleryItem`/`openGalleryItem`/`gradient`/`style` mantığı zaten genel amaçlı yazıldığından iki dalda da değişiklik gerektirmeden aynı şekilde çalıştı (kod okumayla doğrulandı).
+
+Değişen dosya: `app/(tabs)/stories.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+**Cihazda doğrulanmalı (her iki görev için):** Hikayelerim'deki keşfet kartlarının artık kategori adı uzunluğundan bağımsız olarak eşit boyda göründüğü (kısa "Art" ile uzun "Relationships & Dating" kartları hizalı); "Hazır Tema Hikayeler" sekmesine geçildiğinde artık 48 kartın (16 kategori × 3 seviye: A2/B1/C1) hepsinin listelendiği; Tümü sekmesindeki "Yeni Hikayeler Keşfet" yatay şeridinin hâlâ yalnızca 16 temsilci kartla sınırlı kaldığı — bu ortamda `expo start` çalışmadığından görsel doğrulama yapılamadı.
+
+### Yeni blocker / ürün kararı
+
+Yok. İki görev de talimatın verdiği net kararlarla tamamlandı.
+
+### Sonuç
+
+2 commit (`17eecf3`, `f577199`), 1 dosya değişti (`app/(tabs)/stories.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1h` branch'i lokal kaldı.
