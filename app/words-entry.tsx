@@ -12,6 +12,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { GradientBackground } from '@/components/GradientBackground';
 import { StoryGenerationCooldown } from '@/components/StoryGenerationCooldown';
 import { useColors } from '@/hooks/useColors';
@@ -222,7 +223,9 @@ export default function WordsEntryScreen() {
 
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
+      {/* Sticks above the keyboard instead of getting hidden behind it
+          (WL-009) — same visual footer, just keyboard-aware positioning. */}
+      <KeyboardStickyView style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <View style={styles.tipCard}>
           <Text style={styles.star}>⭐</Text>
           <Text style={[styles.tipText, { color: colors.mutedForeground }]}><Text style={styles.tipLead}>Tavsiye:</Text> Otomatik modda kelime geçişleri senin öğrenme hızına göre en verimli şekilde ayarlanır.</Text>
@@ -233,7 +236,7 @@ export default function WordsEntryScreen() {
             <Feather name="arrow-right" size={28} color="#DAC8FF" />
           </LinearGradient>
         </Pressable>
-      </View>
+      </KeyboardStickyView>
 
       <Modal visible={!!overlay} animationType="none" transparent onRequestClose={() => {}} statusBarTranslucent>
         {overlay?.kind === 'cooldown' ? (
@@ -377,9 +380,12 @@ const styles = StyleSheet.create({
   choiceSub: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 10, lineHeight: 12, marginTop: 0, textAlign: 'center' },
   check: { position: 'absolute', top: -5, right: -5, width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(245,208,254,0.85)', backgroundColor: '#D774FF', alignItems: 'center', justifyContent: 'center', shadowColor: '#E879F9', shadowOpacity: 0.55, shadowRadius: 7, elevation: 7 },
   emptyCard: { height: 142, borderRadius: 18, borderWidth: 1, borderColor: 'rgba(139,92,246,0.22)', backgroundColor: 'rgba(5,7,18,0.78)', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', paddingVertical: 10, shadowColor: '#7C3AED', shadowOpacity: 0.16, shadowRadius: 14 },
-  filledCard: { height: 176, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
+  // Heights below are generous enough for the MAX_WORDS=10 worst case
+  // wrapped across 3 balloon rows at 320px width / large system font scale
+  // (WL-009) — previously fixed just tight enough to clip in that case.
+  filledCard: { height: 208, borderColor: 'rgba(192,132,252,0.36)', backgroundColor: 'rgba(8,7,22,0.82)', shadowOpacity: 0.24 },
   magicBox: { width: '100%', height: 84, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 2 },
-  magicBoxFilled: { height: 116 },
+  magicBoxFilled: { height: 148 },
   boxGlow: { position: 'absolute', bottom: 4, width: 150, height: 56, borderRadius: 75, backgroundColor: '#7C3AED', opacity: 0.22, shadowColor: '#A855F7', shadowOpacity: 0.8, shadowRadius: 28 },
   magicCore: { width: 66, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', transform: [{ rotate: '-1deg' }], shadowColor: '#8B5CF6', shadowOpacity: 0.78, shadowRadius: 18, elevation: 10 },
   magicCoreFilled: { position: 'absolute', top: 24, opacity: 0.58, width: 48, height: 34, borderRadius: 11 },
@@ -400,13 +406,13 @@ const styles = StyleSheet.create({
   floatFive: { top: 2, right: 70, transform: [{ rotate: '8deg' }] },
   floatSix: { top: 30, left: 78, transform: [{ rotate: '5deg' }] },
   realFloatChip: { color: '#FFFFFF', borderColor: 'rgba(216,180,254,0.95)', backgroundColor: 'rgba(88,28,135,0.92)' },
-  realWordsCloud: { position: 'absolute', left: 7, right: 7, top: 8, minHeight: 96, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 2, paddingVertical: 4 },
-  realBalloonHit: { position: 'relative', width: 58, alignItems: 'center', justifyContent: 'center', paddingBottom: 6 },
-  realBalloon: { width: 56, minHeight: 25, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 4, shadowOpacity: 0.42, shadowRadius: 10, elevation: 7, borderColor: 'rgba(216,180,254,0.78)', shadowColor: '#A855F7' },
+  realWordsCloud: { position: 'absolute', left: 7, right: 7, top: 8, minHeight: 128, flexDirection: 'row', flexWrap: 'wrap', alignContent: 'center', justifyContent: 'center', gap: 5, paddingHorizontal: 2, paddingVertical: 4 },
+  realBalloonHit: { position: 'relative', width: 62, alignItems: 'center', justifyContent: 'center', paddingBottom: 6 },
+  realBalloon: { width: 60, minHeight: 25, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 4, shadowOpacity: 0.42, shadowRadius: 10, elevation: 7, borderColor: 'rgba(216,180,254,0.78)', shadowColor: '#A855F7' },
   realBalloonString: { position: 'absolute', bottom: -8, width: 1, height: 14, backgroundColor: 'rgba(216,180,254,0.5)', shadowColor: '#D8B4FE', shadowOpacity: 0.28, shadowRadius: 4 },
   balloonHighlight: { position: 'absolute', left: 9, top: 5, width: 9, height: 4, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.62)', transform: [{ rotate: '-24deg' }] },
   balloonKnot: { position: 'absolute', bottom: -3, width: 7, height: 6, borderRadius: 3, transform: [{ rotate: '45deg' }], backgroundColor: 'rgba(139,92,246,0.92)' },
-  realWordText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 9.5, lineHeight: 12, maxWidth: 44, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.34)', textShadowRadius: 2 },
+  realWordText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 9.5, lineHeight: 12, maxWidth: 48, textAlign: 'center', textShadowColor: 'rgba(0,0,0,0.34)', textShadowRadius: 2 },
   emptyTitle: { color: '#F5F3FF', fontFamily: 'Inter_500Medium', fontSize: 15, marginTop: 0 },
   emptyText: { color: '#B8B0C9', fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
   hot: { color: '#F05DFF', fontFamily: 'Inter_700Bold' },

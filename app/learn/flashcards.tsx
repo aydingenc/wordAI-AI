@@ -244,13 +244,27 @@ export default function FlashcardsScreen() {
       </View>
 
       <View style={styles.actionRow}>
-        <Pressable style={styles.hardBtn} onPress={() => judge(false)}>
+        <Pressable style={styles.hardBtn} onPress={() => judge(false)} accessibilityRole="button" accessibilityLabel="Zorlandım">
           <Feather name="x" size={16} color={TOKENS.red} />
-          <Text style={[styles.actionText, { color: TOKENS.red }]}>Zorlandım</Text>
+          <Text
+            style={[styles.actionText, { color: TOKENS.red }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.75}
+          >
+            Zorlandım
+          </Text>
         </Pressable>
-        <Pressable style={styles.knownBtn} onPress={() => judge(true)}>
+        <Pressable style={styles.knownBtn} onPress={() => judge(true)} accessibilityRole="button" accessibilityLabel="Biliyorum">
           <Feather name="check" size={16} color={TOKENS.green} />
-          <Text style={[styles.actionText, { color: TOKENS.green }]}>Biliyorum</Text>
+          <Text
+            style={[styles.actionText, { color: TOKENS.green }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.75}
+          >
+            Biliyorum
+          </Text>
         </Pressable>
       </View>
     </View>

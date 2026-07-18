@@ -405,63 +405,68 @@ export default function HomeScreen() {
             <View
               style={[styles.sheetGrabber, { backgroundColor: colors.borderStrong }]}
             />
-            <View style={styles.sheetHeadRow}>
-              <View
-                style={[styles.sheetIcon, { backgroundColor: colors.secondary }]}
-              >
-                <Feather name="bar-chart-2" size={18} color={colors.primary} />
-              </View>
-              <Text style={[styles.sheetTitle, { color: colors.foreground }]}>
-                Kelime Seviyelerin
-              </Text>
-            </View>
-
-            <Text style={[styles.sheetIntro, { color: colors.mutedForeground }]}>
-              Öğrendiğin kelimelerin statüsünü buradan takip edebilirsin.
-            </Text>
-
-            <Text style={[styles.sheetSubtitle, { color: colors.foreground }]}>
-              Kelime Seviyeleri Nasıl Belirlenir?
-            </Text>
-
-            <View style={styles.sheetLevels}>
-              {LEVEL_INFO.map((l) => (
+            {/* Scrollable so large system font sizes can't push the level
+                rows off-screen with no way to reach them (WL-009) — at
+                normal text size this scrolls nowhere and looks identical. */}
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.sheetHeadRow}>
                 <View
-                  key={l.label}
-                  style={[
-                    styles.sheetLevelRow,
-                    { backgroundColor: colors.secondary, borderColor: colors.border },
-                  ]}
+                  style={[styles.sheetIcon, { backgroundColor: colors.secondary }]}
                 >
-                  <MaterialCommunityIcons name={l.icon} size={20} color={l.color} />
-                  <View style={styles.sheetLevelTextWrap}>
-                    <Text
-                      style={[styles.sheetLevelLabel, { color: colors.foreground }]}
-                    >
-                      {l.label}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.sheetLevelDesc,
-                        { color: colors.mutedForeground },
-                      ]}
-                    >
-                      {l.desc}
-                    </Text>
-                  </View>
+                  <Feather name="bar-chart-2" size={18} color={colors.primary} />
+                </View>
+                <Text style={[styles.sheetTitle, { color: colors.foreground }]}>
+                  Kelime Seviyelerin
+                </Text>
+              </View>
+
+              <Text style={[styles.sheetIntro, { color: colors.mutedForeground }]}>
+                Öğrendiğin kelimelerin statüsünü buradan takip edebilirsin.
+              </Text>
+
+              <Text style={[styles.sheetSubtitle, { color: colors.foreground }]}>
+                Kelime Seviyeleri Nasıl Belirlenir?
+              </Text>
+
+              <View style={styles.sheetLevels}>
+                {LEVEL_INFO.map((l) => (
                   <View
+                    key={l.label}
                     style={[
-                      styles.sheetRangeBadge,
-                      { backgroundColor: l.color + '22', borderColor: l.color + '55' },
+                      styles.sheetLevelRow,
+                      { backgroundColor: colors.secondary, borderColor: colors.border },
                     ]}
                   >
-                    <Text style={[styles.sheetRangeText, { color: l.color }]}>
-                      {l.range}
-                    </Text>
+                    <MaterialCommunityIcons name={l.icon} size={20} color={l.color} />
+                    <View style={styles.sheetLevelTextWrap}>
+                      <Text
+                        style={[styles.sheetLevelLabel, { color: colors.foreground }]}
+                      >
+                        {l.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.sheetLevelDesc,
+                          { color: colors.mutedForeground },
+                        ]}
+                      >
+                        {l.desc}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.sheetRangeBadge,
+                        { backgroundColor: l.color + '22', borderColor: l.color + '55' },
+                      ]}
+                    >
+                      <Text style={[styles.sheetRangeText, { color: l.color }]}>
+                        {l.range}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              ))}
-            </View>
+                ))}
+              </View>
+            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>
@@ -605,6 +610,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
     gap: 12,
+    maxHeight: '85%',
   },
   sheetGrabber: {
     width: 40,
