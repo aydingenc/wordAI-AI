@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '@/components/GradientBackground';
 import { GlowCard } from '@/components/GlowCard';
 import { PrimaryButton } from '@/components/PrimaryButton';
-import { BookIcon, HeartIcon, SparkleIcon } from '@/components/WordStatusIcons';
+import { BookIcon, SparkleIcon } from '@/components/WordStatusIcons';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
 import { Story, THEME_STORIES } from '@/data/mock';
@@ -36,11 +36,6 @@ const DISCOVER_GRADIENTS: [string, string, string][] = [
   ['#0a1a2a', '#1f4a6b', '#05121f'],
   ['#241708', '#a5672f', '#3a2a1a'],
 ];
-
-/** Decorative like counts — cosmetic only, no real analytics backend. */
-function likesFor(index: number): number {
-  return 76 + ((index * 37) % 90);
-}
 
 function themeLabelFor(story: Story): string {
   if (story.themeName) return `${story.themeName} / ${story.themeNameEn ?? story.themeName}`;
@@ -89,6 +84,8 @@ export default function StoriesScreen() {
           <Pressable
             onPress={() => router.push('/create')}
             style={({ pressed }) => [styles.addBtn, { opacity: pressed ? 0.85 : 1 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Yeni hikaye oluştur"
           >
             <LinearGradient
               colors={[colors.accent, colors.primary]}
@@ -108,7 +105,14 @@ export default function StoriesScreen() {
           {TABS.map((tab) => {
             const active = tab.key === activeTab;
             return (
-              <Pressable key={tab.key} onPress={() => setActiveTab(tab.key)} style={styles.tabHit}>
+              <Pressable
+                key={tab.key}
+                onPress={() => setActiveTab(tab.key)}
+                style={styles.tabHit}
+                accessibilityRole="tab"
+                accessibilityLabel={tab.label}
+                accessibilityState={{ selected: active }}
+              >
                 {active ? (
                   <LinearGradient
                     colors={[colors.accent, colors.primary]}
@@ -143,7 +147,6 @@ export default function StoriesScreen() {
                     key={story.id}
                     story={story}
                     gradient={COLLECTION_GRADIENTS[i % COLLECTION_GRADIENTS.length]}
-                    likes={likesFor(i)}
                     onPress={() => openStory(story)}
                   />
                 ))}
@@ -243,12 +246,10 @@ function SectionHead({
 function CollectionCard({
   story,
   gradient,
-  likes,
   onPress,
 }: {
   story: Story;
   gradient: [string, string, string];
-  likes: number;
   onPress: () => void;
 }) {
   const colors = useColors();
@@ -287,10 +288,6 @@ function CollectionCard({
               <Text style={[styles.themeTagText, { color: colors.accent }]} numberOfLines={1}>
                 Tema: {themeLabelFor(story)}
               </Text>
-            </View>
-            <View style={styles.likeCount}>
-              <HeartIcon size={13} />
-              <Text style={[styles.likeCountText, { color: colors.mutedForeground }]}>{likes}</Text>
             </View>
           </View>
         </View>
