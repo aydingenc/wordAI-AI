@@ -189,8 +189,16 @@ export default function WordsEntryScreen() {
             autoCapitalize="none"
             returnKeyType="done"
             editable={!reachedMax}
+            accessibilityLabel="Hedef kelime"
           />
-          <Pressable onPress={() => addWord(input)} disabled={!input.trim() || reachedMax} style={({ pressed }) => [styles.addCircle, { opacity: !input.trim() || reachedMax ? 0.55 : pressed ? 0.8 : 1 }]}>
+          <Pressable
+            onPress={() => addWord(input)}
+            disabled={!input.trim() || reachedMax}
+            style={({ pressed }) => [styles.addCircle, { opacity: !input.trim() || reachedMax ? 0.55 : pressed ? 0.8 : 1 }]}
+            accessibilityRole="button"
+            accessibilityLabel="Kelime ekle"
+            accessibilityState={{ disabled: !input.trim() || reachedMax }}
+          >
             <Feather name="plus" size={20} color="#F6EEFF" />
           </Pressable>
         </View>
@@ -230,7 +238,14 @@ export default function WordsEntryScreen() {
           <Text style={styles.star}>⭐</Text>
           <Text style={[styles.tipText, { color: colors.mutedForeground }]}><Text style={styles.tipLead}>Tavsiye:</Text> Otomatik modda kelime geçişleri senin öğrenme hızına göre en verimli şekilde ayarlanır.</Text>
         </View>
-        <Pressable onPress={createStory} disabled={!canCreate} style={({ pressed }) => [styles.cta, { opacity: canCreate ? (pressed ? 0.9 : 1) : 0.82 }]}>
+        <Pressable
+          onPress={createStory}
+          disabled={!canCreate}
+          style={({ pressed }) => [styles.cta, { opacity: canCreate ? (pressed ? 0.9 : 1) : 0.82 }]}
+          accessibilityRole="button"
+          accessibilityLabel="Hikaye oluştur"
+          accessibilityState={{ disabled: !canCreate }}
+        >
           <LinearGradient colors={['#4C1DFF', '#7C3AED', '#5B10C8']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ctaGradient}>
             <Text style={styles.ctaText}>Hikaye Oluştur</Text>
             <Feather name="arrow-right" size={28} color="#DAC8FF" />
@@ -258,7 +273,13 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 }
 
 function ThemeCard({ item, active, onPress }: { item: (typeof THEMES)[number]; active: boolean; onPress: () => void }) {
-  return <Pressable onPress={onPress} style={[styles.themeCard, active && styles.activeCard]}>
+  return <Pressable
+    onPress={onPress}
+    style={[styles.themeCard, active && styles.activeCard]}
+    accessibilityRole="button"
+    accessibilityLabel={`${item.title} teması`}
+    accessibilityState={{ selected: active }}
+  >
     <View style={styles.themeLabelRow}>
       <MaterialCommunityIcons name={item.icon} size={15} color={active ? '#F0ABFC' : '#DDD6FE'} />
       <Text style={styles.choiceTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>{item.title}</Text>
@@ -269,7 +290,13 @@ function ThemeCard({ item, active, onPress }: { item: (typeof THEMES)[number]; a
 }
 
 function OptionCard({ item, active, onPress }: { item: (typeof REPEAT_OPTIONS)[number]; active: boolean; onPress: () => void }) {
-  return <Pressable onPress={onPress} style={[styles.optionCard, active && styles.activeCard]}>
+  return <Pressable
+    onPress={onPress}
+    style={[styles.optionCard, active && styles.activeCard]}
+    accessibilityRole="button"
+    accessibilityLabel={`Kelime geçiş sayısı: ${item.title}`}
+    accessibilityState={{ selected: active }}
+  >
     <Text style={styles.choiceTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{item.title}</Text><Text style={styles.choiceSub} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>{item.subtitle}</Text>{active ? <View style={styles.optionCheck}><Feather name="check" size={12} color="#230433" /></View> : null}
   </Pressable>;
 }
@@ -310,7 +337,14 @@ function MagicWordsCard({ words, onRemove }: { words: string[]; onRemove: (word:
       {hasWords ? (
         <View style={styles.realWordsCloud}>
           {words.slice(0, MAX_WORDS).map((word) => (
-            <Pressable key={word} onPress={() => onRemove(word)} hitSlop={5} style={styles.realBalloonHit}>
+            <Pressable
+              key={word}
+              onPress={() => onRemove(word)}
+              hitSlop={5}
+              style={styles.realBalloonHit}
+              accessibilityRole="button"
+              accessibilityLabel={`${word} kelimesini kaldır`}
+            >
               <LinearGradient
                 colors={REAL_BALLOON_COLORS}
                 start={{ x: 0.12, y: 0.08 }}
