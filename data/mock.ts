@@ -509,6 +509,24 @@ export function sessionFromScene(scene: Scene): LearnSession {
   };
 }
 
+/**
+ * Builds a saveable `Story` from a completed words-origin `LearnSession`
+ * (NEW-002) — called only once, when the user finishes reading their own
+ * generated story, so it shows up under "Hikayelerim → Kendi Oluşturduklarım".
+ * Preset theme stories (`origin: 'theme'`) are never passed here — they
+ * already exist in `THEME_STORIES` and must not be re-saved as duplicates.
+ */
+export function buildCustomStoryFromSession(session: LearnSession): Story {
+  return {
+    id: nextId('story'),
+    title: session.title,
+    level: session.levelName,
+    category: 'custom',
+    paragraphs: session.paragraphs,
+    targetWords: session.targetWords.map((w) => w.en),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Target-word pill/tier contract (WL-004 2a) — single source of truth for
 // both the tier color and the "NEW" badge, so they can never contradict

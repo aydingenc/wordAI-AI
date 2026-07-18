@@ -18,7 +18,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
-import { buildStoryReaderData, getWordTier, isNewWord, TIER_COLORS } from '@/data/mock';
+import { buildCustomStoryFromSession, buildStoryReaderData, getWordTier, isNewWord, TIER_COLORS } from '@/data/mock';
 
 const TOKENS = {
   bg: '#08070D',
@@ -44,7 +44,7 @@ const CHAPTER_VISUALS: { gradient: readonly [string, string]; icon: keyof typeof
 export default function StoryLearnScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { currentSession } = useProgress();
+  const { currentSession, addCustomStory } = useProgress();
 
   const [pageIndex, setPageIndex] = useState(0);
   const [showTranslation, setShowTranslation] = useState(false);
@@ -53,6 +53,9 @@ export default function StoryLearnScreen() {
   // Tracks which storyCount===0 words have already had their NEW badge shown,
   // by word text (not by page/paragraph position) — across the whole read session.
   const seenNewWordsRef = useRef<Set<string>>(new Set());
+  // Guards addCustomStory() (NEW-002) to fire at most once per session, even
+  // if the user pages back and forward past the last page again.
+  const savedCustomStoryRef = useRef(false);
 
   const readerData = useMemo(
     () =>
@@ -107,6 +110,13 @@ export default function StoryLearnScreen() {
 
   const goToNextPage = () => {
     if (isLastPage) {
+      // NEW-002: save the user's own generated story once they've actually
+      // finished reading it (not the moment it was produced). Preset theme
+      // stories already exist in THEME_STORIES and must not be duplicated.
+      if (currentSession.origin === 'words' && !savedCustomStoryRef.current) {
+        savedCustomStoryRef.current = true;
+        addCustomStory(buildCustomStoryFromSession(currentSession));
+      }
       router.push('/learn/quiz');
       return;
     }
