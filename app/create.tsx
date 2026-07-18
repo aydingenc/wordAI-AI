@@ -79,6 +79,8 @@ function CardButton({
     <Pressable
       testID={testID}
       onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
       style={({ pressed }) => [
         st.ctaCompact,
         {
@@ -280,6 +282,8 @@ export default function CreateScreen() {
                 router.push('/images-gallery');
               }}
               style={[st.ctaChevron, { borderColor: GLASS_BORDER }]}
+              accessibilityRole="button"
+              accessibilityLabel="Hazır temalardan öğren"
             >
               <Feather name="arrow-right" size={18} color={colors.accent} />
             </Pressable>
