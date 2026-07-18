@@ -650,10 +650,58 @@ Değişen dosyalar: `data/mock.ts`, `app/(tabs)/stories.tsx`, `app/story/[id].ts
 
 Değişen dosya: `components/TextMarquee.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. **Cihazda doğrulanmalı:** uzun kelime/anlam/örnek cümlelerin artık "..." göstermeden kayarak okunabildiği (bu ortamda görsel doğrulama yapılamadı).
 
+### Ek görevler (PROMPT_1E_devam.md)
+
+Kapsam: `PROMPT_1E.md`'nin bu branch'e verilen kopyası eksikti — Görev 4 ve Görev 5 hiç yapılmamıştı, `PROMPT_1E_devam.md` ile aynı branch (`audit-phase-1e`) üzerinden tamamlandı. Yeni branch açılmadı.
+
+**Başlangıç doğrulaması:**
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1e
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -5
+e92ea07 Aşama 1E rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Aşama 1E" bölümü eklendi
+027a2a8 Görev 3: Kelime tablosunda kayan yazı artık "..." almadan çalışıyor
+70925ce Görev 2: Kendi hikayeler artık TTS+pilli learn/story.tsx okuyucusuna gidiyor
+610b17e Görev 1: nextId() artık process-restart'lar arası çakışmıyor (duplicate key fix)
+abd8faf Aşama 1D rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Aşama 1D" bölümü eklendi
+```
+`audit-phase-1e` üzerinde, HEAD `e92ea07` (Görev 1-3 + rapor commit'i) doğrulandı. Aynı branch üzerine devam edildi, yeni branch açılmadı.
+
+#### Görev 4 — Hikâye üretim ekranındaki daktilo kutusu taşan metni artık kaydırıyor
+
+**Doğrulama:** `components/StoryGenerationCooldown.tsx`'teki `typingBox` stilinin (`minHeight: 140`, sabit) gerçekten hiçbir kaydırma mekanizmasına sahip olmadığı ve dosyada `ScrollView`'in hiç import edilmediği doğrulandı. `storyPreview.slice(0, typedChars)` daktilo efektiyle uzadıkça, uzun paragraflarda metnin sabit yükseklikli kutunun dışına taştığı kod okumayla teyit edildi.
+
+**Düzeltme:** `react-native`'den `ScrollView` import edildi. Phase-3 kartındaki `<View style={styles.typingBox}>` → `<ScrollView style={styles.typingBox} contentContainerStyle={styles.typingBoxContent}>` olarak değiştirildi. Görsel stiller (`flex`, `marginTop`, `minHeight`, `borderRadius`, `backgroundColor`, `borderWidth`, `borderColor`, `width`) `typingBox`'ta aynen kaldı; yalnızca `padding: 20` yeni `typingBoxContent` (contentContainerStyle) stiline taşındı — ScrollView'da padding, kaydırılan içeriğin (contentContainerStyle) üzerinde olmalı, dış çerçevede (style) olursa taşan içerik kutunun kenarına yapışır. Daktilo animasyonu (`typedChars` state artışı, cursor blink) hiç değişmedi.
+
+Değişen dosya: `components/StoryGenerationCooldown.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. **Cihazda doğrulanmalı:** uzun bir hikâye önizlemesinde (Tecno Spark 40c dahil) daktilo metninin artık kutunun altından taşmadan, kutu içinde kaydırılarak (veya kutunun kendi yüksekliği doluncaya kadar) okunabildiği — bu ortamda `expo start` çalışmadığı için görsel doğrulama yapılamadı.
+
+#### Görev 5 — Hikayelerim → "Yeni Hikayeler Keşfet" kartları artık aynı yükseklikte hizalanıyor
+
+**Doğrulama:** `app/(tabs)/stories.tsx`'teki `DiscoverCard`'ın `discoverTagsRow` stilinin (`flexWrap:'wrap'`, en fazla 3 etiket) hiçbir sabit yükseklik taşımadığı doğrulandı — kısa kelimelerde etiketler 1 satırda kalırken uzun kelimelerde 2 satıra sarıyor, kart yüksekliği tamamen içeriğe bağlı olduğundan yatay kaydırmadaki kartlar (`discoverScrollItem`) farklı boyda görünüyordu.
+
+**Düzeltme:** `discoverTagsRow` stiline `minHeight: 36` eklendi. Hesap: `discoverTag` (`paddingVertical: 2` → satır başına +4px) + `discoverTagText` (`fontSize: 8.5`, `Inter_700Bold`, örtük satır yüksekliği ~12px) ≈ satır başına ~16px; iki satır + aradaki `gap: 4` = `16*2 + 4 = 36px` — en kötü durumu (3 etiketin 2 satıra sarması) karşılayacak şekilde seçildi. Renk/font/padding/border değişmedi, yalnızca satırın rezerve ettiği alan sabitlendi.
+
+Değişen dosya: `app/(tabs)/stories.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata. **Cihazda doğrulanmalı:** Hikayelerim → "Yeni Hikayeler Keşfet" yatay listesinde, kısa ve uzun hedef-kelimeli kartların artık aynı toplam yükseklikte hizalı göründüğü — bu ortamda görsel doğrulama yapılamadı.
+
 ### Yeni blocker / ürün kararı
 
-Yok. Üç görev de talimatın verdiği net kararlarla tamamlandı.
+Yok. Beş görev de (Görev 1-3 + Görev 4-5) talimatların verdiği net kararlarla tamamlandı.
 
 ### Sonuç
 
-3 commit (`610b17e`, `70925ce`, `027a2a8`), 6 dosya değişti (`data/mock.ts`, `app/(tabs)/stories.tsx`, `app/story/[id].tsx`, `app/learn/story.tsx`, `components/TextMarquee.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir metin/renk/layout değişmedi. Push/PR yapılmadı. `audit-phase-1e` branch'i lokal kaldı.
+5 commit (`610b17e`, `70925ce`, `027a2a8`, `d59ea7c`, `8bdd17c`), 8 dosya değişti (`data/mock.ts`, `app/(tabs)/stories.tsx`, `app/story/[id].tsx`, `app/learn/story.tsx`, `components/TextMarquee.tsx`, `components/StoryGenerationCooldown.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir metin/renk/layout değişmedi. Push/PR yapılmadı. `audit-phase-1e` branch'i lokal kaldı.
