@@ -37,7 +37,7 @@ function highlight(sentence: string, word: string) {
 export default function FlashcardsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { currentSession, addLearnedWords } = useProgress();
+  const { currentSession, addLearnedWords, recordCardEvaluation } = useProgress();
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [results, setResults] = useState<(boolean | null)[]>([]);
@@ -101,6 +101,10 @@ export default function FlashcardsScreen() {
       next[index] = known;
       return next;
     });
+    // WL-004 (Memory Engine sınırı): the raw Zorlandım/Biliyorum choice is
+    // persisted as-is — no derived "next review date" or memory score is
+    // fabricated from it (no real spaced-repetition algorithm exists yet).
+    recordCardEvaluation(word.en, known);
 
     Animated.parallel([
       Animated.timing(cardX, { toValue: known ? 420 : -420, duration: 380, easing: Easing.out(Easing.ease), useNativeDriver: true }),

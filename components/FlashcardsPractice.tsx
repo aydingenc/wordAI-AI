@@ -4,6 +4,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PracticeCompleteScreen } from '@/components/PracticeCompleteScreen';
+import { useProgress } from '@/context/ProgressContext';
 import { makeWord } from '@/data/mock';
 
 export interface FlashcardsPracticeProps {
@@ -38,6 +39,7 @@ function highlight(sentence: string, word: string) {
 export function FlashcardsPractice({ words, onBack, onClose, onComplete }: FlashcardsPracticeProps) {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { recordCardEvaluation } = useProgress();
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [results, setResults] = useState<(boolean | null)[]>(words.map(() => null));
@@ -91,6 +93,7 @@ export function FlashcardsPractice({ words, onBack, onClose, onComplete }: Flash
       next[index] = known;
       return next;
     });
+    recordCardEvaluation(word, known);
 
     Animated.parallel([
       Animated.timing(cardX, { toValue: known ? 420 : -420, duration: 380, easing: Easing.out(Easing.ease), useNativeDriver: true }),

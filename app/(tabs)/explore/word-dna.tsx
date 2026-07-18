@@ -283,7 +283,10 @@ export default function WordDnaScreen() {
               <KbStat icon="book-open" val={String(word.reviewCount)} lbl="Review Count" />
             </View>
             <View>
-              <Text style={styles.memoryScoreLbl}>Hafıza Skoru</Text>
+              {/* No real spaced-repetition/memory algorithm exists yet (WL-004
+                  Memory Engine sınırı) — labelled "Örnek" per the audit's own
+                  suggested microcopy so this ring isn't read as a computed score. */}
+              <Text style={styles.memoryScoreLbl}>Örnek Skor</Text>
               <View style={styles.memoryRingWrap}>
                 <View style={styles.memoryRingGlow} />
                 <Svg width={60} height={60} viewBox="0 0 58 58" style={{ transform: [{ rotate: '-90deg' }] }}>

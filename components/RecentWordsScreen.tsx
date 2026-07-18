@@ -1,8 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '@/components/GradientBackground';
+import { GlowCard } from '@/components/GlowCard';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { WordListTable } from '@/components/WordListTable';
 import { WordFilterSheet, ActiveFilter } from '@/components/WordFilterSheet';
 import { PracticeSuggestionsPanel } from '@/components/PracticeSuggestionsPanel';
@@ -43,15 +46,35 @@ export function RecentWordsScreen() {
           </Text>
         </View>
 
-        <WordListTable
-          entries={entries}
-          panelTitle="Son 20 Kelime"
-          panelSub="En son öğrendiğin kelimeler en üstte görünür."
-          filterCount={activeFilters.length}
-          onOpenFilter={() => setFilterSheetOpen(true)}
-          onWordPress={handleWordPress}
-          onPressAll={() => router.push('/words/all')}
-        />
+        {entries.length === 0 ? (
+          <GlowCard style={styles.empty}>
+            <View style={[styles.emptyIcon, { backgroundColor: colors.secondary }]}>
+              <Feather name="book" size={26} color={colors.accent} />
+            </View>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+              Henüz kelime öğrenmedin
+            </Text>
+            <Text style={[styles.emptyBody, { color: colors.mutedForeground }]}>
+              Bir hikâye veya temayla öğrenmeye başladığında kelimelerin burada listelenir.
+            </Text>
+            <PrimaryButton
+              label="Öğrenmeye Başla"
+              icon="plus"
+              onPress={() => router.push('/create')}
+              style={{ marginTop: 6, alignSelf: 'stretch' }}
+            />
+          </GlowCard>
+        ) : (
+          <WordListTable
+            entries={entries}
+            panelTitle="Son 20 Kelime"
+            panelSub="En son öğrendiğin kelimeler en üstte görünür."
+            filterCount={activeFilters.length}
+            onOpenFilter={() => setFilterSheetOpen(true)}
+            onWordPress={handleWordPress}
+            onPressAll={() => router.push('/words/all')}
+          />
+        )}
 
         <PracticeSuggestionsPanel activeFilters={activeFilters} />
       </ScrollView>
@@ -105,5 +128,27 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 9,
     maxWidth: 295,
+  },
+  empty: {
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 4,
+  },
+  emptyIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 17,
+  },
+  emptyBody: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
