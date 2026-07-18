@@ -35,6 +35,48 @@ const MIME_TYPES = {
   '.map': 'application/json',
 };
 
+// SEC-001/SEC-002: x-forwarded-host / host are attacker-controlled request
+// headers. They must never reach the response template unvalidated — a
+// header like `X-Forwarded-Host: x";alert(1);//` would otherwise break out
+// of the inline <script> string literal (reflected XSS). Only a strict
+// hostname[:port] shape is accepted; anything else falls back to a fixed
+// local default instead of being reflected at all.
+const SAFE_HOST_RE = /^[a-zA-Z0-9.-]+(:[0-9]+)?$/;
+
+function getSafeHost(req, fallbackPort) {
+  const candidate = req.headers['x-forwarded-host'] || req.headers['host'] || '';
+  return SAFE_HOST_RE.test(candidate) ? candidate : `localhost:${fallbackPort}`;
+}
+
+function getSafeProtocol(req) {
+  return req.headers['x-forwarded-proto'] === 'http' ? 'http' : 'https';
+}
+
+// Two separate escapers because the same value is embedded into two
+// different syntactic contexts in landing-page.html (an HTML attribute and
+// a JS string literal) — one generic `.replace()` cannot safely serve both.
+function escapeHtmlAttr(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function escapeJsString(value) {
+  return String(value)
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "\\'")
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+}
+
 function getAppName() {
   try {
     const appJsonPath = path.resolve(__dirname, '..', 'app.json');
@@ -65,17 +107,20 @@ function serveManifest(platform, res) {
   res.end(manifest);
 }
 
-function serveLandingPage(req, res, landingPageTemplate, appName) {
-  const forwardedProto = req.headers['x-forwarded-proto'];
-  const protocol = forwardedProto || 'https';
-  const host = req.headers['x-forwarded-host'] || req.headers['host'];
+function serveLandingPage(req, res, landingPageTemplate, appName, port) {
+  const protocol = getSafeProtocol(req);
+  const host = getSafeHost(req, port);
   const baseUrl = `${protocol}://${host}`;
-  const expsUrl = `${host}`;
+  const expsUrl = host;
 
+  // EXPS_URL_PLACEHOLDER lives inside an HTML attribute (href="exps://...");
+  // EXPS_URL_JS_PLACEHOLDER lives inside an inline <script> string literal.
+  // Each needs its own escaping — see the comment on escapeJsString above.
   const html = landingPageTemplate
-    .replace(/BASE_URL_PLACEHOLDER/g, baseUrl)
-    .replace(/EXPS_URL_PLACEHOLDER/g, expsUrl)
-    .replace(/APP_NAME_PLACEHOLDER/g, appName);
+    .replace(/BASE_URL_PLACEHOLDER/g, escapeHtmlAttr(baseUrl))
+    .replace(/EXPS_URL_JS_PLACEHOLDER/g, escapeJsString(expsUrl))
+    .replace(/EXPS_URL_PLACEHOLDER/g, escapeHtmlAttr(expsUrl))
+    .replace(/APP_NAME_PLACEHOLDER/g, escapeHtmlAttr(appName));
 
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
   res.end(html);
@@ -106,9 +151,20 @@ function serveStaticFile(urlPath, res) {
 
 const landingPageTemplate = fs.readFileSync(TEMPLATE_PATH, 'utf-8');
 const appName = getAppName();
+const port = parseInt(process.env.PORT || '3000', 10);
 
 const server = http.createServer((req, res) => {
-  const url = new URL(req.url || '/', `http://${req.headers.host}`);
+  let url;
+  try {
+    // A malformed Host header (or none at all) makes the URL constructor
+    // throw synchronously; uncaught, that would crash the whole process
+    // for every subsequent request. Answer with 400 instead.
+    url = new URL(req.url || '/', `http://${req.headers.host}`);
+  } catch {
+    res.writeHead(400, { 'content-type': 'text/plain' });
+    res.end('Bad Request');
+    return;
+  }
   let pathname = url.pathname;
 
   if (basePath && pathname.startsWith(basePath)) {
@@ -122,14 +178,13 @@ const server = http.createServer((req, res) => {
     }
 
     if (pathname === '/') {
-      return serveLandingPage(req, res, landingPageTemplate, appName);
+      return serveLandingPage(req, res, landingPageTemplate, appName, port);
     }
   }
 
   serveStaticFile(pathname, res);
 });
 
-const port = parseInt(process.env.PORT || '3000', 10);
 server.listen(port, '0.0.0.0', () => {
   console.log(`Serving static Expo build on port ${port}`);
 });
