@@ -34,6 +34,8 @@ export function ScreenHeader({
       <Pressable
         onPress={handleBack}
         hitSlop={10}
+        accessibilityRole="button"
+        accessibilityLabel="Geri"
         style={({ pressed }) => [
           styles.backBtn,
           { backgroundColor: colors.secondary, opacity: pressed ? 0.7 : 1 },
