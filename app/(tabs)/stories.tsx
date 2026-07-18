@@ -10,7 +10,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { BookIcon, SparkleIcon } from '@/components/WordStatusIcons';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
-import { Story, THEME_STORIES } from '@/data/mock';
+import { buildSessionFromStory, Story, THEME_STORIES } from '@/data/mock';
 
 type TabKey = 'all' | 'own' | 'theme';
 
@@ -46,14 +46,26 @@ export default function StoriesScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { customStories } = useProgress();
+  const { customStories, startSession } = useProgress();
   const [activeTab, setActiveTab] = useState<TabKey>('all');
 
   const showCollection = activeTab === 'all' || activeTab === 'own';
   const showDiscover = activeTab === 'all' || activeTab === 'theme';
   const hasOwnStories = customStories.length > 0;
 
-  const openStory = (story: Story) => router.push(`/story/${story.id}`);
+  const openStory = (story: Story) => {
+    // Own stories now reopen in the rich learn/story.tsx reader (chapters,
+    // target-word pills, TTS) instead of the old plain-text /story/[id]
+    // screen. Preset theme stories never reach this function (they use
+    // openTheme below), but the category check keeps this correct even if
+    // that ever changes.
+    if (story.category === 'custom') {
+      startSession(buildSessionFromStory(story));
+      router.push('/learn/story');
+      return;
+    }
+    router.push(`/story/${story.id}`);
+  };
   const openTheme = (story: Story) => {
     if (story.themeId) router.push(`/theme/${story.themeId}`);
   };

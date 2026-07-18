@@ -83,6 +83,8 @@ export interface LearnSession {
   origin: 'words' | 'theme';
   themeId?: string;
   levelIndex?: number;
+  /** Re-reading an already-saved custom story (Görev 2, Aşama 1E) — skips re-saving and swaps the last-page CTA for "back to Hikayelerim". */
+  readOnly?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -527,6 +529,26 @@ export function buildCustomStoryFromSession(session: LearnSession): Story {
     category: 'custom',
     paragraphs: session.paragraphs,
     targetWords: session.targetWords.map((w) => w.en),
+  };
+}
+
+/**
+ * The inverse of `buildCustomStoryFromSession` — re-opens an already-saved
+ * custom story in the rich `learn/story.tsx` reader (chapters, target-word
+ * pills, TTS) instead of the old plain-text `/story/[id]` screen (Görev 2,
+ * Aşama 1E). `readOnly: true` so re-reading it never re-saves it and its
+ * last page offers "back to Hikayelerim" instead of a quiz it has no
+ * questions for.
+ */
+export function buildSessionFromStory(story: Story): LearnSession {
+  return {
+    title: story.title,
+    levelName: story.level,
+    targetWords: story.targetWords.map((w) => makeWord(w)),
+    paragraphs: story.paragraphs,
+    quiz: [],
+    origin: 'words',
+    readOnly: true,
   };
 }
 

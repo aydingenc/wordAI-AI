@@ -139,14 +139,28 @@ export default function StoryLearnScreen() {
     });
   };
 
+  const isReadOnly = !!currentSession.readOnly;
+
   const goToNextPage = () => {
     if (isLastPage) {
       // NEW-002: save the user's own generated story once they've actually
       // finished reading it (not the moment it was produced). Preset theme
       // stories already exist in THEME_STORIES and must not be duplicated.
-      if (currentSession.origin === 'words' && !savedCustomStoryRef.current) {
+      // readOnly sessions (Görev 2, Aşama 1E) are a REPLAY of an already-saved
+      // story — never re-save, or every replay would add a duplicate.
+      if (currentSession.origin === 'words' && !isReadOnly && !savedCustomStoryRef.current) {
         savedCustomStoryRef.current = true;
         addCustomStory(buildCustomStoryFromSession(currentSession));
+      }
+      if (isReadOnly) {
+        // No quiz exists for a readOnly session (buildSessionFromStory sets
+        // quiz: []) — the last page returns to Hikayelerim instead.
+        if (router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace('/stories');
+        }
+        return;
       }
       router.push('/learn/quiz');
       return;
@@ -242,16 +256,22 @@ export default function StoryLearnScreen() {
           style={styles.nextButtonWrap}
           onPress={goToNextPage}
           accessibilityRole="button"
-          accessibilityLabel={isLastPage ? 'Quize devam et' : 'Sonraki sayfa'}
+          accessibilityLabel={isLastPage ? (isReadOnly ? 'Hikayelerime dön' : 'Quize devam et') : 'Sonraki sayfa'}
         >
           <LinearGradient
-            colors={isLastPage ? ['#22C55E', '#15803D'] : [TOKENS.violet400, TOKENS.violet600]}
+            colors={isLastPage && !isReadOnly ? ['#22C55E', '#15803D'] : [TOKENS.violet400, TOKENS.violet600]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.nextButton}
           >
-            <Text style={styles.nextButtonText}>{isLastPage ? 'Quize Devam Et' : 'Sonraki Sayfa'}</Text>
-            <Feather name={isLastPage ? 'check' : 'arrow-right'} size={17} color="#FFFFFF" />
+            <Text style={styles.nextButtonText}>
+              {isLastPage ? (isReadOnly ? 'Hikayelerime Dön' : 'Quize Devam Et') : 'Sonraki Sayfa'}
+            </Text>
+            <Feather
+              name={isLastPage ? (isReadOnly ? 'corner-up-left' : 'check') : 'arrow-right'}
+              size={17}
+              color="#FFFFFF"
+            />
           </LinearGradient>
         </Pressable>
       </View>
