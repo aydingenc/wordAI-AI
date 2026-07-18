@@ -10,6 +10,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { GradientBackground } from '@/components/GradientBackground';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
 
@@ -34,12 +35,16 @@ export default function StoryLoadingScreen() {
   }, [spin, pulse]);
 
   useEffect(() => {
+    // No session to build a story from (e.g. reached this screen directly,
+    // or the session was cleared mid-flight) — don't run the fake "AI is
+    // writing your story" animation for content that doesn't exist. Show
+    // the error state below immediately instead of a silent 3.5s wait.
+    if (!currentSession) return;
     const timers = [700, 1500, 2300, 3000].map((d, i) =>
       setTimeout(() => setStage(i), d),
     );
     const done = setTimeout(() => {
-      if (currentSession) router.replace('/learn/story');
-      else router.replace('/home');
+      router.replace('/learn/story');
     }, 3500);
     return () => {
       timers.forEach(clearTimeout);
@@ -54,6 +59,25 @@ export default function StoryLoadingScreen() {
   const coreStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
   }));
+
+  if (!currentSession) {
+    return (
+      <GradientBackground>
+        <View style={styles.wrap}>
+          <Feather name="alert-circle" size={40} color={colors.mutedForeground} />
+          <Text style={[styles.title, { color: colors.foreground }]}>
+            Aktif bir ders bulunamadı
+          </Text>
+          <PrimaryButton
+            label="Ana Sayfaya Dön"
+            icon="home"
+            variant="secondary"
+            onPress={() => router.replace('/home')}
+          />
+        </View>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>

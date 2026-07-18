@@ -8,16 +8,18 @@ import {
   View,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '@/components/GradientBackground';
 import { GlowCard } from '@/components/GlowCard';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useColors } from '@/hooks/useColors';
 import { useProgress } from '@/context/ProgressContext';
 
 export default function StoryDetailScreen() {
   const colors = useColors();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getStoryById } = useProgress();
@@ -30,7 +32,16 @@ export default function StoryDetailScreen() {
       <GradientBackground>
         <ScreenHeader title="Hikaye" />
         <View style={styles.empty}>
-          <Text style={{ color: colors.foreground }}>Hikaye bulunamadı.</Text>
+          <Feather name="alert-circle" size={40} color={colors.mutedForeground} />
+          <Text style={[styles.emptyText, { color: colors.foreground }]}>
+            Bu hikâye bulunamadı
+          </Text>
+          <PrimaryButton
+            label="Ana Sayfaya Dön"
+            icon="home"
+            variant="secondary"
+            onPress={() => router.replace('/home')}
+          />
         </View>
       </GradientBackground>
     );
@@ -109,6 +120,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 14,
+    paddingHorizontal: 24,
+  },
+  emptyText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 16,
   },
   hero: {
     height: 160,
