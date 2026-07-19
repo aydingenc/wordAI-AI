@@ -11,9 +11,9 @@ const PAGE_SIZE = 10;
 
 /** Single source of truth for column widths — header row and every data row share this object so they can never drift apart. */
 const COL = {
-  word: { flexBasis: 96, flexShrink: 0, flexGrow: 0, minWidth: 0 },
-  mean: { flexBasis: 96, flexShrink: 0, flexGrow: 0, minWidth: 0 },
-  status: { flexBasis: 74, flexShrink: 0, flexGrow: 0, minWidth: 0 },
+  word: { flexGrow: 1.15, flexShrink: 1, minWidth: 0 },
+  mean: { flexGrow: 1, flexShrink: 1, minWidth: 0 },
+  status: { flexBasis: 66, flexShrink: 0, flexGrow: 0, minWidth: 0 },
   dna: { flexBasis: 40, flexShrink: 0, flexGrow: 0, minWidth: 0 },
 } as const;
 

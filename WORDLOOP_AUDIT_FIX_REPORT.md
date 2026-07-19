@@ -1154,3 +1154,71 @@ Yok.
 ### Sonuç
 
 1 commit, 1 dosya değişti (`components/WordListTable.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Renk/font/ikon/Status pill/DNA butonu tasarımına dokunulmadı, sadece `word`/`mean` sütun genişlikleri değişti. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1m` branch'i lokal kaldı.
+
+## Aşama 1N
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1m
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        PROMPT_1F.md
+        PROMPT_1G.md
+        PROMPT_1H.md
+        PROMPT_1I.md
+        PROMPT_1K.md
+        PROMPT_1L.md
+        PROMPT_1M.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e-v2.zip
+        wordloop-1e.zip
+        wordloop-1f.zip
+        wordloop-1g.zip
+        wordloop-1h.zip
+        wordloop-1i.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+a49128a Asama 1M: Kelime/Anlami sutunlari genisletildi (40/56 -> 96/96)
+bca52e2 Asama 1L: Ornek Cumle sutunu satirin altina, tam genislikte taşındı
+053b1cb Asama 1K: TextMarquee animasyon tetiklemesi artik onLayout'a tek basina bagimli degil
+```
+
+`audit-phase-1m` temiz, `a49128a` HEAD'de doğrulandı. `git checkout -b audit-phase-1n` ile buradan dallandı.
+
+### Ne yapıldı
+
+**1M'nin hatası:** 1M, boşta kalan üst satır alanını `COL.word`/`COL.mean`'e sabit piksel (`flexBasis: 96/96`) olarak dağıtmıştı. Bu değer, o anki test ortamındaki (web/geniş viewport) satır genişliğine göre "sığıyor" görünse de, gerçek cihazda (kullanıcının ekran görüntüsüyle doğruladığı üzere) satırın toplam genişliği sabit piksel toplamlarını (`96+96+74+40+gap`larla) her zaman güvenle karşılayamadı — DNA sütunu sağdan kesildi, Status pill kenara çarptı. Kök sorun: sabit px değerleri, satırın gerçek kullanılabilir genişliğinden (cihaza göre değişen) bağımsız seçilmişti.
+
+**Düzeltme:** `components/WordListTable.tsx`'teki `COL` objesi sabit pikselden oransal (`flex`) paylaşıma çevrildi:
+- `word: { flexGrow: 1.15, flexShrink: 1, minWidth: 0 }` (önceden `flexBasis: 96`)
+- `mean: { flexGrow: 1, flexShrink: 1, minWidth: 0 }` (önceden `flexBasis: 96`)
+- `status: { flexBasis: 66, flexShrink: 0, flexGrow: 0, minWidth: 0 }` (önceden 74)
+- `dna: { flexBasis: 40, ... }` — değişmedi
+
+`status` ve `dna` sabit genişlikte kalarak rozet metni ve ikon için gereken minimum alanı garanti ediyor; `word` ve `mean` ise satırda kalan TÜM alanı `1.15:1` oranında paylaşıyor (İngilizce kelime genelde Türkçe karşılığından uzun olduğu için kelime biraz daha fazla pay alıyor), bu da satırın toplam genişliğinin cihaz ne olursa olsun asla aşılmamasını garanti ediyor — flex tanımı gereği kalan alana göre otomatik küçülüp büyüyor. Status pill metni (`meta.label`) 66px'e sığmazsa mevcut `numberOfLines={1} ellipsizeMode="tail"` ile "..." kısaltması oluyor; bu kabul edilebilir (talimat gereği dokunulmadı).
+
+**Doğrulama:** `npx expo start --web` ile headless Chromium (Playwright) üzerinden dört farklı viewport genişliğinde (340px, 360px, 390px, 420px — Tecno Spark 40c gibi bütçe Android cihazların CSS piksel aralığını kapsayacak şekilde) `recent-words` ekranı gerçek veriyle (uzun kelimeler dahil: "sculpture", "international") render edildi. Her genişlikte `document.documentElement.scrollWidth === clientWidth` doğrulandı (sayfa düzeyinde yatay taşma yok); tespit edilen tek "ekran dışı" elemanlar `GradientBackground`'ın kasıtlı, ekran kenarından taşan dekoratif glow blob'larıydı (tabloyla ilgisi yok). En dar genişlikte (340px) ekran görüntüsüyle DNA butonunun ve Status pill'in ekranın sağ kenarından kesilmediği, tam görünür kaldığı; uzun kelimede ("international") artık `TextMarquee`'nin devreye girdiği (beklenen, nadir durum); Status pill'in dar metinlerde "..." ile kısaldığı (kabul edilebilir) doğrulandı.
+
+Değişen dosya: `components/WordListTable.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+**Cihazda doğrulanmalı:** Satırın artık hiçbir cihazda (özellikle Tecno Spark 40c gibi dar ekranlarda) taşmadığı, DNA/Status'un her zaman tam görünür kaldığı, Kelime/Anlamı'nın kalan alanı orantılı paylaştığı — bu ortamda sadece web viewport genişlikleri simüle edilebildi, gerçek Android cihazda son doğrulama önerilir.
+
+### Yeni blocker / ürün kararı
+
+Yok. 1M'nin hatası bu prompt ile kullanıcıya gösterilip onaylanan yaklaşımla düzeltildi.
+
+### Sonuç
+
+1 commit, 1 dosya değişti (`components/WordListTable.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Renk/font/ikon/pill tasarımına dokunulmadı, sadece genişlik hesaplama yöntemi (sabit px → oransal flex) değişti. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1n` branch'i lokal kaldı.
