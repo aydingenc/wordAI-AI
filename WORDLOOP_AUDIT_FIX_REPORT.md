@@ -954,3 +954,74 @@ Yok. İki görev de talimatın verdiği net kararlarla tamamlandı.
 ### Sonuç
 
 2 commit (`c7cf506`, `af23c7c`), 2 dosya değişti (`components/RecentWordsScreen.tsx`, `components/TextMarquee.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1i` branch'i lokal kaldı.
+
+## Aşama 1K
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1i
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        PROMPT_1F.md
+        PROMPT_1G.md
+        PROMPT_1H.md
+        PROMPT_1I.md
+        PROMPT_1K.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e-v2.zip
+        wordloop-1e.zip
+        wordloop-1f.zip
+        wordloop-1g.zip
+        wordloop-1h.zip
+        wordloop-1i.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+f81f962 Asama 1I rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1I" bolumu eklendi
+af23c7c Gorev 2: Marquee kaymasi artik 1200ms yerine 400ms sonra basliyor
+c7cf506 Gorev 1: DNA butonu artik dogru kelimeyle word-dna sayfasina gidiyor
+```
+
+`audit-phase-1i` temiz, `f81f962` HEAD'de doğrulandı. `git checkout -b audit-phase-1k` ile buradan dallandı.
+
+### Kök neden analizi
+
+Aşama 1I Görev 2, marquee'nin "çok geç başladığı" izlenimini `Animated.delay(1200)`'ü `400`'e düşürerek çözmüştü, ancak bu bir zamanlama ayarıydı ve gerçek cihazda (Tecno Spark 40c, Android) kullanıcı tam kapat-aç sonrası marquee'nin **hiç** hareket etmediğini doğruladı — bu, gecikme süresinden bağımsız, daha temel bir tetikleme sorunu olduğunu gösteriyor.
+
+`TextMarquee`'deki animasyon efekti (`useEffect(() => { if (!containerWidth || !textWidth) return; ... }, [containerWidth, textWidth, translateX])`) SADECE hem `containerWidth` hem `textWidth` sıfırdan farklı olduğunda çalışıyor. `textWidth`, Text bileşeninin kendi `onLayout`'undan geliyor (satır ~111: `onLayout={(e) => setTextWidth(e.nativeEvent.layout.width)}`). Düşük performanslı Android cihazlarda, özel font (`Inter`) yüklenmesiyle çakışan bilinen bir React Native davranışı var: bu `onLayout` hiç tetiklenmeyebiliyor veya `textWidth` sonsuza kadar `0` kalabiliyor, bu durumda animasyon efekti her zaman erken `return` ediyor ve marquee asla başlamıyor. Kod okumayla bu senaryonun mevcut kodda mümkün olduğu doğrulandı — `textWidth`'in tek kaynağı bu `onLayout`, hiçbir yedek/timeout mekanizması yoktu.
+
+### Ne yapıldı
+
+`components/TextMarquee.tsx`'e, `onLayout` ölçümünü birincil yöntem olarak koruyan ama tetiklenmezse devreye giren bir güvenlik ağı eklendi:
+- `text` değiştiğinde (mevcut `useEffect(() => setTextWidth(0), [text])` genişletildi) artık aynı zamanda 700ms'lik bir `setTimeout` kuruluyor.
+- 700ms sonunda `textWidth` hâlâ `0`'sa (`setTextWidth((prev) => (prev === 0 ? estimatedWidth : prev))` — fonksiyonel güncelleme ile en güncel değer kontrol ediliyor, closure'daki bayat değere değil), `text.length * fontSize * 0.58` ile kaba bir tahmin set ediliyor. `fontSize`, `StyleSheet.flatten(style)?.fontSize` ile okunuyor, yoksa `12`'ye düşülüyor.
+- Timeout, efekt temizlenirken (`clearTimeout`) veya `text` tekrar değiştiğinde iptal ediliyor.
+- Efekt kasıtlı olarak yalnızca `[text]`'e bağımlı bırakıldı, `style`'a değil — çağrı yerleri (`WordListTable`) her render'da yeni bir dizi literal (`style={[styles.wordText, { color: ... }]}`) geçiyor; `style`'ı bağımlılığa eklemek her render'da `textWidth`'i sıfırlayıp hem gerçek ölçümün hem de yedek timer'ın hiç tamamlanamamasına yol açardı.
+- Gerçek `onLayout` ölçümü, yedekten önce ya da sonra gelsin, doğrudan üzerine yazdığı için her zaman kazanıyor — yedek yalnızca ölçüm hiç gelmediğinde devreye giriyor.
+
+`containerWidth` tarafına dokunulmadı (talimatta belirtildiği gibi, önce yalnızca `textWidth` tarafı düzeltildi).
+
+**Ek doğrulama:** Bu ortamda gerçek bir Android cihaz simüle edilemediğinden (dolayısıyla asıl yedek/timeout yolunun kendisi tetiklenemedi), `npx expo start --web` ile web'de headless Chromium (Playwright) üzerinden `recent-words` ekranına gerçek (uzun örnek cümleli) `recentWords` verisi enjekte edilip önceki `onLayout` yolunun bu değişiklikten sonra da bozulmadığı doğrulandı: transform X değeri zaman içinde değişmeye devam ediyor (`-72.5 → -162.9 → -252 → -2.1`), yani normal yolda regresyon yok. Asıl düzeltilen senaryo (onLayout'un hiç tetiklenmediği durum) bu ortamda üretilemedi.
+
+Değişen dosya: `components/TextMarquee.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+**Cihazda doğrulanmalı:** Tecno Spark 40c dahil gerçek cihazda, tam kapat-aç sonrası, Kelimelerim tablosundaki uzun içerikli sütunların (özellikle "ÖRNEK CÜMLE") artık kesinlikle hareket ettiği — bu düzeltmenin kök nedeni (onLayout'un hiç tetiklenmemesi) tam olarak çözüp çözmediği bu ortamda test edilemiyor, kullanıcının bir sonraki cihaz testinde kesinleşecek.
+
+### Yeni blocker / ürün kararı
+
+Yok.
+
+### Sonuç
+
+1 commit, 1 dosya değişti (`components/TextMarquee.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Görsel tasarım (renk/font/boyut) değişmedi. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1k` branch'i lokal kaldı.

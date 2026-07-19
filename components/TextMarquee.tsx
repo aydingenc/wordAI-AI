@@ -22,7 +22,20 @@ import {
  * own ellipsis renders instead of the scroll. Absolute positioning takes the
  * text out of flow so it sizes to its true, unclipped content width, which is
  * why the container needs an explicit `height`.
+ *
+ * `textWidth` normally comes from the Text's own `onLayout`, but on some
+ * low-end Android devices that callback never fires (or fires once with a
+ * stale 0) while a custom font is still loading, leaving `textWidth` stuck
+ * at 0 forever — the animation effect below bails out on `!textWidth` and
+ * the marquee never starts. FALLBACK_MEASURE_DELAY ms after each text
+ * change, if no real measurement has arrived yet, a rough character-count
+ * estimate is used instead so the marquee can still start; a genuine
+ * `onLayout` measurement (before or after the fallback fires) always wins.
  */
+const FALLBACK_MEASURE_DELAY = 700;
+const ESTIMATED_CHAR_WIDTH_RATIO = 0.58;
+const DEFAULT_FONT_SIZE = 12;
+
 export function TextMarquee({
   text,
   style,
@@ -38,6 +51,19 @@ export function TextMarquee({
 
   useEffect(() => {
     setTextWidth(0);
+
+    const fontSize = StyleSheet.flatten(style)?.fontSize ?? DEFAULT_FONT_SIZE;
+    const estimatedWidth = text.length * fontSize * ESTIMATED_CHAR_WIDTH_RATIO;
+    const fallbackTimer = setTimeout(() => {
+      setTextWidth((prev) => (prev === 0 ? estimatedWidth : prev));
+    }, FALLBACK_MEASURE_DELAY);
+
+    return () => clearTimeout(fallbackTimer);
+    // `style` is intentionally excluded — call sites pass a fresh array
+    // literal every render, and re-running this on every such render would
+    // keep resetting textWidth to 0 and never let either the real
+    // measurement or the fallback timer land.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
   useEffect(() => {
