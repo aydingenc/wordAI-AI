@@ -1304,3 +1304,7 @@ Kapsam dışı gözlem: "Hazır Temalardan Öğren" başlığı çok dar genişl
 ### Sonuç
 
 3 commit (`ddd66d4`, `0f20937`, `003ec15`), 3 dosya değişti (`app/create.tsx`, `components/KelimelerFlow.tsx`, `components/GorsellerFlow.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Kart boyutu (yükseklik/genişlik/padding) hiç değişmedi — yalnızca içerik (fontSize/lineHeight) ve `numberOfLines` değişti. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1o` branch'i lokal kaldı.
+
+### Not — Dal düzeltmesi (`audit-phase-1o-fixed`)
+
+`audit-phase-1o` yanlış noktadan (`audit-phase-1j`) dallanmıştı — bu yüzden yukarıdaki 1O işi, `audit-phase-1k/1l/1m/1n`'deki (Kelimelerim tablosu: TextMarquee yedek mekanizması, Örnek Cümle'yi satır altına taşıma, kolon genişlik düzeltmeleri — hepsi gerçek ve cihazda doğrulanmış) işi içermiyordu. `audit-phase-1o`'daki gerçek yeni iş (`ddd66d4`, `0f20937`, `003ec15`, bu rapor commit'i) doğru temelden (`audit-phase-1n`) dallanan `audit-phase-1o-fixed` branch'ine `git cherry-pick` ile taşındı; `app/create.tsx`'te bir satırlık bağlam çakışması (1J/1O'nun kendi ara halleriyle 1N'in farklı context'i) çıktı, `FLOW_CARD_HEIGHT` yönünde çözüldü, bu rapor dosyasında da 1K-1N zinciriyle 1O bölümünün art arda (1K→L→M→N→O) doğru sırada birleşmesi elle sağlandı. `npx tsc -p tsconfig.json --noEmit`: 0 hata. Eski `audit-phase-1o` branch'i referans olarak silinmedi, ama bundan sonra kullanılmayacak — **kanonik branch artık `audit-phase-1o-fixed`**.
