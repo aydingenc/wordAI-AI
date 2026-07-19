@@ -215,8 +215,8 @@ const styles = StyleSheet.create({
   },
   paragraph: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 12,
-    lineHeight: 18.5,
+    fontSize: 9,
+    lineHeight: 13.5,
     textAlign: 'left',
   },
   hl: {
