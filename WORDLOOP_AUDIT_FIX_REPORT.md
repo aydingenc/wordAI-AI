@@ -1025,3 +1025,68 @@ Yok.
 ### Sonuç
 
 1 commit, 1 dosya değişti (`components/TextMarquee.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Görsel tasarım (renk/font/boyut) değişmedi. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1k` branch'i lokal kaldı.
+
+## Aşama 1L
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1k
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        PROMPT_1F.md
+        PROMPT_1G.md
+        PROMPT_1H.md
+        PROMPT_1I.md
+        PROMPT_1K.md
+        PROMPT_1L.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e-v2.zip
+        wordloop-1e.zip
+        wordloop-1f.zip
+        wordloop-1g.zip
+        wordloop-1h.zip
+        wordloop-1i.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+053b1cb Asama 1K: TextMarquee animasyon tetiklemesi artik onLayout'a tek basina bagimli degil
+f81f962 Asama 1I rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1I" bolumu eklendi
+af23c7c Gorev 2: Marquee kaymasi artik 1200ms yerine 400ms sonra basliyor
+```
+
+`audit-phase-1k` temiz, `053b1cb` HEAD'de doğrulandı. `git checkout -b audit-phase-1l` ile buradan dallandı.
+
+### Ne yapıldı
+
+`components/WordListTable.tsx`'te önceden onaylanmış tasarım değişikliği uygulandı: "Örnek Cümle" sütunu üst satırdan kaldırılıp her satırın altına, tam genişlikte, sola yaslı ayrı bir blok olarak taşındı.
+
+- **Başlık satırı:** `Örnek cümle` `<Text>`'i tamamen kaldırıldı. `COL.word`/`COL.mean`/`COL.status`/`COL.dna` ve bunlara karşılık gelen `wordText`/`meanText`/`statusPill`/`statusPillText`/`dnaCell`/`dnaBtn` stillerine hiç dokunulmadı. Artık kullanılmayan `COL.ex` de kaldırıldı (yalnızca bu sütunu tanımlıyordu, başka hiçbir yerde referans edilmiyordu).
+- **`WordRow`:** Dış `View` artık `styles.dataRow` (tek başına, `flexDirection: 'column'`), içinde iki alt blok var: `[styles.row, styles.dataRowTop]` ile sarılmış eski üst satır (Kelime/Anlamı/Status/DNA — hiçbiri değişmedi, `TextMarquee` word/mean sütunlarında hâlâ kullanılıyor) ve yeni `styles.exampleRow` bloğu (üstte ince bir ayraç çizgisiyle) içinde düz bir `<Text style={styles.exampleText}>{entry.example}</Text>`.
+- Örnek cümle için `TextMarquee` kullanılmadı — `numberOfLines` sınırı yok, kısa cümle 1 satırda kalıyor, uzun cümle doğal olarak 2. satıra sarıyor, hiçbir zaman kesilmiyor/kaymıyor.
+- Yeni stiller: `dataRowTop: { flexDirection: 'row', alignItems: 'center' }`, `exampleRow: { borderTopWidth: 1, marginTop: 6, paddingTop: 6 }`, `exampleText: { fontFamily: 'Inter_400Regular', fontSize: 11, lineHeight: 16, textAlign: 'left' }` (fontFamily, eski `exText`'teki ile aynı tutuldu — görsel aileyi korumak için, artık kullanılmayan `exText` kaldırıldı). `dataRow`'a `flexDirection: 'column'` ve `width: '100%'` eklendi (önceden bu `styles.row`'dan geliyordu, o stil artık yalnızca `dataRowTop`'ta kullanılıyor).
+- `TextMarquee.tsx`'in kendisine dokunulmadı — Kelime/Anlamı sütunlarında hâlâ kullanılıyor, 1K'da eklenen yedek mekanizma geçerli.
+
+**Ek doğrulama:** `npx expo start --web` ile headless Chromium (Playwright) üzerinden, gerçek uzun örnek cümleli veriyle `recent-words` ekranı render edilip ekran görüntüsüyle doğrulandı: başlık satırında artık yalnızca KELIME/ANLAMI/STATUS/DNA var; her satırın altında örnek cümle tam genişlikte, kesilmeden, doğal olarak 2 satıra sararak görünüyor; Kelime sütunundaki `TextMarquee` (uzun kelimelerde) eskisi gibi çalışmaya devam ediyor.
+
+Değişen dosya: `components/WordListTable.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+**Cihazda doğrulanmalı:** Kelime/Anlamı/Status/DNA sütunlarının eskisiyle birebir aynı göründüğü (genişlik, renk, font, boşluk); örnek cümlenin artık satır altında, tam genişlikte, kesilmeden/kaymadan okunabildiği — gerçek cihazda (özellikle uzun cümlelerin 2 satıra sarma davranışı ve satırlar arası boşluk) son doğrulama gerekiyor.
+
+### Yeni blocker / ürün kararı
+
+Yok.
+
+### Sonuç
+
+1 commit, 1 dosya değişti (`components/WordListTable.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Kelime/Anlamı/Status/DNA sütunlarına dokunulmadı. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1l` branch'i lokal kaldı.

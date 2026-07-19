@@ -13,7 +13,6 @@ const PAGE_SIZE = 10;
 const COL = {
   word: { flexBasis: 40, flexShrink: 0, flexGrow: 0, minWidth: 0 },
   mean: { flexBasis: 56, flexShrink: 0, flexGrow: 0, minWidth: 0 },
-  ex: { flexGrow: 1, flexShrink: 1, minWidth: 0 },
   status: { flexBasis: 74, flexShrink: 0, flexGrow: 0, minWidth: 0 },
   dna: { flexBasis: 40, flexShrink: 0, flexGrow: 0, minWidth: 0 },
 } as const;
@@ -70,7 +69,6 @@ export function WordListTable({
         <View style={[styles.row, styles.headRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.th, COL.word, { color: colors.mutedForeground }]}>Kelime</Text>
           <Text style={[styles.th, COL.mean, { color: colors.mutedForeground }]}>Anlamı</Text>
-          <Text style={[styles.th, COL.ex, { color: colors.mutedForeground }]}>Örnek cümle</Text>
           <Text style={[styles.th, COL.status, { color: colors.mutedForeground }]}>Status</Text>
           <View style={[COL.dna, styles.thDna]}>
             <Text style={[styles.th, { color: colors.mutedForeground }]}>DNA</Text>
@@ -158,35 +156,39 @@ function WordRow({ entry, onPress }: { entry: WordListEntry; onPress: () => void
   const meta = STATUS_META[entry.status];
 
   return (
-    <View style={[styles.row, styles.dataRow, { backgroundColor: 'rgba(255,255,255,0.012)', borderColor: 'rgba(139,92,246,0.12)' }]}>
-      <View style={COL.word}>
-        <TextMarquee text={entry.en} style={[styles.wordText, { color: colors.foreground }]} />
-      </View>
-      <View style={COL.mean}>
-        <TextMarquee text={entry.tr} style={[styles.meanText, { color: colors.mutedForeground }]} />
-      </View>
-      <View style={COL.ex}>
-        <TextMarquee text={entry.example} style={[styles.exText, { color: colors.mutedForeground }]} />
-      </View>
-      <View style={COL.status}>
-        <View style={[styles.statusPill, { backgroundColor: meta.bg, borderColor: meta.border }]}>
-          <meta.Icon size={10} color={meta.color} />
-          <Text style={[styles.statusPillText, { color: meta.color }]} numberOfLines={1} ellipsizeMode="tail">
-            {meta.label}
-          </Text>
+    <View style={[styles.dataRow, { backgroundColor: 'rgba(255,255,255,0.012)', borderColor: 'rgba(139,92,246,0.12)' }]}>
+      <View style={[styles.row, styles.dataRowTop]}>
+        <View style={COL.word}>
+          <TextMarquee text={entry.en} style={[styles.wordText, { color: colors.foreground }]} />
+        </View>
+        <View style={COL.mean}>
+          <TextMarquee text={entry.tr} style={[styles.meanText, { color: colors.mutedForeground }]} />
+        </View>
+        <View style={COL.status}>
+          <View style={[styles.statusPill, { backgroundColor: meta.bg, borderColor: meta.border }]}>
+            <meta.Icon size={10} color={meta.color} />
+            <Text style={[styles.statusPillText, { color: meta.color }]} numberOfLines={1} ellipsizeMode="tail">
+              {meta.label}
+            </Text>
+          </View>
+        </View>
+        <View style={[COL.dna, styles.dnaCell]}>
+          <Pressable
+            onPress={onPress}
+            hitSlop={6}
+            style={({ pressed }) => [
+              styles.dnaBtn,
+              { borderColor: 'rgba(139,92,246,0.3)', opacity: pressed ? 0.8 : 1 },
+            ]}
+          >
+            <DnaIcon size={16} />
+          </Pressable>
         </View>
       </View>
-      <View style={[COL.dna, styles.dnaCell]}>
-        <Pressable
-          onPress={onPress}
-          hitSlop={6}
-          style={({ pressed }) => [
-            styles.dnaBtn,
-            { borderColor: 'rgba(139,92,246,0.3)', opacity: pressed ? 0.8 : 1 },
-          ]}
-        >
-          <DnaIcon size={16} />
-        </Pressable>
+      <View style={[styles.exampleRow, { borderTopColor: 'rgba(139,92,246,0.08)' }]}>
+        <Text style={[styles.exampleText, { color: colors.mutedForeground }]}>
+          {entry.example}
+        </Text>
       </View>
     </View>
   );
@@ -286,12 +288,29 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   dataRow: {
+    flexDirection: 'column',
+    width: '100%',
     paddingHorizontal: 9,
     paddingVertical: 10,
     marginBottom: 7,
     borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',
+  },
+  dataRowTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  exampleRow: {
+    borderTopWidth: 1,
+    marginTop: 6,
+    paddingTop: 6,
+  },
+  exampleText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 11,
+    lineHeight: 16,
+    textAlign: 'left',
   },
   wordText: {
     fontFamily: 'Inter_700Bold',
@@ -300,10 +319,6 @@ const styles = StyleSheet.create({
   meanText: {
     fontFamily: 'Inter_400Regular',
     fontSize: 11.5,
-  },
-  exText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
   },
   statusPill: {
     flexDirection: 'row',
