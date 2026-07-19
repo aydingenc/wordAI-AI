@@ -404,7 +404,7 @@ function makeStyles(s: number) {
     },
     flowTitle: {
       fontFamily: 'Inter_700Bold',
-      fontSize: 15,
+      fontSize: 11,
       letterSpacing: 0,
       textAlign: 'center',
     },
