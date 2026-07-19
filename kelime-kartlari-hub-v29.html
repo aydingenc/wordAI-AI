@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Kelime Kartları</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+  :root{
+    --bg:#08070f; --panel:#131120; --panel-2:#1a1730;
+    --border:rgba(139,92,246,0.16); --border-strong:rgba(139,92,246,0.38);
+    --violet:#8b5cf6; --violet-light:#b39dfb;
+    --text:#f6f4fc; --text-dim:#a89fc2; --text-faint:#6f6685;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:radial-gradient(ellipse at 50% -10%, #241d42 0%, #0d0a1a 45%, #08070f 80%);
+    min-height:100vh; display:flex; justify-content:center; padding:24px 0;
+    font-family:'Inter', system-ui, sans-serif; color:var(--text);
+  }
+  .device{
+    width:390px; min-height:844px; background:var(--bg);
+    border-radius:36px; overflow:hidden; box-shadow:0 50px 100px rgba(0,0,0,0.65);
+    position:relative;
+  }
+  .device::before{
+    content:''; position:absolute; top:-60px; left:50%; transform:translateX(-50%);
+    width:340px; height:260px;
+    background:radial-gradient(ellipse, rgba(139,92,246,0.24), transparent 70%);
+    pointer-events:none; z-index:0;
+  }
+  .scroll{ padding:22px 18px 110px; position:relative; z-index:1; }
+  .ic{ display:inline-block; }
+
+  /* header */
+  .header-panel{
+    padding:4px 0 14px;
+    margin-bottom:8px;
+  }
+  .header-row{ position:relative; display:flex; align-items:center; justify-content:center; padding:0 42px; }
+  .back-btn{
+    position:absolute; left:0; top:50%; transform:translateY(-50%);
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    display:flex; align-items:center; justify-content:center; color:var(--text-dim);
+    cursor:pointer;
+    flex-shrink:0;
+    z-index:2;
+  }
+  .back-btn:active{ transform:translateY(-50%) scale(0.9); }
+  .header-title-group{ display:flex; align-items:center; justify-content:center; gap:6px; min-width:0; }
+  .header-title-group h1{
+    font-family:'Fraunces', serif; font-weight:700; font-size:17px;
+    background:linear-gradient(180deg, #ffffff, #d9d0f5);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .sparkle-ic{ color:var(--violet-light); width:12px; height:12px; flex-shrink:0; }
+  .header-sub{ font-size:10.5px; color:var(--text-faint); text-align:center; line-height:1.4; margin-top:6px; }
+
+  /* hero card */
+  .hero-card{
+    background:linear-gradient(135deg, rgba(139,92,246,0.22), rgba(88,58,168,0.12)), rgba(19,17,32,0.8);
+    backdrop-filter:blur(20px);
+    border:1px solid var(--border-strong); border-radius:20px;
+    padding:18px; margin-bottom:22px;
+    display:flex; gap:14px; align-items:center;
+    box-shadow:0 16px 40px rgba(76,29,149,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+    position:relative; overflow:hidden;
+  }
+  .hero-stack{ position:relative; width:78px; height:88px; flex-shrink:0; }
+  .stack-card{
+    position:absolute; width:70px; height:82px; border-radius:12px;
+    background:linear-gradient(160deg, #2a1f4a, #1a1230);
+    border:1px solid rgba(139,92,246,0.4);
+    box-shadow:0 0 16px rgba(139,92,246,0.3);
+  }
+  .stack-card.c1{ transform:rotate(-8deg); top:6px; left:0; opacity:0.6; }
+  .stack-card.c2{ transform:rotate(-3deg); top:3px; left:4px; opacity:0.8; }
+  .stack-card.c3{ top:0; left:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px; }
+  .stack-card.c3 .word{ font-family:'Fraunces', serif; font-size:14px; font-weight:700; color:#fff; }
+  .stack-card.c3 .type{ font-size:8px; color:var(--violet-light); font-style:italic; margin:2px 0 4px; }
+  .stack-card.c3 .def{ font-size:6.5px; color:var(--text-faint); text-align:center; line-height:1.3; }
+  .hero-info{ flex:1; min-width:0; }
+  .hero-title{ font-family:'Fraunces', serif; font-size:15px; font-weight:700; margin-bottom:4px; }
+  .hero-sub{ font-size:10.5px; color:var(--text-dim); line-height:1.4; margin-bottom:10px; }
+  .hero-btn{
+    display:inline-flex; align-items:center; gap:5px;
+    background:linear-gradient(135deg, #a78bfa, #7c3aed);
+    color:#fff; font-size:11.5px; font-weight:700;
+    padding:8px 14px; border-radius:11px;
+    box-shadow:0 6px 16px rgba(124,58,237,0.4);
+  }
+  .hero-stats{ display:flex; gap:14px; margin-top:12px; }
+  .hero-stat{ display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text-dim); }
+  .hero-stat .ic{ width:12px; height:12px; color:var(--violet-light); }
+
+  /* section header */
+  .sect-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; position:relative; }
+  .sect-title{ display:flex; align-items:center; gap:7px; font-size:13px; font-weight:700; color:var(--text); }
+  .sect-title .ic{ width:14px; height:14px; color:var(--violet-light); }
+  .sect-link{ font-size:10.5px; font-weight:700; color:var(--violet-light); display:flex; align-items:center; gap:2px; }
+  .sect-link .ic{ width:10px; height:10px; }
+
+  .grid{ display:flex; flex-wrap:wrap; gap:9px; margin-bottom:22px; }
+  .g4{ flex:1 1 45%; }
+  .g3{ flex:1 1 30%; }
+  .g2{ flex:1 1 45%; }
+  .mini-card{
+    border-radius:14px; padding:12px 10px;
+    border:1px solid var(--border);
+    backdrop-filter:blur(14px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.05);
+    position:relative; overflow:hidden;
+  }
+  .mini-card .ic-wrap{
+    width:26px; height:26px; border-radius:9px; margin-bottom:8px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mini-card .ic-wrap .ic{ width:14px; height:14px; }
+  .mini-title{ font-size:12px; font-weight:700; margin-bottom:2px; }
+  .mini-sub{ font-size:9px; color:var(--text-faint); }
+  .mini-big{ font-family:'Fraunces', serif; font-size:20px; font-weight:700; margin-bottom:1px; }
+
+  .m-violet{ background:linear-gradient(160deg, rgba(139,92,246,0.16), rgba(19,17,32,0.6)); border-color:rgba(139,92,246,0.3); }
+  .m-violet .ic-wrap{ background:rgba(139,92,246,0.2); color:#c4b5fd; }
+  .m-blue{ background:linear-gradient(160deg, rgba(96,165,250,0.14), rgba(19,17,32,0.6)); border-color:rgba(96,165,250,0.3); }
+  .m-blue .ic-wrap{ background:rgba(96,165,250,0.2); color:#60a5fa; }
+  .m-pink{ background:linear-gradient(160deg, rgba(244,114,182,0.14), rgba(19,17,32,0.6)); border-color:rgba(244,114,182,0.3); }
+  .m-pink .ic-wrap{ background:rgba(244,114,182,0.2); color:#f472b6; }
+  .m-green{ background:linear-gradient(160deg, rgba(74,222,128,0.14), rgba(19,17,32,0.6)); border-color:rgba(74,222,128,0.3); }
+  .m-green .ic-wrap{ background:rgba(74,222,128,0.2); color:#4ade80; }
+  .m-amber{ background:linear-gradient(160deg, rgba(250,204,21,0.14), rgba(19,17,32,0.6)); border-color:rgba(250,204,21,0.3); }
+  .m-amber .ic-wrap{ background:rgba(250,204,21,0.2); color:#facc15; }
+  .m-teal{ background:linear-gradient(160deg, rgba(45,212,191,0.14), rgba(19,17,32,0.6)); border-color:rgba(45,212,191,0.3); }
+  .m-teal .ic-wrap{ background:rgba(45,212,191,0.2); color:#2dd4bf; }
+
+  .status-card{ display:flex; align-items:center; gap:10px; padding:13px; }
+
+  .rc-info-btn{
+    width:20px; height:20px; border-radius:50%;
+    background:rgba(139,92,246,0.16); border:1px solid rgba(139,92,246,0.4);
+    color:var(--violet-light);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-family:'Fraunces', serif; font-weight:700; font-style:italic; font-size:10px;
+    cursor:pointer; flex-shrink:0;
+    margin-left:2px;
+  }
+  .rc-info-btn:active{ transform:scale(0.9); }
+
+  /* half-tray sheet — "Kelime Durumu Nasıl Belirlenir?" explanation */
+  .rc-sheet-overlay{
+    position:fixed; inset:0;
+    background:rgba(4,3,10,0.6);
+    backdrop-filter:blur(3px);
+    display:flex; align-items:flex-end; justify-content:center;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.25s ease;
+    z-index:100;
+  }
+  .rc-sheet-overlay.open{ opacity:1; pointer-events:auto; }
+  .rc-sheet{
+    width:100%; max-width:390px;
+    background:linear-gradient(180deg, rgba(139,92,246,0.06), rgba(255,255,255,0) 25%), rgba(15,13,27,0.98);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(139,92,246,0.3);
+    border-bottom:none;
+    border-radius:22px 22px 0 0;
+    padding:10px 20px 30px;
+    box-shadow:0 -20px 60px rgba(0,0,0,0.5);
+    transform:translateY(100%);
+    transition:transform 0.3s cubic-bezier(.2,.9,.3,1);
+    max-height:80vh;
+    overflow-y:auto;
+  }
+  .rc-sheet-overlay.open .rc-sheet{ transform:translateY(0); }
+  .rc-sheet-handle{ width:36px; height:4px; border-radius:2px; background:rgba(255,255,255,0.15); margin:0 auto 16px; }
+  .rc-sheet-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .rc-sheet-title{ font-family:'Fraunces', serif; font-size:16.5px; font-weight:700; color:var(--text); }
+  .rc-sheet-close{
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(255,255,255,0.06);
+    color:var(--text-dim); font-size:12px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; cursor:pointer;
+  }
+  .rc-sheet p{ font-size:12px; line-height:1.65; color:var(--text-dim); margin-bottom:14px; }
+  .rc-sheet p b{ color:var(--text); }
+  .rc-sheet-item{ display:flex; align-items:flex-start; gap:9px; margin-bottom:12px; font-size:12px; line-height:1.55; color:var(--text-dim); }
+  .rc-sheet-dot{ width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+  .rc-sheet-foot{ font-size:11px; color:var(--text-faint); border-top:1px solid rgba(255,255,255,0.08); padding-top:13px; margin-top:4px; }
+  .rc-grid{ gap:8px; }
+  .wt-scroll{
+    flex-wrap:nowrap; overflow-x:auto;
+    scrollbar-width:none; -ms-overflow-style:none;
+    margin:0 -18px; padding:0 18px 4px;
+    gap:8px;
+  }
+  .wt-scroll::-webkit-scrollbar{ display:none; }
+  .wt-card{
+    flex:0 0 84px;
+    padding:11px 10px;
+    border-radius:14px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.05);
+    text-align:center;
+  }
+  .wt-card .rc-head{ justify-content:center; margin-bottom:6px; }
+  .wt-card .rc-title2{ font-size:10.5px; margin-bottom:2px; }
+  .wt-card .rc-sub2{ font-size:8.5px; color:var(--text-faint); }
+  .theme-card2{ text-align:left; }
+  .theme-card2 .rc-title2{ font-size:12px; margin-bottom:2px; }
+  .theme-card2 .rc-sub2{ font-size:9.5px; color:var(--text-faint); }
+  .rc-card2{
+    padding:11px 10px;
+    border-radius:14px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+  .rc-head{ display:flex; align-items:center; gap:11px; margin-bottom:0; }
+  .rc-text2{ display:flex; flex-direction:column; gap:2px; min-width:0; }
+  .rc-ic-wrap2{
+    width:24px; height:24px; border-radius:8px; flex-shrink:0;
+    border:1px solid currentColor;
+    box-shadow:0 0 12px currentColor, inset 0 1px 0 rgba(255,255,255,0.15);
+    display:flex; align-items:center; justify-content:center;
+    opacity:0.95;
+  }
+  .rc-ic-wrap2 .ic{ width:12px; height:12px; }
+  .rc-title2{ font-size:10.5px; font-weight:700; color:var(--text); margin-bottom:2px; }
+  .rc-sub2{ font-size:8.5px; color:var(--text-faint); }
+  .rc-count2{ font-size:8.5px; font-weight:700; color:var(--text-dim); }
+
+  .theme-pager{ display:flex; align-items:center; justify-content:center; gap:16px; margin:2px 0 14px; }
+  .theme-arrow{
+    width:32px; height:32px; border-radius:50%;
+    background:linear-gradient(145deg, rgba(167,139,250,0.22), rgba(88,58,168,0.08));
+    border:1px solid rgba(139,92,246,0.28);
+    display:flex; align-items:center; justify-content:center; color:var(--violet-light);
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.08);
+    transition:transform 0.12s ease;
+  }
+  .theme-arrow .ic{ width:13px; height:13px; }
+  .theme-arrow:active{ transform:scale(0.9); }
+  .theme-arrow.disabled{ opacity:0.25; pointer-events:none; }
+  .theme-dots{ display:flex; gap:6px; }
+  .theme-dots span{ width:5px; height:5px; border-radius:50%; background:var(--text-faint); opacity:0.35; }
+  .theme-dots span.active{ background:var(--violet-light); opacity:1; width:14px; border-radius:4px; box-shadow:0 0 6px rgba(179,157,251,0.6); }
+  #themeGrid{ margin-bottom:0; }
+  .status-card .ic-wrap{ width:34px; height:34px; margin-bottom:0; flex-shrink:0; }
+  .status-card .ic-wrap .ic{ width:17px; height:17px; }
+
+  /* AI box */
+  .ai-box{
+    display:flex; gap:11px; align-items:center;
+    background:linear-gradient(135deg, rgba(139,92,246,0.16), rgba(76,50,150,0.05));
+    border:1px solid var(--border-strong); border-radius:17px; padding:13px;
+    box-shadow:0 0 30px rgba(139,92,246,0.1); margin-bottom:8px;
+    margin-top:20px;
+  }
+  .ai-icon{
+    width:40px; height:40px; border-radius:13px; flex-shrink:0;
+    background:linear-gradient(145deg, rgba(167,139,250,0.35), rgba(88,58,168,0.15));
+    border:1px solid rgba(139,92,246,0.3);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 16px rgba(139,92,246,0.25);
+  }
+  .ai-icon .ic{ width:19px; height:19px; color:var(--violet-light); }
+  .ai-text{ flex:1; font-size:9.5px; line-height:1.5; color:var(--text-dim); }
+  .ai-text b{ color:var(--text); font-family:'Fraunces', serif; }
+  .ai-arrow{
+    width:26px; height:26px; border-radius:50%; flex-shrink:0;
+    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    display:flex; align-items:center; justify-content:center; color:var(--text-dim);
+  }
+  .ai-arrow .ic{ width:13px; height:13px; }
+
+  /* bottom nav */
+  .bottom-nav{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:390px;
+    display:flex; align-items:flex-end; justify-content:space-around;
+    padding:10px 6px 22px;
+    background:linear-gradient(0deg, rgba(8,7,15,0.98), rgba(8,7,15,0.9));
+    border-top:1px solid var(--border); z-index:50;
+    border-bottom-left-radius:36px; border-bottom-right-radius:36px;
+  }
+  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .nav-item .ic{ width:19px; height:19px; color:var(--text-faint); }
+  .nav-item span{ font-size:9.5px; font-weight:600; color:var(--text-faint); }
+  .nav-item.active .ic{ color:var(--violet-light); }
+  .nav-item.active span{ color:var(--violet-light); font-weight:700; }
+  .nav-fab{
+    width:50px; height:50px; border-radius:50%; margin-top:-20px;
+    background:linear-gradient(145deg, #a78bfa, #7c3aed);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; box-shadow:0 10px 26px rgba(124,58,237,0.5), 0 0 0 4px var(--bg);
+  }
+  .nav-fab .ic{ width:20px; height:20px; }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="scroll">
+
+    <div class="header-panel">
+      <div class="header-row">
+        <div class="back-btn"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M10 3L5 8l5 5"/></svg></div>
+        <div class="header-title-group">
+          <svg class="sparkle-ic ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.8l1.1 3.9 3.9 1.1-3.9 1.1L8 11.8l-1.1-3.9-3.9-1.1 3.9-1.1L8 1.8z"/></svg>
+          <h1>Kelime Kartları</h1>
+          <svg class="sparkle-ic ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.8l1.1 3.9 3.9 1.1-3.9 1.1L8 11.8l-1.1-3.9-3.9-1.1 3.9-1.1L8 1.8z"/></svg>
+        </div>
+      </div>
+      <div class="header-sub">Kelime kartlarıyla hızlı tekrar yap ve öğrendiklerini güçlendir.</div>
+    </div>
+
+    <div class="hero-card">
+      <div class="hero-stack">
+        <div class="stack-card c1"></div>
+        <div class="stack-card c2"></div>
+        <div class="stack-card c3">
+          <div class="word">journey</div>
+          <div class="type">noun</div>
+          <div class="def">a long trip or experience</div>
+        </div>
+      </div>
+      <div class="hero-info">
+        <div class="hero-title">Tüm kelime kartlarını çalış</div>
+        <div class="hero-sub">Bu zamana kadar öğrendiğin tüm kelimeleri kartlarla tekrar et.</div>
+        <div class="hero-btn">Başla <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></div>
+        <div class="hero-stats">
+          <div class="hero-stat"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/></svg> Toplam 245 kart</div>
+          <div class="hero-stat"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg> Tahmini 12 dk</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sect-head">
+      <div class="sect-title"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13V8M8 13V4M13 13V6"/></svg> Seviyene göre çalış</div>
+    </div>
+    <div class="grid" style="flex-wrap:nowrap;">
+      <div class="mini-card g3 m-violet" style="text-align:center;">
+        <div class="mini-title" style="font-size:11px; margin-bottom:2px;">Başlangıç</div>
+        <div class="mini-big" style="font-size:14px; margin-bottom:3px;">A1 · A2</div>
+        <div class="mini-sub" style="font-size:9px;">100 kart</div>
+      </div>
+      <div class="mini-card g3 m-pink" style="text-align:center;">
+        <div class="mini-title" style="font-size:11px; margin-bottom:2px;">Orta</div>
+        <div class="mini-big" style="font-size:14px; margin-bottom:3px;">B1 · B2</div>
+        <div class="mini-sub" style="font-size:9px;">145 kart</div>
+      </div>
+      <div class="mini-card g3 m-blue" style="text-align:center;">
+        <div class="mini-title" style="font-size:11px; margin-bottom:2px;">İleri</div>
+        <div class="mini-big" style="font-size:14px; margin-bottom:3px;">C1 · C2</div>
+        <div class="mini-sub" style="font-size:9px;">78 kart</div>
+      </div>
+    </div>
+
+    <div class="sect-head">
+      <div class="sect-title"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l5-5h5.5A1.5 1.5 0 0 1 14 3.5V9l-5 5-7-7z"/><circle cx="5.5" cy="5.5" r="1"/></svg> Temalara göre çalış</div>
+    </div>
+    <div class="grid" id="themeGrid"></div>
+    <div class="theme-pager">
+      <div class="theme-arrow" id="themePrev"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3L5 8l5 5"/></svg></div>
+      <div class="theme-dots" id="themeDots"></div>
+      <div class="theme-arrow" id="themeNext"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></div>
+    </div>
+
+    <div class="sect-head">
+      <div class="sect-title"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8A5 5 0 1 1 11.5 4.3"/><path d="M13 2.3V5H10.3"/></svg> Review Count'a Göre Çalış <div class="rc-info-btn" id="rcInfoBtn">i</div></div>
+    </div>
+    <div class="grid rc-grid">
+      <div class="mini-card g3 m-violet rc-card2">
+        <div class="rc-head">
+          <div class="ic-wrap rc-ic-wrap2"><svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.8l1.1 3.9 3.9 1.1-3.9 1.1L8 11.8l-1.1-3.9-3.9-1.1 3.9-1.1L8 1.8z"/></svg></div>
+          <div class="rc-text2">
+            <div class="rc-title2">Yeni</div>
+            <div class="rc-sub2">Henüz oturmadı</div>
+            <div class="rc-count2">87 kart</div>
+          </div>
+        </div>
+      </div>
+      <div class="mini-card g3 m-amber rc-card2">
+        <div class="rc-head">
+          <div class="ic-wrap rc-ic-wrap2"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 2"><circle cx="8" cy="8" r="5.5"/></svg></div>
+          <div class="rc-text2">
+            <div class="rc-title2">Öğreniliyor</div>
+            <div class="rc-sub2">Pekişiyor</div>
+            <div class="rc-count2">94 kart</div>
+          </div>
+        </div>
+      </div>
+      <div class="mini-card g3 m-green rc-card2">
+        <div class="rc-head">
+          <div class="ic-wrap rc-ic-wrap2"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="5.5"/><path d="M5.5 8l1.8 1.8 3.2-3.6"/></svg></div>
+          <div class="rc-text2">
+            <div class="rc-title2">Mastered</div>
+            <div class="rc-sub2">Kalıcı oldu</div>
+            <div class="rc-count2">64 kart</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sect-head">
+      <div class="sect-title"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 6.5h6M5 9.5h4"/></svg> Kelime türüne göre çalış</div>
+    </div>
+    <div class="grid wt-scroll">
+      <div class="mini-card m-violet wt-card">
+        <div class="rc-head">
+          <div class="ic-wrap rc-ic-wrap2"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l4-4M7 9l3-6M10 3h3v3"/></svg></div>
+        </div>
+        <div class="rc-title2">Fiiller</div>
+        <div class="rc-sub2">68 kart</div>
+      </div>
+      <div class="mini-card m-blue wt-card">
+        <div class="rc-head">
+          <div class="ic-wrap rc-ic-wrap2"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5l4 3-4 3zM8 5l4 3-4 3z"/></svg></div>
+        </div>
+        <div class="rc-title2">Zarflar</div>
+        <div class="rc-sub2">34 kart</div>
+      </div>
+      <div class="mini-card m-pink wt-card">
+        <div class="rc-head">
+          <div class="ic-wrap rc-ic-wrap2"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5.5" r="2.5"/><path d="M3.5 13.5c0-2.8 2-4.5 4.5-4.5s4.5 1.7 4.5 4.5"/></svg></div>
+        </div>
+        <div class="rc-title2">İsimler</div>
+        <div class="rc-sub2">92 kart</div>
+      </div>
+      <div class="mini-card m-teal wt-card">
+        <div class="rc-head">
+          <div class="ic-wrap rc-ic-wrap2"><svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.8l1.7 4.4 4.6.4-3.5 3 1.1 4.5L8 11.6l-4 2.5 1.1-4.5-3.5-3 4.6-.4L8 1.8z"/></svg></div>
+        </div>
+        <div class="rc-title2">Sıfatlar</div>
+        <div class="rc-sub2">37 kart</div>
+      </div>
+      <div class="mini-card m-blue wt-card">
+        <div class="rc-head">
+          <div class="ic-wrap rc-ic-wrap2"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h12v7H6l-3 3v-3H2V3z"/></svg></div>
+        </div>
+        <div class="rc-title2">Zamirler</div>
+        <div class="rc-sub2">14 kart</div>
+      </div>
+    </div>
+
+    <div class="ai-box">
+      <div class="ai-icon"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><circle cx="3" cy="4" r="1.2"/><circle cx="13" cy="4" r="1.2"/><circle cx="3" cy="12" r="1.2"/><circle cx="13" cy="12" r="1.2"/><path d="M6.5 6.7L4 4.8M9.5 6.7L12 4.8M6.5 9.3L4 11.2M9.5 9.3L12 11.2"/></svg></div>
+      <div class="ai-text"><b>AI Tavsiyesi:</b> Bilemediğin ve pekiştirmek istediğin kelimelerden yeni hikâyeler türet; böylece kelimeleri farklı bağlamlarda görerek kalıcılıklarını artır.</div>
+      <div class="ai-arrow"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l6-5 6 5v7H2V7z"/></svg>
+      <span>Ana Sayfa</span>
+    </div>
+    <div class="nav-item">
+      <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
+      <span>Kelimelerim</span>
+    </div>
+    <div class="nav-fab"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg></div>
+    <div class="nav-item">
+      <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg>
+      <span>Hikâyelerim</span>
+    </div>
+    <div class="nav-item active">
+      <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M10.3 5.7l-1.5 3.6-3.6 1.5 1.5-3.6z"/></svg>
+      <span>Keşfet</span>
+    </div>
+  </div>
+</div>
+
+<div class="rc-sheet-overlay" id="rcSheetOverlay">
+  <div class="rc-sheet">
+    <div class="rc-sheet-handle"></div>
+    <div class="rc-sheet-head">
+      <div class="rc-sheet-title">Kelime Durumu Nasıl Belirlenir?</div>
+      <div class="rc-sheet-close" id="rcSheetClose">&#10005;</div>
+    </div>
+
+    <p>Her kelimenin bir <b>Review Count</b> değeri vardır — bu sayı, kelimenin kaç <b>farklı hikâyede</b> geçtiğini gösterir.</p>
+    <p>Flashcard, quiz veya pratik oyunlarında kelimeyle karşılaşman bu sayıyı ETKİLEMEZ. Aynı hikâyede bir kelime 10 kere geçse bile Review Count yine <b>1</b> artar — önemli olan tekrar sayısı değil, kelimenin kaç farklı hikâyede karşına çıktığıdır.</p>
+
+    <div class="rc-sheet-item"><div class="rc-sheet-dot" style="background:#c4b5fd; box-shadow:0 0 8px rgba(196,181,253,0.6);"></div><div><b style="color:#c4b5fd;">1-3 farklı hikâye → Yeni:</b> Kelimeyle yeni tanışıyorsun, henüz pekişmedi.</div></div>
+    <div class="rc-sheet-item"><div class="rc-sheet-dot" style="background:#facc15; box-shadow:0 0 8px rgba(250,204,21,0.6);"></div><div><b style="color:#facc15;">4-8 farklı hikâye → Öğreniliyor:</b> Farklı bağlamlarda görüldükçe hafızana yerleşiyor.</div></div>
+    <div class="rc-sheet-item"><div class="rc-sheet-dot" style="background:#4ade80; box-shadow:0 0 8px rgba(74,222,128,0.6);"></div><div><b style="color:#4ade80;">9+ farklı hikâye → Mastered:</b> Yeterince farklı hikâyede görüldü, uzun süreli hafızana yerleşti.</div></div>
+
+    <div class="rc-sheet-foot">Durum tamamen otomatik güncellenir, elle değiştiremezsin — yeni hikâyeler oluşturup kelimeyle farklı bağlamlarda karşılaşarak ilerletebilirsin.</div>
+  </div>
+</div>
+<script>
+  var themes = [
+    {name:'travel', cls:'m-violet', count:18, icon:'<rect x="4" y="5" width="8" height="9" rx="1"/><path d="M6 5V3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5V5"/>'},
+    {name:'entertainment', cls:'m-pink', count:15, icon:'<circle cx="8" cy="8" r="6"/><path d="M6 6h.01M10 6h.01M6 10c.7.7 1.3 1 2 1s1.3-.3 2-1"/>'},
+    {name:'art', cls:'m-amber', count:12, icon:'<circle cx="8" cy="8" r="6"/><circle cx="6" cy="6" r=".8" fill="currentColor"/><circle cx="10" cy="6" r=".8" fill="currentColor"/><circle cx="6" cy="10" r=".8" fill="currentColor"/>'},
+    {name:'politics', cls:'m-blue', count:10, icon:'<path d="M4 14V3l7 2-7 2"/>'},
+    {name:'nature', cls:'m-green', count:20, icon:'<path d="M3 13c6 1 10-3 10-10-7 0-10 4-10 10z"/>'},
+    {name:'daily life', cls:'m-teal', count:24, icon:'<path d="M4 7h8v3a4 4 0 0 1-4 4 4 4 0 0 1-4-4V7z"/><path d="M12 8h1.5a1.5 1.5 0 0 1 0 3H12"/>'},
+    {name:'business', cls:'m-blue', count:26, icon:'<rect x="2" y="5" width="12" height="8" rx="1.5"/><path d="M6 5V4a2 2 0 0 1 4 0v1"/>'},
+    {name:'health', cls:'m-green', count:19, icon:'<path d="M8 14s-5-3.2-5-7a3 3 0 0 1 5-2.2A3 3 0 0 1 13 7c0 3.8-5 7-5 7z"/><path d="M6.5 7h1v-1.5h1V7h1v1h-1v1.5h-1V8h-1z"/>'},
+    {name:'emotions', cls:'m-pink', count:16, icon:'<path d="M8 13.5s-5.5-3.4-5.5-7.2C2.5 4 4.2 2.5 6.2 2.5c1.1 0 2.1.5 2.8 1.3.7-.8 1.7-1.3 2.8-1.3 2 0 3.7 1.5 3.7 3.8 0 3.8-5.5 7.2-5.5 7.2z" fill="currentColor" stroke="none"/>'},
+    {name:'relationships & dating', cls:'m-pink', count:14, icon:'<circle cx="5.5" cy="6" r="2"/><circle cx="10.5" cy="6" r="2"/><path d="M2.5 14c0-2.5 1.5-4 3.5-4M13.5 14c0-2.5-1.5-4-3.5-4"/>'},
+    {name:'food', cls:'m-amber', count:22, icon:'<path d="M5 2v5M7 2v5M5 7c0 3 0 7 2 7s2-4 2-7"/><path d="M11 2v12"/>'},
+    {name:'science', cls:'m-teal', count:17, icon:'<path d="M6 2h4M6.5 2v4.5L3 12c-.5.9.2 2 1.2 2h7.6c1 0 1.7-1.1 1.2-2l-3.5-5.5V2"/>'},
+    {name:'technology', cls:'m-violet', count:23, icon:'<rect x="4" y="4" width="8" height="8" rx="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/>'},
+    {name:'shopping', cls:'m-blue', count:13, icon:'<path d="M4 5h8l-1 8H5L4 5z"/><path d="M6 5V4a2 2 0 0 1 4 0v1"/>'},
+    {name:'sports', cls:'m-green', count:21, icon:'<circle cx="8" cy="8" r="6"/><path d="M8 2v12M2 8h12M4 4l8 8M12 4l-8 8"/>'},
+    {name:'education', cls:'m-amber', count:25, icon:'<path d="M2 5.5L8 3l6 2.5L8 8 2 5.5z"/><path d="M4.5 6.7V10c0 1 1.5 2 3.5 2s3.5-1 3.5-2V6.7"/>'}
+  ];
+
+  var PAGE_SIZE = 4;
+  var totalPages = Math.ceil(themes.length / PAGE_SIZE);
+  var currentPage = 0;
+
+  function renderThemePage(){
+    var grid = document.getElementById('themeGrid');
+    var start = currentPage * PAGE_SIZE;
+    var pageThemes = themes.slice(start, start + PAGE_SIZE);
+    grid.innerHTML = pageThemes.map(function(t){
+      var displayName = t.name.charAt(0).toUpperCase() + t.name.slice(1);
+      return '<div class="mini-card g2 ' + t.cls + ' theme-card2"><div class="rc-head" style="justify-content:flex-start;"><div class="ic-wrap rc-ic-wrap2" style="border:1px solid currentColor; box-shadow:0 0 12px currentColor, inset 0 1px 0 rgba(255,255,255,0.15);"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">' + t.icon + '</svg></div><div class="rc-text2"><div class="rc-title2">' + displayName + '</div><div class="rc-sub2">' + t.count + ' kart</div></div></div></div>';
+    }).join('');
+
+    var dots = document.getElementById('themeDots');
+    dots.innerHTML = '';
+    for(var i=0;i<totalPages;i++){
+      var d = document.createElement('span');
+      if(i===currentPage) d.className='active';
+      dots.appendChild(d);
+    }
+    document.getElementById('themePrev').classList.toggle('disabled', currentPage===0);
+    document.getElementById('themeNext').classList.toggle('disabled', currentPage===totalPages-1);
+  }
+
+  document.getElementById('themePrev').addEventListener('click', function(){
+    if(currentPage>0){ currentPage--; renderThemePage(); }
+  });
+  document.getElementById('themeNext').addEventListener('click', function(){
+    if(currentPage<totalPages-1){ currentPage++; renderThemePage(); }
+  });
+
+  renderThemePage();
+
+  var rcBtn = document.getElementById('rcInfoBtn');
+  var rcOverlay = document.getElementById('rcSheetOverlay');
+  var rcClose = document.getElementById('rcSheetClose');
+  rcBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    rcOverlay.classList.add('open');
+  });
+  rcClose.addEventListener('click', function(){
+    rcOverlay.classList.remove('open');
+  });
+  rcOverlay.addEventListener('click', function(e){
+    if(e.target === rcOverlay){ rcOverlay.classList.remove('open'); }
+  });
+</script>
+</body>
+</html>

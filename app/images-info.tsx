@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,6 +13,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StoryGenerationCooldown } from '@/components/StoryGenerationCooldown';
+import { buildSessionFromWords, LEVEL_NAMES, makeWord, SAMPLE_WORDS } from '@/data/mock';
+import { useProgress } from '@/context/ProgressContext';
+
+const COOLDOWN_MOCK_READY_DELAY = 9000;
 
 
 const TOKENS = {
@@ -29,7 +35,7 @@ const webNoBreak = { wordBreak: 'keep-all', overflowWrap: 'normal', hyphens: 'no
 
 const flow = [
   { icon: 'image-outline', label: 'Görsel' },
-  { icon: 'cpu', label: 'AI Analizi' },
+  { icon: 'brain', label: 'AI Analizi' },
   { icon: 'list', label: 'Seçilen Kelimeler' },
   { icon: 'book-open-page-variant-outline', label: 'Hikaye + Quiz' },
 ] as const;
@@ -37,10 +43,41 @@ const flow = [
 export default function ImagesInfoScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { startSession } = useProgress();
+
+  const [overlayStage, setOverlayStage] = useState<'cooldown' | null>(null);
+  const [cooldownReady, setCooldownReady] = useState(false);
+  const readyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
+    };
+  }, []);
 
   const showDemoAlert = () => {
-    Alert.alert('Görsel Yükle', 'Bu demo ekranda geçici yükleme aksiyonu gösterilir.');
+    Alert.alert(
+      'Görsel Yükle',
+      'Bu sürümde gerçek görsel analizi henüz yok. Devam edersen örnek kelimelerle bir ders hazırlanır.',
+    );
   };
+
+  const startCooldown = () => {
+    if (readyTimerRef.current) clearTimeout(readyTimerRef.current);
+    startSession(session);
+    setCooldownReady(false);
+    setOverlayStage('cooldown');
+    readyTimerRef.current = setTimeout(() => setCooldownReady(true), COOLDOWN_MOCK_READY_DELAY);
+  };
+
+  const proceedFromCooldown = () => {
+    setCooldownReady(false);
+    setOverlayStage(null);
+    router.push('/learn/story');
+  };
+
+  const mockWords = useMemo(() => SAMPLE_WORDS.map((w) => makeWord(w)), []);
+  const session = useMemo(() => buildSessionFromWords(mockWords, LEVEL_NAMES[0]), [mockWords]);
 
   return (
     <View style={styles.screen}>
@@ -50,6 +87,8 @@ export default function ImagesInfoScreen() {
       <ScrollView
         contentContainerStyle={[styles.content, { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 28 }]}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!overlayStage}
+        pointerEvents={overlayStage ? 'none' : 'auto'}
       >
         <View style={styles.header}>
           <View style={[styles.headerStar, styles.headerStarOne]} />
@@ -59,13 +98,15 @@ export default function ImagesInfoScreen() {
           <View style={[styles.headerStar, styles.headerStarFive]} />
           <View style={[styles.headerStar, styles.headerStarSix]} />
           <View style={[styles.headerStar, styles.headerStarSeven]} />
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
-            <Feather name="arrow-left" size={24} color={TOKENS.violet100} />
-          </Pressable>
-          <Pressable style={styles.howButton}>
-            <MaterialCommunityIcons name="help-circle-outline" size={13} color="#F15DFF" />
-            <Text style={styles.howText}>Nasıl çalışır?</Text>
-          </Pressable>
+          <View style={styles.topRow}>
+            <Pressable style={styles.backButton} onPress={() => router.back()}>
+              <Feather name="arrow-left" size={24} color={TOKENS.violet100} />
+            </Pressable>
+            <Pressable style={styles.howButton}>
+              <MaterialCommunityIcons name="help-circle-outline" size={14} color={TOKENS.violet300} />
+              <Text style={styles.howText}>Nasıl çalışır?</Text>
+            </Pressable>
+          </View>
           <View style={styles.headerCopy}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>Görsellerden Öğren</Text>
@@ -75,6 +116,7 @@ export default function ImagesInfoScreen() {
               Kendi fotoğrafını yükle, AI analiz etsin,{`\n`}sana özel kelimeler ve hikâyeler oluştursun.
             </Text>
           </View>
+          {/* TODO: replace with real assets/images/mascot.png once a clean (no watermark, violet-toned) version is provided */}
           <View style={styles.mascotWrap} pointerEvents="none">
             <Text style={[styles.floatSparkle, styles.sparkleOne]}>✦</Text>
             <Text style={[styles.floatSparkle, styles.sparkleTwo]}>✦</Text>
@@ -90,12 +132,13 @@ export default function ImagesInfoScreen() {
             <View style={styles.stepActiveNumber}><Text style={styles.stepActiveNumberText}>1</Text></View>
             <Text style={styles.stepActiveText}>Kendi Görselini Yükle</Text>
           </LinearGradient>
-          <View style={styles.stepPassive}>
+          <Pressable style={styles.stepPassive} onPress={() => router.push('/images-gallery')}>
             <View style={styles.stepNumber}><Text style={styles.stepNumberText}>2</Text></View>
             <Text style={styles.stepPassiveText}>Hazır Görseller</Text>
-          </View>
+          </Pressable>
         </View>
 
+        {/* TODO: replace this gradient with real assets/images/upload-bg.jpg once a clean (no watermark, violet-toned) version is provided */}
         <Pressable style={styles.uploadCard} onPress={showDemoAlert}>
           <LinearGradient colors={['#4C2A6E', '#6B3FA0', '#2E1A47', '#150E22']} locations={[0, 0.3, 0.65, 1]} style={styles.uploadOverlay}>
             <View style={styles.uploadDarkOverlay} />
@@ -163,7 +206,7 @@ export default function ImagesInfoScreen() {
             <React.Fragment key={step.label}>
               <View style={styles.flowStep}>
                 <LinearGradient colors={[TOKENS.violet300, TOKENS.violet600]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.flowCircle}>
-                  {step.icon === 'list' || step.icon === 'cpu' ? <Feather name={step.icon} size={24} color="#FFFFFF" /> : <MaterialCommunityIcons name={step.icon} size={24} color="#FFFFFF" />}
+                  {step.icon === 'list' ? <Feather name={step.icon} size={24} color="#FFFFFF" /> : <MaterialCommunityIcons name={step.icon} size={24} color="#FFFFFF" />}
                 </LinearGradient>
                 <Text style={styles.flowLabel}>{step.label}</Text>
               </View>
@@ -197,7 +240,7 @@ export default function ImagesInfoScreen() {
           </View>
         </LinearGradient>
 
-        <Pressable style={styles.ctaWrap} onPress={() => router.push('/story-loading')}>
+        <Pressable style={styles.ctaWrap} onPress={startCooldown}>
           <LinearGradient colors={['rgba(139,92,246,0.45)', 'rgba(109,40,217,0.45)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.ctaGlow} />
           <LinearGradient colors={['#8B5CF6', '#6D28D9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.ctaButton}>
             <View style={styles.ctaTopLine} />
@@ -207,6 +250,17 @@ export default function ImagesInfoScreen() {
           </LinearGradient>
         </Pressable>
       </ScrollView>
+
+      <Modal visible={!!overlayStage} animationType="none" transparent onRequestClose={() => {}} statusBarTranslucent>
+        {overlayStage === 'cooldown' ? (
+          <StoryGenerationCooldown
+            targetWords={mockWords.map((w) => ({ word: w.en, meaning: w.tr }))}
+            storyPreview={session.paragraphs[0]?.en ?? ''}
+            isReady={cooldownReady}
+            onProceed={proceedFromCooldown}
+          />
+        ) : null}
+      </Modal>
     </View>
   );
 }
@@ -240,15 +294,16 @@ const styles = StyleSheet.create({
   headerStarFive: { right: 142, bottom: 38, width: 5, height: 5, borderRadius: 2.5, opacity: 0.5 },
   headerStarSix: { left: 88, bottom: 20, width: 3, height: 3, borderRadius: 1.5, opacity: 0.75 },
   headerStarSeven: { right: 12, bottom: 58, width: 4, height: 4, borderRadius: 2, opacity: 0.65 },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 4 },
   backButton: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: 'rgba(196,181,253,0.46)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(10,7,20,0.45)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.35, shadowRadius: 12, elevation: 6 },
-  howButton: { position: 'absolute', right: 0, top: 8, flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: 'rgba(139,92,246,0.50)', borderRadius: 12, paddingHorizontal: 8, height: 28, backgroundColor: 'rgba(13,8,22,0.66)', zIndex: 4 },
-  howText: { color: '#DDD6FE', fontFamily: 'Inter_500Medium', fontSize: 10.5 },
+  howButton: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: 'rgba(167,139,250,0.35)', borderRadius: 18, paddingHorizontal: 14, paddingVertical: 0, height: 36, backgroundColor: 'rgba(22,16,31,0.6)' },
+  howText: { color: '#FFFFFF', fontFamily: 'Inter_500Medium', fontSize: 12 },
   headerCopy: { marginTop: 18, width: '100%', zIndex: 2 },
   titleRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'nowrap' },
   title: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 26, lineHeight: 32, flexShrink: 0, letterSpacing: -0.45 },
   titleSparkle: { marginLeft: 7, color: TOKENS.violet300, fontSize: 18, lineHeight: 22 },
   subtitle: { marginTop: 8, color: '#C7C2D0', fontFamily: 'Inter_400Regular', fontSize: 14, lineHeight: 20, width: '100%' },
-  mascotWrap: { position: 'absolute', right: -34, top: 22, width: 108, height: 108, alignItems: 'center', justifyContent: 'center', opacity: 0.9 },
+  mascotWrap: { position: 'absolute', right: -34, top: 48, width: 108, height: 108, alignItems: 'center', justifyContent: 'center', opacity: 0.9 },
   mascotCircle: { width: 82, height: 82, borderRadius: 41, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.32)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.62, shadowRadius: 24, elevation: 12 },
   floatSparkle: { position: 'absolute', color: TOKENS.violet100, zIndex: 2 },
   sparkleOne: { top: 4, left: 12, fontSize: 8 },
@@ -307,7 +362,7 @@ const styles = StyleSheet.create({
   quoteBand: { borderRadius: 24, paddingVertical: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderColor: 'rgba(167,139,250,0.32)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.18, shadowRadius: 16, elevation: 6 },
   quoteIcon: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(196,181,253,0.25)', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.45, shadowRadius: 18, elevation: 8 },
   quoteSparkle: { color: '#FFFFFF', fontSize: 22 },
-  quoteText: { flex: 1, minHeight: 54, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 12, lineHeight: 18, textAlignVertical: 'center' },
+  quoteText: { flex: 1, minHeight: 54, color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 11.2, lineHeight: 18, textAlignVertical: 'center' },
   quoteAccent: { color: TOKENS.violet100 },
   bookWrap: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.32, shadowRadius: 12 },
   bookSparkle: { position: 'absolute', color: TOKENS.violet100 },

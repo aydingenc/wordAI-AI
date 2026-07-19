@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hikâyen Hazırlanıyor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0714;
+  --card-grad:linear-gradient(180deg,rgba(38,28,58,.55),rgba(22,16,31,.92));
+  --violet-100:#C4B5FD;
+  --violet-300:#A78BFA;
+  --violet-600:#7C3AED;
+  --grad-primary:linear-gradient(135deg,#A78BFA,#7C3AED);
+  --text-muted:#A19DB0;
+  --radius-lg:22px;
+  --radius-md:14px;
+  --glow-ring:0 0 0 1px rgba(196,181,253,.3),0 0 24px rgba(139,92,246,.55),inset 0 1px 0 rgba(255,255,255,.3);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);font-family:'Inter',system-ui,sans-serif;color:#fff;
+  word-break:keep-all;overflow-wrap:normal;hyphens:none}
+.page{max-width:400px;margin:0 auto;padding:26px 22px 24px;min-height:100vh;
+  display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+/* ============ DEMO KONTROLÜ (sadece önizleme için, üretimde yok) ============ */
+.demo-bar{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  background:rgba(10,7,20,.95);border-bottom:1px solid rgba(167,139,250,.25);
+  padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:10px;
+  font-size:11px;color:var(--text-muted);
+}
+.demo-bar button{
+  background:var(--grad-primary);border:none;color:#fff;font-size:11px;font-weight:700;
+  padding:5px 12px;border-radius:10px;cursor:pointer;font-family:inherit;
+}
+.page{margin-top:34px}
+
+/* ============ HEADER ============ */
+.header{display:flex;align-items:center;gap:14px}
+.logo-circle{
+  width:52px;height:52px;border-radius:50%;flex-shrink:0;
+  background:var(--grad-primary);box-shadow:var(--glow-ring);
+  display:flex;align-items:center;justify-content:center;
+}
+.logo-circle svg{width:24px;height:24px}
+.header-text h1{font-size:22px;font-weight:800}
+.header-text p{margin-top:4px;font-size:13px;color:var(--text-muted);line-height:1.4}
+
+/* ============ SAYAÇ ============ */
+.timer-area{display:flex;flex-direction:column;align-items:center;margin-top:28px}
+.timer-circle{
+  width:118px;height:118px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, rgba(167,139,250,.28), transparent 60%), rgba(124,58,237,.12);
+  border:2px solid rgba(167,139,250,.6);
+  box-shadow:0 0 0 1px rgba(196,181,253,.2), 0 0 30px rgba(139,92,246,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.timer-circle .num{font-size:34px;font-weight:900}
+.timer-circle .unit{font-size:12px;color:var(--violet-100);margin-top:-4px}
+
+.progress-track{
+  width:100%;height:6px;border-radius:99px;background:rgba(255,255,255,.08);
+  margin-top:20px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;border-radius:99px;background:var(--grad-primary);
+  width:0%;transition:width .4s ease;
+}
+
+.phase-row{display:flex;justify-content:space-between;width:100%;margin-top:14px;gap:8px}
+.phase-pill{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 4px;border-radius:14px;background:rgba(255,255,255,.03);
+  border:1px solid transparent;
+}
+.phase-pill.active{background:rgba(167,139,250,.16);border-color:rgba(167,139,250,.4)}
+.phase-pill .dot{width:6px;height:6px;border-radius:50%;background:#4A4560}
+.phase-pill.active .dot{background:var(--violet-100)}
+.phase-pill span{font-size:10px;font-weight:700;color:#8f88a6}
+.phase-pill.active span{color:#fff}
+
+/* ============ İÇERİK KARTI (faza göre değişir) ============ */
+.content-wrap{margin-top:26px;flex:1}
+.glass-card{
+  border-radius:var(--radius-lg);padding:20px;
+  background:var(--card-grad);
+  border:1px solid rgba(167,139,250,.28);
+  box-shadow:0 0 0 1px rgba(196,181,253,.12), 0 0 30px rgba(139,92,246,.18), inset 0 1px 0 rgba(255,255,255,.06);
+  min-height:230px;
+  display:none;
+  animation:fadeSlide .35s ease;
+}
+.glass-card.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Faz 1 — Günün İlginç Bilgisi */
+.fact-icon{
+  width:48px;height:48px;border-radius:16px;
+  background:var(--grad-primary);box-shadow:var(--glow-ring);
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+}
+.fact-icon svg{width:22px;height:22px}
+.glass-card h2{font-size:18px;font-weight:800}
+.glass-card .body-text{margin-top:8px;font-size:13.5px;line-height:1.55;color:var(--text-muted)}
+.tip-pill{
+  margin-top:16px;display:inline-flex;align-items:center;gap:6px;
+  padding:7px 12px;border-radius:99px;
+  background:rgba(252,211,77,.1);border:1px solid rgba(252,211,77,.28);
+}
+.tip-pill svg{width:14px;height:14px;color:#FCD34D}
+.tip-pill span{font-size:11.5px;font-weight:600;color:#FCD34D}
+
+/* Faz 2 — Kelime Tekrar (tek tek, otomatik geçişli büyük kart) */
+.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.section-head-icon{width:26px;height:26px;color:var(--violet-300);flex-shrink:0}
+.big-word-card{
+  margin-top:18px;border-radius:var(--radius-md);cursor:pointer;
+  background:rgba(255,255,255,.035);border:1px solid rgba(167,139,250,.25);
+  padding:26px 16px;text-align:center;min-height:120px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.big-word-card .w{font-size:26px;font-weight:800}
+.big-word-card .hint{margin-top:8px;font-size:11.5px;color:var(--text-muted)}
+.word-dots{display:flex;justify-content:center;gap:6px;margin-top:16px}
+.word-dots span{width:6px;height:6px;border-radius:50%;background:#4A4560;transition:background .2s,transform .2s}
+.word-dots span.active{background:var(--violet-300);transform:scale(1.3)}
+
+/* Faz 3 — Hikâye Yazma/Hazırlama (moda göre metin değişir) */
+.typing-box{
+  margin-top:16px;min-height:110px;border-radius:var(--radius-md);
+  padding:14px;background:rgba(0,0,0,.22);border:1px solid rgba(167,139,250,.2);
+}
+.typing-box p{font-size:14.5px;line-height:1.6;font-weight:500}
+.cursor{color:var(--violet-300);animation:blink 1s step-start infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ============ ALT BİLGİ KARTI ============ */
+.bottom-card{
+  margin-top:16px;padding:14px 16px;border-radius:var(--radius-lg);
+  background:rgba(255,255,255,.035);border:1px solid rgba(167,139,250,.22);
+  display:flex;align-items:center;gap:12px;
+  transition:opacity .3s;
+}
+.bottom-card svg{width:22px;height:22px;color:var(--violet-300);flex-shrink:0}
+.bottom-card h3{font-size:13.5px;font-weight:700}
+.bottom-card p{margin-top:2px;font-size:11.5px;color:var(--text-muted);line-height:1.4}
+
+/* ============ UZATILMIŞ BEKLEME BANDI (60sn'yi geçtiyse) ============ */
+.extended-wait{
+  display:none;margin-top:14px;padding:10px 14px;border-radius:var(--radius-md);
+  background:rgba(252,211,77,.08);border:1px solid rgba(252,211,77,.22);
+  align-items:center;gap:8px;
+}
+.extended-wait.visible{display:flex}
+.extended-wait .spin{
+  width:14px;height:14px;border-radius:50%;flex-shrink:0;
+  border:2px solid rgba(252,211,77,.3);border-top-color:#FCD34D;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.extended-wait span{font-size:11.5px;font-weight:600;color:#FCD34D}
+
+/* ============ "HİKAYEN HAZIR" BUTONU ============ */
+.ready-cta-wrap{
+  display:none;margin-top:16px;position:relative;
+}
+.ready-cta-wrap.visible{display:block;animation:fadeSlide .4s ease}
+.ready-glow{
+  position:absolute;left:5%;right:5%;top:6px;height:100%;
+  background:linear-gradient(135deg,#8B5CF6,#6D28D9);filter:blur(22px);opacity:.5;border-radius:26px;
+}
+.ready-cta{
+  position:relative;width:100%;height:52px;border-radius:26px;
+  background:linear-gradient(135deg,#8B5CF6,#6D28D9);
+  border:1px solid rgba(196,181,253,.4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  color:#fff;font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;
+}
+.ready-cta svg{width:17px;height:17px}
+</style>
+</head>
+<body>
+
+<div class="demo-bar">
+  Önizleme modu — gerçek süre 60sn
+  <button onclick="restartDemo(6)">Hızlı demo (6sn)</button>
+  <button onclick="restartDemo(60)">Gerçek süre (60sn)</button>
+  <button onclick="setStoryMode('live')" id="modeBtnLive">Canlı üretim</button>
+  <button onclick="setStoryMode('preset')" id="modeBtnPreset">Hazır tema</button>
+  <button onclick="simulateReady()" id="readyBtn" style="background:#16A34A">AI yanıtı geldi (simüle et)</button>
+</div>
+
+<div class="page">
+
+  <div class="header">
+    <div class="logo-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
+    </div>
+    <div class="header-text">
+      <h1>Hikâyen Hazırlanıyor</h1>
+      <p>Kelimelerini hikâyeye dönüştürüyoruz.</p>
+    </div>
+  </div>
+
+  <div class="timer-area">
+    <div class="timer-circle">
+      <span class="num" id="timerNum">60</span>
+      <span class="unit">sn</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="phase-row">
+      <div class="phase-pill active" id="pill1"><span class="dot"></span><span>Bilgi</span></div>
+      <div class="phase-pill" id="pill2"><span class="dot"></span><span>Tekrar</span></div>
+      <div class="phase-pill" id="pill3"><span class="dot"></span><span id="pill3Label">Hazırlanıyor</span></div>
+    </div>
+  </div>
+
+  <div class="content-wrap">
+
+    <!-- FAZ 1 -->
+    <div class="glass-card active" id="phase1">
+      <div class="fact-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4z"/></svg>
+      </div>
+      <h2>Günün İlginç Bilgisi</h2>
+      <p class="body-text">Bir dili kalıcı öğrenmenin en güçlü yollarından biri, kelimeleri tek başına değil; hikâye, duygu ve bağlam içinde görmektir.</p>
+      <div class="tip-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.5.4.8 1 .8 1.7V17h6.4v-.6c0-.7.3-1.3.8-1.7A7 7 0 0 0 12 2z"/></svg>
+        <span>Beklerken küçük bir öğrenme molası</span>
+      </div>
+    </div>
+
+    <!-- FAZ 2 -->
+    <div class="glass-card" id="phase2">
+      <div class="section-head">
+        <div>
+          <h2>Günün Kelimeleri</h2>
+          <p class="body-text">Beklerken hedef kelimeleri hızlıca tekrar et.</p>
+        </div>
+        <svg class="section-head-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="12" height="16" rx="2" transform="translate(4)"/><path d="M8 4v16"/></svg>
+      </div>
+      <div class="big-word-card" id="bigWordCard">
+        <span class="w" id="bigWordText">travel</span>
+        <span class="hint" id="bigWordHint">Anlamı görmek için dokun</span>
+      </div>
+      <div class="word-dots" id="wordDots"></div>
+    </div>
+
+    <!-- FAZ 3 -->
+    <div class="glass-card" id="phase3">
+      <div class="section-head">
+        <div>
+          <h2 id="phase3Title">Hikâyen Yazılıyor</h2>
+          <p class="body-text" id="phase3Sub">Hikâyenin ilk satırları oluşuyor.</p>
+        </div>
+        <svg class="section-head-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+      </div>
+      <div class="typing-box">
+        <p id="typedText"><span class="cursor">|</span></p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-card" id="bottomCard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>
+    <div>
+      <h3>AI Story & Quiz hazırlanıyor</h3>
+      <p>Hikâye, hedef kelimeler ve quiz aynı akışta açılacak.</p>
+    </div>
+  </div>
+
+  <div class="extended-wait" id="extendedWait">
+    <div class="spin"></div>
+    <span>Neredeyse bitti, biraz daha sürüyor...</span>
+  </div>
+
+  <div class="ready-cta-wrap" id="readyCtaWrap">
+    <div class="ready-glow"></div>
+    <button class="ready-cta" onclick="goToResult()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      Hikâyen Hazır — Devam Et
+    </button>
+  </div>
+
+</div>
+
+<script>
+// ============ ÖRNEK VERİ (üretimde prop olarak gelecek) ============
+const targetWords = [
+  { word: "travel", meaning: "seyahat etmek" },
+  { word: "airport", meaning: "havalimanı" },
+  { word: "journey", meaning: "yolculuk" },
+  { word: "flight", meaning: "uçuş" },
+  { word: "ticket", meaning: "bilet" },
+  { word: "luggage", meaning: "bagaj" },
+  { word: "road", meaning: "yol" },
+  { word: "island", meaning: "ada" },
+  { word: "sunset", meaning: "gün batımı" },
+  { word: "adventure", meaning: "macera" },
+];
+const storyPreview = "It was early morning when the story began. Travel filled the air, and every step felt like the start of a new adventure.";
+
+// ============ HİKAYE MODU (canlı üretim vs hazır tema) ============
+// live: Kelimelerden Öğren / Görsellerden Öğren (kendi görsel) → AI o an gerçekten yazıyor
+// preset: Hazır Temalardan → hikaye zaten önceden yazılmış, sadece hazırlanıp gösteriliyor.
+//         "AI yazıyor" demek burada YANLIŞ BİLGİ olur — metin buna göre değişir.
+let storyMode = 'live';
+const modeCopy = {
+  live: {
+    pill3: 'Hazırlanıyor',
+    title: 'Hikâyen Yazılıyor',
+    sub: 'Hikâyenin ilk satırları oluşuyor.',
+  },
+  preset: {
+    pill3: 'Hazırlanıyor',
+    title: 'Son Hazırlıklar',
+    sub: 'Sahnen birazdan hazır olacak.',
+  },
+};
+function setStoryMode(mode){
+  storyMode = mode;
+  const c = modeCopy[mode];
+  document.getElementById('pill3Label').textContent = c.pill3;
+  document.getElementById('phase3Title').textContent = c.title;
+  document.getElementById('phase3Sub').textContent = c.sub;
+  document.getElementById('modeBtnLive').style.opacity = mode === 'live' ? 1 : .5;
+  document.getElementById('modeBtnPreset').style.opacity = mode === 'preset' ? 1 : .5;
+}
+
+// ============ HAZIR OLMA DURUMU (AI yanıtı) ============
+// Kural: yanıt ne zaman gelirse gelsin OTOMATİK yönlendirme YOK.
+// Yanıt gelince "Hikâyen Hazır" butonu belirir, kullanıcı isterse hemen
+// gider, isterse mevcut fazı izlemeye devam eder (buton her zaman orada durur).
+// 60sn dolup yanıt hâlâ gelmediyse: uzatılmış bekleme bandı gösterilir,
+// yanıt gelene kadar sessizce beklenir — o an da aynı buton belirir.
+let isReady = false;
+let isTimeoutExceeded = false;
+
+function simulateReady(){
+  isReady = true;
+  document.getElementById('readyCtaWrap').classList.add('visible');
+  document.getElementById('extendedWait').classList.remove('visible');
+  document.getElementById('readyBtn').disabled = true;
+  document.getElementById('readyBtn').style.opacity = .4;
+}
+
+function goToResult(){
+  document.querySelector('.page').style.transition = 'opacity .45s ease';
+  document.querySelector('.page').style.opacity = '0';
+  setTimeout(() => {
+    alert('→ AI Story & Quiz ekranına yumuşak geçiş burada tetiklenir.');
+    document.querySelector('.page').style.opacity = '1';
+  }, 480);
+}
+
+const wordDotsEl = document.getElementById('wordDots');
+targetWords.forEach((_, i) => {
+  const d = document.createElement('span');
+  if (i === 0) d.className = 'active';
+  wordDotsEl.appendChild(d);
+});
+
+let currentWordIndex = 0;
+let wordFlipped = false;
+function renderWord(){
+  const w = targetWords[currentWordIndex];
+  document.getElementById('bigWordText').textContent = wordFlipped ? w.meaning : w.word;
+  document.getElementById('bigWordHint').textContent = wordFlipped
+    ? 'Kelimeye dönmek için tekrar dokun'
+    : 'Anlamı görmek için dokun';
+  document.querySelectorAll('#wordDots span').forEach((d,i) => d.classList.toggle('active', i===currentWordIndex));
+}
+document.getElementById('bigWordCard').addEventListener('click', () => {
+  wordFlipped = !wordFlipped;
+  renderWord();
+});
+renderWord();
+
+// ============ FAZ SÜRELERİ (sabit, toplam süreden bağımsız oran) ============
+// Gerçek üretimde: Faz1=7sn, Faz2=43sn, Faz3=10sn (toplam 60sn)
+// Demo modunda aynı ORANLAR korunur, sadece toplam süre kısalır.
+const PHASE1_RATIO = 7/60;
+const PHASE2_RATIO = 43/60;
+// PHASE3_RATIO = geri kalan (10/60)
+
+let TOTAL = 60;
+let remaining = TOTAL;
+let intervalId = null;
+let lastWordSlotIndex = -1;
+
+function setPhase(phase){
+  document.querySelectorAll('.glass-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.phase-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('phase' + phase).classList.add('active');
+  document.getElementById('pill' + phase).classList.add('active');
+}
+
+function typeStory(elapsedInPhase3, phase3Duration){
+  const target = Math.min(storyPreview.length, Math.floor((elapsedInPhase3/phase3Duration) * storyPreview.length));
+  const el = document.getElementById('typedText');
+  el.innerHTML = storyPreview.slice(0, target) + '<span class="cursor">|</span>';
+}
+
+function tick(){
+  if (isReady) { clearInterval(intervalId); return; }
+
+  remaining -= 1;
+  const elapsed = TOTAL - remaining;
+  document.getElementById('timerNum').textContent = Math.max(remaining,0);
+  document.getElementById('progressFill').style.width = (Math.min(elapsed/TOTAL,1)*100) + '%';
+
+  const p1End = TOTAL * PHASE1_RATIO;
+  const p2End = TOTAL * (PHASE1_RATIO + PHASE2_RATIO);
+
+  if (elapsed < p1End){
+    setPhase(1);
+  } else if (elapsed < p2End){
+    setPhase(2);
+    // Faz 2 süresini kelime sayısına eşit böl, sırayla otomatik geçir
+    const phase2Elapsed = elapsed - p1End;
+    const phase2Duration = p2End - p1End;
+    const perWord = phase2Duration / targetWords.length;
+    const slotIndex = Math.min(targetWords.length - 1, Math.floor(phase2Elapsed / perWord));
+    if (slotIndex !== lastWordSlotIndex){
+      currentWordIndex = slotIndex;
+      wordFlipped = false;
+      renderWord();
+      lastWordSlotIndex = slotIndex;
+    }
+  } else {
+    setPhase(3);
+    typeStory(elapsed - p2End, TOTAL - p2End);
+  }
+
+  if (remaining <= 0 && !isReady){
+    // 60sn doldu, yanıt hâlâ gelmedi → otomatik hiçbir yere gitme,
+    // sessizce beklemeye devam et, uzatılmış bekleme bandını göster.
+    clearInterval(intervalId);
+    isTimeoutExceeded = true;
+    document.getElementById('extendedWait').classList.add('visible');
+    document.getElementById('timerNum').textContent = '···';
+  }
+}
+
+function restartDemo(totalSeconds){
+  clearInterval(intervalId);
+  TOTAL = totalSeconds;
+  remaining = TOTAL;
+  lastWordSlotIndex = -1;
+  currentWordIndex = 0;
+  wordFlipped = false;
+  isReady = false;
+  isTimeoutExceeded = false;
+  document.getElementById('readyCtaWrap').classList.remove('visible');
+  document.getElementById('extendedWait').classList.remove('visible');
+  document.getElementById('readyBtn').disabled = false;
+  document.getElementById('readyBtn').style.opacity = 1;
+  document.getElementById('timerNum').textContent = TOTAL;
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('typedText').innerHTML = '<span class="cursor">|</span>';
+  renderWord();
+  setPhase(1);
+  intervalId = setInterval(tick, 1000);
+}
+
+setStoryMode('live');
+restartDemo(6); // önizlemede hızlı başlasın; gerçek süre için üstteki butonu kullan
+</script>
+
+</body>
+</html>

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withTiming,
   Easing,
@@ -27,13 +28,15 @@ export function AnimatedReveal({
   delay?: number;
 }) {
   const progress = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    progress.value = withTiming(visible ? 1 : 0, {
-      duration,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [visible, progress, duration]);
+    // Reduce Motion: jump straight to the end state instead of animating
+    // (still hidden→shown, just without the slide/fade transition).
+    progress.value = reducedMotion
+      ? (visible ? 1 : 0)
+      : withTiming(visible ? 1 : 0, { duration, easing: Easing.out(Easing.cubic) });
+  }, [visible, progress, duration, reducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: progress.value,
@@ -56,13 +59,13 @@ export function AnimatedPop({
   style?: ViewStyle | ViewStyle[];
 }) {
   const progress = useSharedValue(0);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    progress.value = withTiming(visible ? 1 : 0, {
-      duration: 650,
-      easing: Easing.out(Easing.back(1.6)),
-    });
-  }, [visible, progress]);
+    progress.value = reducedMotion
+      ? (visible ? 1 : 0)
+      : withTiming(visible ? 1 : 0, { duration: 650, easing: Easing.out(Easing.back(1.6)) });
+  }, [visible, progress, reducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: progress.value,

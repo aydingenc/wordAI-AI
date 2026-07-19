@@ -18,6 +18,9 @@ export function Chip({
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={label}
+      accessibilityState={onPress ? { selected: !!selected } : undefined}
       style={({ pressed }) => [
         styles.chip,
         {
@@ -36,7 +39,13 @@ export function Chip({
         {label}
       </Text>
       {onRemove ? (
-        <Pressable onPress={onRemove} hitSlop={8} style={styles.remove}>
+        <Pressable
+          onPress={onRemove}
+          hitSlop={8}
+          style={styles.remove}
+          accessibilityRole="button"
+          accessibilityLabel={`${label} kelimesini kaldır`}
+        >
           <Feather
             name="x"
             size={14}

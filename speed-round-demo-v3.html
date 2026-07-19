@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Hızlı Tekrar — Canlı Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,600&display=swap');
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ width:100%; height:100%; overflow:hidden; background:#050409; }
+  body{ font-family:'Inter',sans-serif; display:flex; justify-content:center; align-items:center; }
+  :root{
+    --violet-400:#a78bfa; --violet-500:#8b5cf6; --violet-600:#7c3aed;
+    --green-fg:#4ade80; --red-fg:#f87171; --amber-fg:#facc15; --text-hi:#f5f3ff; --text-mid:#b9b3d1; --text-low:#6f6a8a;
+  }
+  .device{
+    width:390px; height:844px; position:relative; overflow:hidden;
+    background:radial-gradient(120% 50% at 50% 0%, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0) 55%), #08070d;
+    border-radius:36px; box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    display:flex; flex-direction:column; padding:30px 20px 26px;
+  }
+
+  /* ---------- INTRO ---------- */
+  #intro{ display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; flex:1; }
+  .intro-badge{ width:72px; height:72px; border-radius:22px; margin-bottom:16px; background:linear-gradient(155deg,#facc15,#f59e0b); display:flex; align-items:center; justify-content:center; box-shadow:0 16px 34px -10px rgba(245,158,11,0.7); }
+  .intro-badge svg{ width:32px; height:32px; }
+  .intro-title{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--text-hi); margin-bottom:8px; }
+  .intro-sub{ font-size:13px; color:var(--text-mid); margin-bottom:24px; max-width:270px; line-height:1.5; }
+  .intro-meta{ font-size:12px; color:var(--text-low); margin-bottom:24px; }
+  .big-btn{ padding:16px 40px; border-radius:16px; border:none; font-size:15px; font-weight:800; color:#1c1200; cursor:pointer; background:linear-gradient(135deg,#fde047,#f59e0b); box-shadow:0 14px 30px -10px rgba(245,158,11,0.8); }
+
+  /* ---------- GAME ---------- */
+  #game{ display:none; flex-direction:column; flex:1; }
+  #game.active{ display:flex; }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-top:34px; margin-bottom:20px; }
+  .timer-ring-wrap{ position:relative; width:56px; height:56px; }
+  .timer-ring-wrap svg{ width:100%; height:100%; transform:rotate(-90deg); }
+  .timer-track{ fill:none; stroke:rgba(255,255,255,0.1); stroke-width:5; }
+  .timer-fill{ fill:none; stroke:var(--amber-fg); stroke-width:5; stroke-linecap:round; stroke-dasharray:151; stroke-dashoffset:0; transition:stroke-dashoffset 1s linear, stroke 0.3s ease; }
+  .timer-num{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900; color:#fff; }
+  .score-pill{ display:flex; align-items:center; gap:5px; padding:7px 13px; border-radius:999px; background:rgba(34,197,94,0.12); border:1px solid rgba(74,222,128,0.3); font-size:13px; font-weight:800; color:#4ade80; }
+
+  .close-btn-abs{
+    position:absolute; top:26px; right:24px; z-index:100;
+    width:36px; height:36px; border-radius:11px;
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .close-btn-abs svg{ width:15px; height:15px; }
+
+  .q-stage{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .q-word{ font-family:'Fraunces',serif; font-size:36px; font-weight:600; color:var(--text-hi); margin-bottom:28px; text-align:center; }
+  .q-choices{ display:flex; flex-direction:column; gap:10px; width:100%; }
+  .q-choice{ padding:15px; border-radius:14px; background:rgba(255,255,255,0.03); border:1.5px solid rgba(255,255,255,0.09); color:var(--text-hi); font-size:14.5px; font-weight:600; text-align:center; cursor:pointer; }
+  .q-choice.correct{ background:rgba(34,197,94,0.18); border-color:#4ade80; color:#4ade80; }
+  .q-choice.wrong{ background:rgba(248,113,113,0.18); border-color:#f87171; color:#f87171; }
+
+  /* ---------- COMPLETE ---------- */
+  #complete{ display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; flex:1; }
+  #complete.show{ display:flex; }
+  .complete-badge{ width:76px; height:76px; border-radius:24px; margin-bottom:16px; background:linear-gradient(155deg,#fde047,#f59e0b); display:flex; align-items:center; justify-content:center; box-shadow:0 16px 34px -10px rgba(245,158,11,0.8); animation:popIn 0.5s cubic-bezier(.34,1.56,.64,1); }
+  .complete-badge svg{ width:34px; height:34px; }
+  @keyframes popIn{ 0%{ transform:scale(0); opacity:0;} 60%{ transform:scale(1.15);} 100%{ transform:scale(1); opacity:1;} }
+  .complete-title{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--text-hi); margin-bottom:10px; }
+  .complete-num{ font-size:40px; font-weight:900; color:#facc15; }
+  .complete-label{ font-size:12px; color:var(--text-low); margin-bottom:22px; }
+  .complete-cta{ width:100%; max-width:280px; padding:15px; border-radius:15px; border:none; font-size:14.5px; font-weight:800; color:#fff; cursor:pointer; background:linear-gradient(135deg, var(--violet-400), var(--violet-600)); box-shadow:0 14px 30px -10px rgba(124,58,237,0.8); }
+
+  .confetti-layer{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:50; }
+  .confetti-piece{ position:absolute; top:-10px; width:7px; height:11px; opacity:0.9; animation:confettiFall linear forwards; }
+  @keyframes confettiFall{ 0%{ transform:translateY(0) rotate(0deg); opacity:1; } 100%{ transform:translateY(760px) rotate(540deg); opacity:0; } }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="close-btn-abs" onclick="alert('Ana ekrana dönülecek')"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#a3a0b8" stroke-width="2" stroke-linecap="round"/></svg></div>
+
+  <div id="intro">
+    <div class="intro-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="#1c1200"/></svg></div>
+    <div class="intro-title">Hızlı Tekrar</div>
+    <div class="intro-sub">5 kelime, her biri için 3 saniye. Süre bitmeden doğru anlamı seç!</div>
+    <div class="intro-meta">5 kelime · ~15 saniye</div>
+    <button class="big-btn" onclick="startGame()">Başla</button>
+  </div>
+
+  <div id="game">
+    <div class="topbar">
+      <div class="timer-ring-wrap">
+        <svg viewBox="0 0 56 56"><circle class="timer-track" cx="28" cy="28" r="24"/><circle class="timer-fill" id="timerFill" cx="28" cy="28" r="24"/></svg>
+        <div class="timer-num" id="timerNum">3</div>
+      </div>
+      <div class="score-pill">⚡ <span id="scoreNum">0</span>/5</div>
+    </div>
+    <div class="q-stage">
+      <div class="q-word" id="qWord"></div>
+      <div class="q-choices" id="qChoices"></div>
+    </div>
+  </div>
+
+  <div id="complete">
+    <div class="complete-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="white"/></svg></div>
+    <div class="complete-title">Tur Bitti!</div>
+    <div class="complete-num" id="finalScore">0/5</div>
+    <div class="complete-label">doğru cevap</div>
+    <button class="complete-cta" onclick="alert('Aynı kelimelerle yeni bir hikâye oluşturulacak')">Aynı Kelimelerden Farklı Hikâye Oluştur</button>
+  </div>
+
+  <div class="confetti-layer" id="confettiLayer"></div>
+</div>
+
+<script>
+var words = [
+  {en:'adventure', tr:'macera', options:['macera','korku','yorgunluk']},
+  {en:'journey', tr:'yolculuk', options:['yolculuk','otel','bilet']},
+  {en:'luggage', tr:'bavul', options:['bavul','belge','harita']},
+  {en:'passport', tr:'pasaport', options:['pasaport','anahtar','kart']},
+  {en:'gate', tr:'uçuş kapısı', options:['uçuş kapısı','bagaj bandı','bekleme salonu']}
+];
+
+var current = 0, score = 0, timeLeft = 3, timerInterval = null, answered = false;
+var CIRC = 151;
+
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+
+function startGame(){
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('game').classList.add('active');
+  current = 0; score = 0;
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered = false;
+  var w = words[current];
+  document.getElementById('qWord').textContent = w.en;
+  var choicesEl = document.getElementById('qChoices');
+  choicesEl.innerHTML = shuffle(w.options).map(function(opt){
+    return '<div class="q-choice" data-opt="'+opt+'">'+opt+'</div>';
+  }).join('');
+  choicesEl.querySelectorAll('.q-choice').forEach(function(el){
+    el.addEventListener('click', function(){ answer(el, el.dataset.opt); });
+  });
+  document.getElementById('scoreNum').textContent = score;
+
+  timeLeft = 3;
+  document.getElementById('timerNum').textContent = timeLeft;
+  var fill = document.getElementById('timerFill');
+  fill.style.transition = 'none';
+  fill.style.strokeDashoffset = 0;
+  fill.style.stroke = '#facc15';
+  void fill.offsetWidth;
+  fill.style.transition = 'stroke-dashoffset 1s linear, stroke 0.3s ease';
+
+  clearInterval(timerInterval);
+  timerInterval = setInterval(function(){
+    timeLeft--;
+    document.getElementById('timerNum').textContent = Math.max(timeLeft,0);
+    fill.style.strokeDashoffset = CIRC * ((3-timeLeft)/3);
+    if(timeLeft <= 1) fill.style.stroke = '#f87171';
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      if(!answered) timeUp();
+    }
+  }, 1000);
+}
+
+function timeUp(){
+  answered = true;
+  var w = words[current];
+  document.querySelectorAll('.q-choice').forEach(function(el){
+    if(el.dataset.opt === w.tr) el.classList.add('correct');
+  });
+  setTimeout(nextQuestion, 700);
+}
+
+function answer(el, opt){
+  if(answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+  var w = words[current];
+  if(opt === w.tr){
+    el.classList.add('correct');
+    score++;
+    burstConfettiSmall();
+  } else {
+    el.classList.add('wrong');
+    document.querySelectorAll('.q-choice').forEach(function(c){
+      if(c.dataset.opt === w.tr) c.classList.add('correct');
+    });
+  }
+  setTimeout(nextQuestion, 600);
+}
+
+function nextQuestion(){
+  current++;
+  if(current >= words.length){
+    showComplete();
+  } else {
+    renderQuestion();
+  }
+}
+
+function burstConfettiSmall(){
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#facc15','#4ade80','#8b5cf6'];
+  for(var i=0;i<10;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (20 + Math.random()*60) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1 + Math.random()*0.6) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 1800); })(p);
+  }
+}
+
+function showComplete(){
+  document.getElementById('game').classList.remove('active');
+  document.getElementById('complete').classList.add('show');
+  document.getElementById('finalScore').textContent = score+'/'+words.length;
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#facc15','#4ade80','#8b5cf6','#60a5fa'];
+  for(var i=0;i<28;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (5 + Math.random()*90) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1.3 + Math.random()*0.9) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 2400); })(p);
+  }
+}
+</script>
+</body>
+</html>

@@ -20,7 +20,6 @@ import { WordNetwork } from '@/components/WordNetwork';
 import { FeatureCarousel } from '@/components/FeatureCarousel';
 import { useColors } from '@/hooks/useColors';
 import { IMAGES } from '@/data/mock';
-import { APP_NAME } from '@/constants/app';
 
 const STORY_IMG = require('@/assets/images/home-story.jpg');
 const PREMIUM_IMG = require('@/assets/images/home-premium.jpg');
@@ -67,10 +66,12 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [levelInfoOpen, setLevelInfoOpen] = useState(false);
 
-  // Two-tone wordmark (placeholder split; APP_NAME stays the single source).
-  const half = Math.ceil(APP_NAME.length / 2);
-  const brandHead = APP_NAME.slice(0, half);
-  const brandTail = APP_NAME.slice(half);
+  // Two-tone wordmark. Fixed at the natural camelCase boundary ("big" +
+  // "Father") instead of an automatic Math.ceil(length/2) split — a
+  // length-based split reads wrong for this name and would silently break
+  // again on any future rename, so it's spelled out directly.
+  const brandHead = 'big';
+  const brandTail = 'Father';
 
   return (
     <GradientBackground>
@@ -97,6 +98,8 @@ export default function HomeScreen() {
           </Text>
           <Pressable
             onPress={() => router.push('/profile')}
+            accessibilityRole="button"
+            accessibilityLabel="Profilim"
             style={[
               styles.iconCircle,
               { backgroundColor: colors.card, borderColor: colors.border },
@@ -133,6 +136,8 @@ export default function HomeScreen() {
               style={styles.levelHead}
               onPress={() => setLevelInfoOpen(true)}
               hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Kelime seviyelerin hakkında bilgi"
             >
               <Text
                 style={[styles.cardHeadText, { color: colors.foreground }]}
@@ -174,6 +179,8 @@ export default function HomeScreen() {
             <Pressable
               style={styles.cardHead}
               onPress={() => router.push('/recent-words')}
+              accessibilityRole="button"
+              accessibilityLabel="Son öğrenilen kelimeler"
             >
               <Text
                 style={[styles.cardHeadText, { color: colors.foreground }]}
@@ -204,7 +211,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Search */}
-        <Pressable onPress={() => router.push('/explore')}>
+        <Pressable
+          onPress={() => router.push('/explore')}
+          accessibilityRole="button"
+          accessibilityLabel="Kelime veya tema ara"
+        >
           <View
             style={[
               styles.search,
@@ -286,6 +297,8 @@ export default function HomeScreen() {
             <Pressable
               style={styles.storyContent}
               onPress={() => router.push('/stories')}
+              accessibilityRole="button"
+              accessibilityLabel="Hikâyeye git"
             >
               <View style={styles.storyTop}>
                 <View style={styles.miniHead}>
@@ -321,7 +334,9 @@ export default function HomeScreen() {
             </Text>
             <WordNetwork />
             <Pressable
-              onPress={() => router.push('/worddna/love')}
+              onPress={() => router.push('/word-network')}
+              accessibilityRole="button"
+              accessibilityLabel="Kelime ağını gör"
               style={[
                 styles.storyBtn,
                 { backgroundColor: 'rgba(255,255,255,0.1)' },
@@ -336,7 +351,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Premium */}
-        <Pressable onPress={() => router.push('/profile')}>
+        <Pressable
+          onPress={() => router.push('/profile')}
+          accessibilityRole="button"
+          accessibilityLabel="Premium farklarını keşfet"
+        >
           <GlowCard padded={false} style={styles.premiumCard}>
             <Image source={PREMIUM_IMG} style={styles.premiumImg} />
             <LinearGradient
@@ -390,6 +409,8 @@ export default function HomeScreen() {
         <Pressable
           style={styles.sheetBackdrop}
           onPress={() => setLevelInfoOpen(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Kapat"
         >
           <Pressable
             style={[
@@ -405,63 +426,68 @@ export default function HomeScreen() {
             <View
               style={[styles.sheetGrabber, { backgroundColor: colors.borderStrong }]}
             />
-            <View style={styles.sheetHeadRow}>
-              <View
-                style={[styles.sheetIcon, { backgroundColor: colors.secondary }]}
-              >
-                <Feather name="bar-chart-2" size={18} color={colors.primary} />
-              </View>
-              <Text style={[styles.sheetTitle, { color: colors.foreground }]}>
-                Kelime Seviyelerin
-              </Text>
-            </View>
-
-            <Text style={[styles.sheetIntro, { color: colors.mutedForeground }]}>
-              Öğrendiğin kelimelerin statüsünü buradan takip edebilirsin.
-            </Text>
-
-            <Text style={[styles.sheetSubtitle, { color: colors.foreground }]}>
-              Kelime Seviyeleri Nasıl Belirlenir?
-            </Text>
-
-            <View style={styles.sheetLevels}>
-              {LEVEL_INFO.map((l) => (
+            {/* Scrollable so large system font sizes can't push the level
+                rows off-screen with no way to reach them (WL-009) — at
+                normal text size this scrolls nowhere and looks identical. */}
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.sheetHeadRow}>
                 <View
-                  key={l.label}
-                  style={[
-                    styles.sheetLevelRow,
-                    { backgroundColor: colors.secondary, borderColor: colors.border },
-                  ]}
+                  style={[styles.sheetIcon, { backgroundColor: colors.secondary }]}
                 >
-                  <MaterialCommunityIcons name={l.icon} size={20} color={l.color} />
-                  <View style={styles.sheetLevelTextWrap}>
-                    <Text
-                      style={[styles.sheetLevelLabel, { color: colors.foreground }]}
-                    >
-                      {l.label}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.sheetLevelDesc,
-                        { color: colors.mutedForeground },
-                      ]}
-                    >
-                      {l.desc}
-                    </Text>
-                  </View>
+                  <Feather name="bar-chart-2" size={18} color={colors.primary} />
+                </View>
+                <Text style={[styles.sheetTitle, { color: colors.foreground }]}>
+                  Kelime Seviyelerin
+                </Text>
+              </View>
+
+              <Text style={[styles.sheetIntro, { color: colors.mutedForeground }]}>
+                Öğrendiğin kelimelerin statüsünü buradan takip edebilirsin.
+              </Text>
+
+              <Text style={[styles.sheetSubtitle, { color: colors.foreground }]}>
+                Kelime Seviyeleri Nasıl Belirlenir?
+              </Text>
+
+              <View style={styles.sheetLevels}>
+                {LEVEL_INFO.map((l) => (
                   <View
+                    key={l.label}
                     style={[
-                      styles.sheetRangeBadge,
-                      { backgroundColor: l.color + '22', borderColor: l.color + '55' },
+                      styles.sheetLevelRow,
+                      { backgroundColor: colors.secondary, borderColor: colors.border },
                     ]}
                   >
-                    <Text style={[styles.sheetRangeText, { color: l.color }]}>
-                      {l.range}
-                    </Text>
+                    <MaterialCommunityIcons name={l.icon} size={20} color={l.color} />
+                    <View style={styles.sheetLevelTextWrap}>
+                      <Text
+                        style={[styles.sheetLevelLabel, { color: colors.foreground }]}
+                      >
+                        {l.label}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.sheetLevelDesc,
+                          { color: colors.mutedForeground },
+                        ]}
+                      >
+                        {l.desc}
+                      </Text>
+                    </View>
+                    <View
+                      style={[
+                        styles.sheetRangeBadge,
+                        { backgroundColor: l.color + '22', borderColor: l.color + '55' },
+                      ]}
+                    >
+                      <Text style={[styles.sheetRangeText, { color: l.color }]}>
+                        {l.range}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              ))}
-            </View>
+                ))}
+              </View>
+            </ScrollView>
           </Pressable>
         </Pressable>
       </Modal>
@@ -605,6 +631,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
     gap: 12,
+    maxHeight: '85%',
   },
   sheetGrabber: {
     width: 40,

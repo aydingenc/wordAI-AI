@@ -39,6 +39,8 @@ function CustomTabBar({ state, navigation }: any) {
             <View key="fab" style={styles.tab}>
               <Pressable
                 onPress={() => router.push('/create')}
+                accessibilityRole="button"
+                accessibilityLabel="Yeni öğrenme oturumu oluştur"
                 style={({ pressed }) => [
                   styles.fab,
                   {
@@ -74,6 +76,9 @@ function CustomTabBar({ state, navigation }: any) {
                 navigation.navigate(item.name);
               }
             }}
+            accessibilityRole="tab"
+            accessibilityLabel={item.label}
+            accessibilityState={{ selected: focused }}
             style={styles.tab}
           >
             <View

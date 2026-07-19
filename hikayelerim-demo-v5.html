@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Hikayelerim</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+  :root{
+    --bg:#08070f;
+    --panel:#131120;
+    --panel-2:#1a1730;
+    --border:rgba(139,92,246,0.16);
+    --border-strong:rgba(139,92,246,0.38);
+    --violet:#8b5cf6;
+    --violet-light:#b39dfb;
+    --text:#f6f4fc;
+    --text-dim:#a89fc2;
+    --text-faint:#6f6685;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:radial-gradient(ellipse at 50% -10%, #241d42 0%, #0d0a1a 45%, #08070f 80%);
+    min-height:100vh; display:flex; justify-content:center; padding:24px 0;
+    font-family:'Inter', system-ui, sans-serif; color:var(--text);
+  }
+  .device{
+    width:390px; min-height:844px; background:var(--bg);
+    border-radius:36px; overflow:hidden;
+    box-shadow:0 50px 100px rgba(0,0,0,0.65);
+    padding:0 0 90px; position:relative;
+  }
+  .device::before{
+    content:''; position:absolute; top:-60px; left:50%; transform:translateX(-50%);
+    width:340px; height:260px;
+    background:radial-gradient(ellipse, rgba(139,92,246,0.24), transparent 70%);
+    pointer-events:none; z-index:0;
+  }
+  .scroll{ padding:0 18px; position:relative; z-index:1; }
+
+  /* header */
+  .header-row{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    padding:26px 0 4px;
+  }
+  .header-title-group{ display:flex; align-items:center; gap:8px; }
+  .header-icon{
+    width:36px; height:36px; border-radius:12px;
+    background:linear-gradient(145deg, rgba(196,181,253,0.4), rgba(88,58,168,0.18));
+    border:1px solid rgba(196,181,253,0.5);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--violet-light);
+    box-shadow:0 0 0 1px rgba(139,92,246,0.12), 0 10px 22px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+    position:relative;
+  }
+  .header-icon::after{
+    content:'';
+    position:absolute; inset:-5px;
+    border-radius:15px;
+    border:1px solid rgba(139,92,246,0.2);
+    animation:header-icon-pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes header-icon-pulse{
+    0%,100%{ opacity:0.5; transform:scale(1); }
+    50%{ opacity:0.9; transform:scale(1.06); }
+  }
+  .header-icon .ic{ width:17px; height:17px; }
+  .header-title-group h1{
+    font-family:'Fraunces', serif; font-weight:700; font-size:21px;
+    background:linear-gradient(180deg, #ffffff, #d9d0f5);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sparkle-ic{ color:var(--violet-light); width:14px; height:14px; }
+  .add-btn{
+    position:absolute; right:0; top:26px;
+    width:38px; height:38px; border-radius:13px;
+    background:linear-gradient(145deg, #a78bfa, #7c3aed);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; box-shadow:0 8px 20px rgba(124,58,237,0.4);
+    flex-shrink:0;
+  }
+  .add-btn .ic{ width:17px; height:17px; }
+  .header-sub{ font-size:12px; color:var(--text-faint); margin-bottom:16px; }
+
+  /* tabs */
+  .tabs{
+    display:flex; gap:6px; margin-bottom:22px;
+    background:rgba(255,255,255,0.02);
+    border:1px solid var(--border);
+    border-radius:14px; padding:4px;
+  }
+  .tab{
+    flex:1; text-align:center; padding:8px 3px;
+    border-radius:11px; font-size:10px; font-weight:700;
+    line-height:1.25;
+    color:var(--text-faint); white-space:normal;
+    display:flex; align-items:center; justify-content:center;
+    min-height:34px;
+  }
+  .tab.active{
+    background:linear-gradient(145deg, #a78bfa, #7c3aed);
+    color:#fff; box-shadow:0 6px 16px rgba(124,58,237,0.35);
+  }
+
+  /* section header */
+  .section-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .section-title{
+    display:flex; align-items:center; gap:7px;
+    font-family:'Fraunces', serif; font-weight:700; font-size:14.5px; color:var(--text);
+  }
+  .section-title .ic{ width:15px; height:15px; color:var(--violet-light); }
+  .section-title.discover .ic{ color:#facc15; }
+  .see-all{
+    display:flex; align-items:center; gap:3px;
+    font-size:11.5px; font-weight:700; color:var(--violet-light);
+  }
+  .see-all .ic{ width:11px; height:11px; }
+
+  /* collection cards */
+  .collection-list{ display:flex; flex-direction:column; gap:14px; margin-bottom:26px; }
+  .collection-card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0) 40%), rgba(19,17,32,0.75);
+    backdrop-filter:blur(20px);
+    border:1px solid var(--border);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 14px 34px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .collection-thumb{
+    width:100%; height:130px;
+    position:relative;
+  }
+  .collection-thumb-menu{
+    position:absolute; top:10px; right:10px;
+    width:26px; height:26px; border-radius:50%;
+    background:rgba(8,7,15,0.55);
+    backdrop-filter:blur(6px);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+  }
+  .collection-body{ padding:14px 15px 15px; }
+  .collection-title{
+    font-family:'Fraunces', serif; font-weight:700; font-size:15.5px;
+    margin-bottom:8px;
+  }
+  .tag-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .tag-pill{
+    font-size:10px; font-weight:700; color:var(--violet-light);
+    background:rgba(139,92,246,0.14);
+    border:1px solid rgba(139,92,246,0.3);
+    padding:3px 9px; border-radius:20px;
+  }
+  .collection-desc{
+    font-size:11.5px; line-height:1.55; color:var(--text-dim);
+    margin-bottom:12px;
+  }
+  .collection-foot{
+    display:flex; align-items:center; justify-content:space-between;
+    padding-top:10px; border-top:1px solid rgba(255,255,255,0.06);
+  }
+  .theme-tag{
+    display:flex; align-items:center; gap:5px;
+    font-size:10.5px; font-weight:600; color:var(--violet-light);
+  }
+  .theme-tag .ic{ width:12px; height:12px; }
+  .like-count{
+    display:flex; align-items:center; gap:4px;
+    font-size:11px; font-weight:700; color:var(--text-dim);
+  }
+  .like-count .ic{ width:13px; height:13px; color:#f472b6; }
+
+  /* discover row */
+  .discover-scroll{
+    display:flex; gap:12px; overflow-x:auto;
+    margin:0 -18px 8px; padding:0 18px 6px;
+    scrollbar-width:none;
+  }
+  .discover-scroll::-webkit-scrollbar{ display:none; }
+  .discover-card{
+    flex:0 0 148px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0) 40%), rgba(19,17,32,0.75);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 10px 26px rgba(0,0,0,0.3);
+  }
+  .discover-thumb{ width:100%; height:96px; position:relative; }
+  .level-badge{
+    position:absolute; top:8px; left:8px;
+    font-size:9px; font-weight:800; color:#fff;
+    background:rgba(124,58,237,0.85);
+    padding:2px 7px; border-radius:8px;
+  }
+  .bookmark-badge{
+    position:absolute; top:8px; right:8px;
+    width:22px; height:22px; border-radius:50%;
+    background:rgba(8,7,15,0.55);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+  }
+  .bookmark-badge .ic{ width:11px; height:11px; }
+  .discover-body{ padding:10px 11px 12px; }
+  .discover-title{ font-size:12px; font-weight:700; margin-bottom:6px; line-height:1.3; }
+  .discover-tags{ display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px; }
+  .discover-tag{
+    font-size:8.5px; font-weight:700; color:var(--text-dim);
+    background:rgba(255,255,255,0.05);
+    padding:2px 6px; border-radius:10px;
+  }
+  .discover-theme{
+    display:flex; align-items:center; gap:4px;
+    font-size:9px; font-weight:600; color:var(--violet-light);
+  }
+  .discover-theme .ic{ width:10px; height:10px; }
+
+  /* bottom nav */
+  .bottom-nav{
+    position:absolute; bottom:0; left:0; right:0;
+    display:flex; align-items:flex-end; justify-content:space-around;
+    padding:10px 6px 22px;
+    background:linear-gradient(0deg, rgba(8,7,15,0.98), rgba(8,7,15,0.9));
+    border-top:1px solid var(--border);
+    z-index:5;
+  }
+  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .nav-item .ic{ width:19px; height:19px; color:var(--text-faint); }
+  .nav-item span{ font-size:9.5px; font-weight:600; color:var(--text-faint); }
+  .nav-item.active .ic{ color:var(--violet-light); }
+  .nav-item.active span{ color:var(--violet-light); font-weight:700; }
+  .nav-fab{
+    width:50px; height:50px; border-radius:50%; margin-top:-20px;
+    background:linear-gradient(145deg, #a78bfa, #7c3aed);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; box-shadow:0 10px 26px rgba(124,58,237,0.5), 0 0 0 4px var(--bg);
+  }
+  .nav-fab .ic{ width:20px; height:20px; }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="scroll">
+
+    <div class="header-row">
+      <div class="header-title-group">
+        <svg class="sparkle-ic ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.8l1.1 3.9 3.9 1.1-3.9 1.1L8 11.8l-1.1-3.9-3.9-1.1 3.9-1.1L8 1.8z"/></svg>
+        <div class="header-icon"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg></div>
+        <h1>Hikayelerim</h1>
+        <svg class="sparkle-ic ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.8l1.1 3.9 3.9 1.1-3.9 1.1L8 11.8l-1.1-3.9-3.9-1.1 3.9-1.1L8 1.8z"/></svg>
+      </div>
+      <div class="add-btn"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg></div>
+    </div>
+    <div class="header-sub">Oluşturduğun ve keşfettiğin tüm hikayeler.</div>
+
+    <div class="tabs">
+      <div class="tab active">Tümü</div>
+      <div class="tab">Kendi Oluşturduklarım</div>
+      <div class="tab">Hazır Tema Hikayeler</div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title">
+        <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg>
+        Hikaye Koleksiyonum
+      </div>
+      <div class="see-all">Tümünü Gör <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></div>
+    </div>
+
+    <div class="collection-list">
+      <div class="collection-card">
+        <div class="collection-thumb" style="background:linear-gradient(160deg, #3d2a1a 0%, #ff8a5c 45%, #7c3aed 100%);">
+        </div>
+        <div class="collection-body">
+          <div class="collection-title">The Airport Adventure</div>
+          <div class="tag-row">
+            <span class="tag-pill">airport</span><span class="tag-pill">travel</span><span class="tag-pill">ticket</span><span class="tag-pill">journey</span><span class="tag-pill">holiday</span>
+          </div>
+          <div class="collection-desc">Sara, yeni bir macera için havaalanında. Kalabalık, heyecan ve yeni başlangıçlarla dolu bir yolculuk onu bekliyor.</div>
+          <div class="collection-foot">
+            <div class="theme-tag">
+              <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg>
+              Tema: Seyahat / Travel
+            </div>
+            <div class="like-count"><svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 13.5s-5.5-3.4-5.5-7.2C2.5 4 4.2 2.5 6.2 2.5c1.1 0 2.1.5 2.8 1.3.7-.8 1.7-1.3 2.8-1.3 2 0 3.7 1.5 3.7 3.8 0 3.8-5.5 7.2-5.5 7.2z"/></svg> 128</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="collection-card">
+        <div class="collection-thumb" style="background:linear-gradient(160deg, #0f2417 0%, #2f6b47 45%, #16324a 100%);">
+        </div>
+        <div class="collection-body">
+          <div class="collection-title">A Day in Nature</div>
+          <div class="tag-row">
+            <span class="tag-pill">nature</span><span class="tag-pill">fresh</span><span class="tag-pill">forest</span><span class="tag-pill">walk</span><span class="tag-pill">peace</span>
+          </div>
+          <div class="collection-desc">Doğanın kalbinde huzurlu bir gün. Temiz hava, kuş sesleri ve eşsiz manzaralar.</div>
+          <div class="collection-foot">
+            <div class="theme-tag">
+              <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg>
+              Tema: Doğa / Nature
+            </div>
+            <div class="like-count"><svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 13.5s-5.5-3.4-5.5-7.2C2.5 4 4.2 2.5 6.2 2.5c1.1 0 2.1.5 2.8 1.3.7-.8 1.7-1.3 2.8-1.3 2 0 3.7 1.5 3.7 3.8 0 3.8-5.5 7.2-5.5 7.2z"/></svg> 95</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="collection-card">
+        <div class="collection-thumb" style="background:linear-gradient(160deg, #241708 0%, #a5672f 45%, #3a2a1a 100%);">
+        </div>
+        <div class="collection-body">
+          <div class="collection-title">My Favorite Coffee Shop</div>
+          <div class="tag-row">
+            <span class="tag-pill">coffee</span><span class="tag-pill">shop</span><span class="tag-pill">relax</span><span class="tag-pill">afternoon</span><span class="tag-pill">friend</span>
+          </div>
+          <div class="collection-desc">Şehrin en sevdiğim kahve dükkanında keyifli bir öğleden sonra. İyi kahve, güzel sohbetler.</div>
+          <div class="collection-foot">
+            <div class="theme-tag">
+              <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg>
+              Tema: Günlük Yaşam / Daily Life
+            </div>
+            <div class="like-count"><svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 13.5s-5.5-3.4-5.5-7.2C2.5 4 4.2 2.5 6.2 2.5c1.1 0 2.1.5 2.8 1.3.7-.8 1.7-1.3 2.8-1.3 2 0 3.7 1.5 3.7 3.8 0 3.8-5.5 7.2-5.5 7.2z"/></svg> 76</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title discover">
+        <svg class="ic" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.8l1.1 3.9 3.9 1.1-3.9 1.1L8 11.8l-1.1-3.9-3.9-1.1 3.9-1.1L8 1.8z"/></svg>
+        Yeni Hikayeler Keşfet
+      </div>
+      <div class="see-all">Tümünü Gör <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg></div>
+    </div>
+
+    <div class="discover-scroll">
+      <div class="discover-card">
+        <div class="discover-thumb" style="background:linear-gradient(160deg, #123a4a, #2f7a8c, #0a1f2e);">
+          <div class="level-badge">A1</div>
+        </div>
+        <div class="discover-body">
+          <div class="discover-title">A Visit to the Island</div>
+          <div class="discover-tags"><span class="discover-tag">sea</span><span class="discover-tag">boat</span><span class="discover-tag">village</span></div>
+          <div class="discover-theme"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg> Seyahat / Travel</div>
+        </div>
+      </div>
+
+      <div class="discover-card">
+        <div class="discover-thumb" style="background:linear-gradient(160deg, #0a0a1a, #1e2a4a, #05050d);">
+          <div class="level-badge">A2</div>
+        </div>
+        <div class="discover-body">
+          <div class="discover-title">Camping Under Stars</div>
+          <div class="discover-tags"><span class="discover-tag">camp</span><span class="discover-tag">night</span><span class="discover-tag">stars</span></div>
+          <div class="discover-theme"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg> Kamp / Camping</div>
+        </div>
+      </div>
+
+      <div class="discover-card">
+        <div class="discover-thumb" style="background:linear-gradient(160deg, #2a0a12, #6b1f2f, #0f0508);">
+          <div class="level-badge">B1</div>
+        </div>
+        <div class="discover-body">
+          <div class="discover-title">Lost in London</div>
+          <div class="discover-tags"><span class="discover-tag">city</span><span class="discover-tag">bus</span><span class="discover-tag">lost</span></div>
+          <div class="discover-theme"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg> Şehir / City</div>
+        </div>
+      </div>
+
+      <div class="discover-card">
+        <div class="discover-thumb" style="background:linear-gradient(160deg, #0a1a2a, #1f4a6b, #05121f);">
+          <div class="level-badge">A2</div>
+        </div>
+        <div class="discover-body">
+          <div class="discover-title">The Lake Adventure</div>
+          <div class="discover-tags"><span class="discover-tag">lake</span><span class="discover-tag">mountain</span></div>
+          <div class="discover-theme"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg> Doğa / Nature</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item">
+      <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l6-5 6 5v7H2V7z"/></svg>
+      <span>Ana Sayfa</span>
+    </div>
+    <div class="nav-item">
+      <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
+      <span>Kelimelerim</span>
+    </div>
+    <div class="nav-fab"><svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg></div>
+    <div class="nav-item active">
+      <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3.3c1.5-.6 3.2-.6 4.7 0 .3.1.5.4.5.7v7.2c0 .5-.5.8-1 .6-1.2-.5-2.8-.5-4.2 0V3.3z"/><path d="M14 3.3c-1.5-.6-3.2-.6-4.7 0-.3.1-.5.4-.5.7v7.2c0 .5.5.8 1 .6 1.2-.5 2.8-.5 4.2 0V3.3z"/></svg>
+      <span>Hikâyelerim</span>
+    </div>
+    <div class="nav-item">
+      <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M10.3 5.7l-1.5 3.6-3.6 1.5 1.5-3.6z"/></svg>
+      <span>Keşfet</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

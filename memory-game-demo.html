@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Hafıza Oyunu — Canlı Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,600&display=swap');
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ width:100%; height:100%; overflow:hidden; background:#050409; }
+  body{ font-family:'Inter',sans-serif; display:flex; justify-content:center; align-items:center; }
+  :root{
+    --violet-400:#a78bfa; --violet-500:#8b5cf6; --violet-600:#7c3aed;
+    --green-fg:#4ade80; --red-fg:#f87171; --text-hi:#f5f3ff; --text-mid:#b9b3d1; --text-low:#6f6a8a;
+  }
+  .device{
+    width:390px; height:844px; position:relative; overflow:hidden;
+    background:radial-gradient(120% 50% at 50% 0%, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0) 55%), #08070d;
+    border-radius:36px; box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    display:flex; flex-direction:column; padding:30px 20px 26px;
+  }
+  .topbar{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .back-btn{ width:36px; height:36px; border-radius:11px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.25); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; }
+  .back-btn svg{ width:16px; height:16px; }
+  .stat-pill{ display:flex; align-items:center; gap:5px; padding:6px 11px; border-radius:999px; background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.25); font-size:12px; font-weight:800; color:var(--violet-400); }
+
+  .title-block{ text-align:center; margin:16px 0 20px; }
+  .title-block h1{ font-family:'Fraunces',serif; font-size:19px; font-weight:600; color:var(--text-hi); margin-bottom:4px; }
+  .title-block p{ font-size:12px; color:var(--text-low); }
+
+  .grid{ flex:1; display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; align-content:center; perspective:1000px; }
+  .cell{ aspect-ratio:1; cursor:pointer; }
+  .cell-inner{
+    width:100%; height:100%; position:relative; transform-style:preserve-3d;
+    transition:transform 0.45s cubic-bezier(.4,.2,.2,1);
+  }
+  .cell.flipped .cell-inner{ transform:rotateY(180deg); }
+  .cell-face{
+    position:absolute; inset:0; border-radius:14px; backface-visibility:hidden;
+    display:flex; align-items:center; justify-content:center; padding:6px; text-align:center;
+  }
+  .cell-back{
+    background:linear-gradient(155deg, rgba(139,92,246,0.22), rgba(20,14,34,0.9));
+    border:1.5px solid rgba(139,92,246,0.35);
+  }
+  .cell-back svg{ width:22px; height:22px; color:#a78bfa; opacity:0.7; }
+  .cell-front{
+    background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.12);
+    transform:rotateY(180deg); font-size:11.5px; font-weight:700; color:var(--text-hi); line-height:1.25;
+  }
+  .cell.matched .cell-front{ background:rgba(34,197,94,0.16); border-color:rgba(74,222,128,0.4); color:var(--green-fg); }
+  .cell.wrong .cell-inner{ animation:shake 0.4s ease; }
+  @keyframes shake{ 0%,100%{transform:rotateY(180deg) translateX(0);} 25%{transform:rotateY(180deg) translateX(-4px);} 75%{transform:rotateY(180deg) translateX(4px);} }
+
+  #complete{ display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; flex:1; }
+  #complete.show{ display:flex; }
+  .complete-badge{ width:76px; height:76px; border-radius:24px; margin-bottom:16px; background:linear-gradient(155deg, var(--violet-400), var(--violet-600)); display:flex; align-items:center; justify-content:center; box-shadow:0 16px 34px -10px rgba(124,58,237,0.85); animation:popIn 0.5s cubic-bezier(.34,1.56,.64,1); }
+  .complete-badge svg{ width:34px; height:34px; }
+  @keyframes popIn{ 0%{ transform:scale(0); opacity:0;} 60%{ transform:scale(1.15);} 100%{ transform:scale(1); opacity:1;} }
+  .complete-title{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--text-hi); margin-bottom:8px; }
+  .complete-stats{ display:flex; gap:10px; margin:18px 0 26px; }
+  .complete-stat{ padding:12px 18px; border-radius:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); }
+  .complete-stat .n{ font-size:20px; font-weight:900; color:#a78bfa; }
+  .complete-stat .l{ font-size:10px; color:var(--text-low); margin-top:2px; }
+  .complete-cta{ width:100%; max-width:280px; padding:15px; border-radius:15px; border:none; font-size:14.5px; font-weight:800; color:#fff; cursor:pointer; background:linear-gradient(135deg, var(--violet-400), var(--violet-600)); box-shadow:0 14px 30px -10px rgba(124,58,237,0.8); }
+
+  .confetti-layer{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:50; }
+  .confetti-piece{ position:absolute; top:-10px; width:7px; height:11px; opacity:0.9; animation:confettiFall linear forwards; }
+  @keyframes confettiFall{ 0%{ transform:translateY(0) rotate(0deg); opacity:1; } 100%{ transform:translateY(760px) rotate(540deg); opacity:0; } }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topbar" id="topbar">
+    <div class="back-btn" onclick="alert('Geri dönülecek')"><svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div style="flex:1;"></div>
+    <div class="stat-pill">🔄 <span id="movesCount">0</span> hamle</div>
+  </div>
+
+  <div id="gameArea">
+    <div class="title-block">
+      <h1>Hafıza Oyunu</h1>
+      <p>Eşleşen İngilizce–Türkçe kart çiftlerini bul</p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div id="complete">
+    <div class="complete-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.6L21 9.3l-5 4.5L17.4 21 12 17.4 6.6 21 8 13.8l-5-4.5 6.4-0.7z" fill="white"/></svg></div>
+    <div class="complete-title">Tüm Çiftler Bulundu!</div>
+    <div class="complete-stats">
+      <div class="complete-stat"><div class="n" id="finalMoves">0</div><div class="l">Toplam Hamle</div></div>
+      <div class="complete-stat"><div class="n" id="finalTime">0sn</div><div class="l">Süre</div></div>
+    </div>
+    <button class="complete-cta" onclick="alert('Devam edilecek')">Harika, Devam Et</button>
+  </div>
+
+  <div class="confetti-layer" id="confettiLayer"></div>
+</div>
+
+<script>
+var words = [
+  {en:'adventure', tr:'macera'},
+  {en:'journey', tr:'yolculuk'},
+  {en:'luggage', tr:'bavul'},
+  {en:'passport', tr:'pasaport'},
+  {en:'gate', tr:'uçuş kapısı'}
+];
+
+var cards = [];
+words.forEach(function(w, i){
+  cards.push({pairId:i, text:w.en});
+  cards.push({pairId:i, text:w.tr});
+});
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+cards = shuffle(cards);
+
+var flipped = [], matchedCount = 0, moves = 0, startTime = Date.now(), locked = false;
+
+function renderGrid(){
+  var grid = document.getElementById('grid');
+  grid.innerHTML = cards.map(function(c, idx){
+    return '<div class="cell" data-idx="'+idx+'"><div class="cell-inner">'+
+      '<div class="cell-face cell-back"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.6L21 9.3l-5 4.5L17.4 21 12 17.4 6.6 21 8 13.8l-5-4.5 6.4-0.7z" fill="currentColor"/></svg></div>'+
+      '<div class="cell-face cell-front">'+c.text+'</div>'+
+    '</div></div>';
+  }).join('');
+  grid.querySelectorAll('.cell').forEach(function(el){
+    el.addEventListener('click', function(){ flipCell(el, parseInt(el.dataset.idx)); });
+  });
+}
+renderGrid();
+
+function flipCell(el, idx){
+  if(locked || el.classList.contains('flipped') || el.classList.contains('matched')) return;
+  el.classList.add('flipped');
+  flipped.push({el:el, idx:idx});
+
+  if(flipped.length === 2){
+    moves++;
+    document.getElementById('movesCount').textContent = moves;
+    locked = true;
+    var a = flipped[0], b = flipped[1];
+    if(cards[a.idx].pairId === cards[b.idx].pairId){
+      setTimeout(function(){
+        a.el.classList.add('matched'); b.el.classList.add('matched');
+        matchedCount++;
+        burstConfettiSmall();
+        flipped = []; locked = false;
+        if(matchedCount === words.length){
+          setTimeout(showComplete, 500);
+        }
+      }, 350);
+    } else {
+      a.el.classList.add('wrong'); b.el.classList.add('wrong');
+      setTimeout(function(){
+        a.el.classList.remove('flipped','wrong');
+        b.el.classList.remove('flipped','wrong');
+        flipped = []; locked = false;
+      }, 750);
+    }
+  }
+}
+
+function burstConfettiSmall(){
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#8b5cf6','#4ade80','#fbbf24'];
+  for(var i=0;i<10;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (20 + Math.random()*60) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1 + Math.random()*0.6) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 1800); })(p);
+  }
+}
+
+function showComplete(){
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('complete').classList.add('show');
+  var elapsed = Math.round((Date.now()-startTime)/1000);
+  document.getElementById('finalMoves').textContent = moves;
+  document.getElementById('finalTime').textContent = elapsed+'sn';
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#8b5cf6','#4ade80','#fbbf24','#60a5fa','#f87171'];
+  for(var i=0;i<28;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (5 + Math.random()*90) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1.3 + Math.random()*0.9) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 2400); })(p);
+  }
+}
+</script>
+</body>
+</html>

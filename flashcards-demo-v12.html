@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Kelime Kartları — Canlı Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,600&display=swap');
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ width:100%; height:100%; overflow:hidden; background:#050409; }
+  body{ font-family:'Inter',sans-serif; display:flex; justify-content:center; align-items:center; }
+
+  :root{
+    --violet-400:#a78bfa; --violet-500:#8b5cf6; --violet-600:#7c3aed;
+    --green-fg:#4ade80; --red-fg:#f87171;
+    --text-hi:#f5f3ff; --text-mid:#b9b3d1; --text-low:#6f6a8a;
+  }
+
+  .device{
+    width:390px; height:844px; position:relative; overflow:hidden;
+    background:radial-gradient(120% 50% at 50% 0%, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0) 55%), #08070d;
+    border-radius:36px; box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    display:flex; flex-direction:column; padding:26px 20px 24px;
+  }
+
+  .topbar{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .back-btn{ width:36px; height:36px; border-radius:11px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.25); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; }
+  .back-btn svg{ width:16px; height:16px; }
+  .progress-track{ flex:1; height:6px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .progress-fill{ height:100%; background:linear-gradient(90deg, var(--violet-400), var(--violet-500)); border-radius:3px; transition:width 0.4s ease; }
+  .counter{ font-size:12px; font-weight:700; color:var(--text-mid); flex:0 0 auto; }
+
+  .stage{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; perspective:1400px; position:relative; }
+  .stage::before{
+    content:''; position:absolute; width:320px; height:320px; border-radius:50%;
+    background:radial-gradient(circle, rgba(139,92,246,0.35) 0%, rgba(139,92,246,0) 70%);
+    filter:blur(10px); animation:glowPulse 3.2s ease-in-out infinite;
+  }
+  @keyframes glowPulse{ 0%,100%{ opacity:0.55; transform:scale(1); } 50%{ opacity:0.9; transform:scale(1.08); } }
+
+  .card-float{ animation:cardFloat 4.5s ease-in-out infinite; }
+  @keyframes cardFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+
+  .card{
+    width:280px; height:430px; position:relative; cursor:pointer;
+    transform-style:preserve-3d; transition:transform 0.55s cubic-bezier(.4,.2,.2,1);
+  }
+  .card:active{ transform:scale(0.97); }
+  .card.flipped:active{ transform:rotateY(180deg) scale(0.97); }
+  .card.flipped{ transform:rotateY(180deg); }
+  .card.exit-left{ transform:translateX(-420px) rotate(-14deg); opacity:0; transition:all 0.4s ease; }
+  .card.exit-right{ transform:translateX(420px) rotate(14deg); opacity:0; transition:all 0.4s ease; }
+
+  .card-face{
+    position:absolute; inset:0; border-radius:26px; backface-visibility:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:36px 26px 28px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.6), 0 8px 24px -8px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+    overflow:hidden;
+  }
+  .card-face::after{
+    content:''; position:absolute; top:-60%; left:-60%; width:60%; height:220%;
+    background:linear-gradient(75deg, transparent 30%, rgba(255,255,255,0.12) 48%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.12) 52%, transparent 70%);
+    animation:shineSweep 5s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes shineSweep{
+    0%{ transform:translateX(0) translateY(0) rotate(0deg); }
+    35%,100%{ transform:translateX(260%) translateY(0) rotate(0deg); }
+  }
+  .card-front{
+    background:linear-gradient(160deg, rgba(139,92,246,0.22) 0%, rgba(20,14,34,0.9) 60%);
+    border:1px solid rgba(139,92,246,0.3);
+  }
+  .card-back{
+    background:linear-gradient(160deg, rgba(74,222,128,0.18) 0%, rgba(14,20,17,0.94) 60%);
+    border:1px solid rgba(74,222,128,0.3);
+    transform:rotateY(180deg);
+  }
+
+  .card-tag{ font-size:10px; font-weight:800; letter-spacing:0.04em; color:var(--violet-400); margin-bottom:16px; }
+  .card-back .card-tag{ color:var(--green-fg); }
+
+  .meta-row{ display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; justify-content:center; }
+  .meta-chip{ font-size:9.5px; font-weight:700; padding:4px 9px; border-radius:999px; display:flex; align-items:center; gap:4px; }
+  .meta-theme{ background:rgba(96,165,250,0.14); color:#60a5fa; border:1px solid rgba(96,165,250,0.3); }
+  .meta-level{ background:rgba(139,92,246,0.14); color:#a78bfa; border:1px solid rgba(139,92,246,0.3); }
+  .meta-type{ background:rgba(255,255,255,0.05); color:var(--text-mid); border:1px solid rgba(255,255,255,0.1); }
+
+  .card-word{ font-family:'Fraunces',serif; font-size:32px; font-weight:600; color:var(--text-hi); margin-bottom:14px; text-align:center; }
+  .card-example{ font-family:'Fraunces',serif; font-size:12.5px; color:var(--text-mid); line-height:1.6; text-align:center; padding:0 6px; margin-bottom:18px; }
+  .card-example mark{ background:none; color:#c4b5fd; font-family:'Inter',sans-serif; font-weight:800; }
+  .card-hint{ font-size:11px; color:var(--text-low); margin-top:40px; display:flex; align-items:center; gap:5px; }
+  .card-hint svg{ width:13px; height:13px; animation:hintPulse 1.6s ease-in-out infinite; }
+  @keyframes hintPulse{ 0%,100%{ opacity:0.4; } 50%{ opacity:0.9; } }
+
+  .card-meaning{ font-family:'Fraunces',serif; font-size:26px; font-weight:600; color:var(--green-fg); margin-bottom:14px; text-align:center; }
+  .card-example-tr{ font-family:'Fraunces',serif; font-size:12.5px; color:var(--text-mid); line-height:1.6; text-align:center; padding:0 6px; margin-bottom:18px; }
+  .card-example-tr mark{ background:none; color:#86efac; font-family:'Inter',sans-serif; font-weight:800; }
+
+  .word-type-line{ font-size:10.5px; color:var(--text-low); margin-top:16px; font-style:italic; }
+  .word-type-line-mid{ font-size:10.5px; color:var(--text-low); margin-bottom:18px; font-style:italic; }
+
+  .dna-row{ width:100%; display:flex; align-items:center; gap:13px; }
+  .info-icon-btn{
+    flex:0 0 auto; width:34px; height:34px; border-radius:50%;
+    background:rgba(139,92,246,0.1); border:1.5px solid rgba(167,139,250,0.45);
+    box-shadow:0 0 10px -2px rgba(167,139,250,0.45);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .info-icon-btn svg{ width:16px; height:16px; color:#c4b5fd; }
+
+  .info-panel{
+    display:none; width:100%; margin-top:10px; padding:9px 11px; border-radius:12px;
+    background:rgba(139,92,246,0.08); border:1px dashed rgba(167,139,250,0.4);
+    font-size:10.5px; color:#c4b5fd; line-height:1.5; text-align:left;
+  }
+  .info-panel.show{ display:block; animation:fadeUp 0.25s ease; }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(-4px);} to{ opacity:1; transform:translateY(0);} }
+  .dna-btn{
+    flex:1; padding:12px 14px; border-radius:16px;
+    background:rgba(139,92,246,0.08); border:1.5px solid rgba(167,139,250,0.55);
+    box-shadow:0 0 16px -2px rgba(167,139,250,0.5), inset 0 0 12px -4px rgba(167,139,250,0.3);
+    display:flex; align-items:center; gap:10px; cursor:pointer;
+  }
+  .dna-btn .dna-icons{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+  .dna-btn .dna-icons svg{ width:19px; height:19px; color:#c4b5fd; }
+  .dna-btn .dna-text{ flex:1; text-align:left; font-size:13px; font-weight:700; color:#e9e0ff; }
+  .dna-btn .dna-arrow{ flex:0 0 auto; color:#c4b5fd; }
+  .dna-btn .dna-arrow svg{ width:16px; height:16px; }
+
+  .dots{ display:flex; gap:6px; justify-content:center; margin:16px 0 20px; }
+  .dot{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.15); transition:all 0.25s ease; }
+  .dot.current{ background:var(--violet-400); width:20px; border-radius:4px; }
+  .dot.known{ background:var(--green-fg); }
+  .dot.hard{ background:var(--red-fg); }
+
+  .action-row{ display:flex; gap:12px; }
+  .action-btn{
+    flex:1; padding:15px; border-radius:16px; border:none; font-size:14px; font-weight:800; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:7px; transition:transform 0.12s ease;
+  }
+  .action-btn:active{ transform:scale(0.96); }
+  .action-btn svg{ width:16px; height:16px; }
+  .btn-hard{ background:rgba(248,113,113,0.14); color:var(--red-fg); border:1.5px solid rgba(248,113,113,0.35); }
+  .btn-known{ background:rgba(34,197,94,0.14); color:var(--green-fg); border:1.5px solid rgba(74,222,128,0.35); }
+
+  /* ============ COMPLETE STATE ============ */
+  #complete{ display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; flex:1; }
+  #complete.show{ display:flex; }
+  .complete-badge{ width:76px; height:76px; border-radius:24px; margin-bottom:16px; background:linear-gradient(155deg, var(--violet-400), var(--violet-600)); display:flex; align-items:center; justify-content:center; box-shadow:0 16px 34px -10px rgba(124,58,237,0.85); animation:popIn 0.5s cubic-bezier(.34,1.56,.64,1); }
+  .complete-badge svg{ width:34px; height:34px; }
+  @keyframes popIn{ 0%{ transform:scale(0); opacity:0;} 60%{ transform:scale(1.15);} 100%{ transform:scale(1); opacity:1;} }
+  .complete-title{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--text-hi); margin-bottom:8px; }
+  .complete-stats{ display:flex; gap:10px; margin:18px 0 26px; }
+  .complete-stat{ padding:12px 18px; border-radius:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); }
+  .complete-stat .n{ font-size:20px; font-weight:900; }
+  .complete-stat .l{ font-size:10px; color:var(--text-low); margin-top:2px; }
+  .complete-cta{ width:100%; max-width:280px; padding:15px; border-radius:15px; border:none; font-size:14.5px; font-weight:800; color:#fff; cursor:pointer; background:linear-gradient(135deg, var(--violet-400), var(--violet-600)); box-shadow:0 14px 30px -10px rgba(124,58,237,0.8); }
+
+  .confetti-layer{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:50; }
+  .confetti-piece{ position:absolute; top:-10px; width:7px; height:11px; opacity:0.9; animation:confettiFall linear forwards; }
+  @keyframes confettiFall{ 0%{ transform:translateY(0) rotate(0deg); opacity:1; } 100%{ transform:translateY(760px) rotate(540deg); opacity:0; } }
+
+  .close-btn{ width:36px; height:36px; border-radius:11px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; }
+  .close-btn svg{ width:15px; height:15px; }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="topbar" id="topbar">
+    <div class="back-btn" onclick="alert('Geri dönülecek')"><svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="counter" id="counter">1/5</div>
+    <div class="close-btn" onclick="alert('Ana ekrana dönülecek')"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#a3a0b8" stroke-width="2" stroke-linecap="round"/></svg></div>
+  </div>
+
+  <div class="stage" id="stage">
+   <div class="card-float" id="cardFloat">
+    <div class="card" id="card" onclick="flipCard()">
+      <div class="card-face card-front">
+        <div class="card-tag">İNGİLİZCE</div>
+        <div class="meta-row" id="metaRowFront"></div>
+        <div class="card-word" id="wordEn"></div>
+        <div class="card-example" id="wordSentenceEn"></div>
+        <div class="word-type-line-mid" id="wordTypeEn"></div>
+        <div class="dna-row">
+          <div class="dna-btn" onclick="event.stopPropagation(); alert('SentenceLab + WordDNA sayfasına gidilecek')">
+            <div class="dna-icons">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="11.5" r="0.9" fill="currentColor"/><circle cx="12" cy="11.5" r="0.9" fill="currentColor"/><circle cx="15.5" cy="11.5" r="0.9" fill="currentColor"/></svg>
+              <svg viewBox="0 0 24 24" fill="none"><path d="M7 3c0 4 10 4 10 8s-10 4-10 8M17 3c0 4-10 4-10 8s10 4 10 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 5.5h8M7.3 9h9.4M7.3 15h9.4M8 18.5h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="dna-text">SentenceLab + WordDNA</div>
+            <div class="dna-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="info-icon-btn" onclick="event.stopPropagation(); toggleInfo('infoPanelFront')">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.7" r="1" fill="currentColor"/></svg>
+          </div>
+        </div>
+        <div class="info-panel" id="infoPanelFront">Bu kelime hakkında daha fazla bilgiye ve örneğe ihtiyacım var.</div>
+        <div class="card-hint"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12h16M14 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Anlamı görmek için dokun</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-tag">TÜRKÇE</div>
+        <div class="meta-row" id="metaRowBack"></div>
+        <div class="card-meaning" id="wordTr"></div>
+        <div class="card-example-tr" id="wordSentenceTr"></div>
+        <div class="word-type-line-mid" id="wordType"></div>
+        <div class="dna-row">
+          <div class="dna-btn" onclick="event.stopPropagation(); alert('SentenceLab + WordDNA sayfasına gidilecek')">
+            <div class="dna-icons">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="8.5" cy="11.5" r="0.9" fill="currentColor"/><circle cx="12" cy="11.5" r="0.9" fill="currentColor"/><circle cx="15.5" cy="11.5" r="0.9" fill="currentColor"/></svg>
+              <svg viewBox="0 0 24 24" fill="none"><path d="M7 3c0 4 10 4 10 8s-10 4-10 8M17 3c0 4-10 4-10 8s10 4 10 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 5.5h8M7.3 9h9.4M7.3 15h9.4M8 18.5h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="dna-text">SentenceLab + WordDNA</div>
+            <div class="dna-arrow"><svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="info-icon-btn" onclick="event.stopPropagation(); toggleInfo('infoPanelBack')">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.7" r="1" fill="currentColor"/></svg>
+          </div>
+        </div>
+        <div class="info-panel" id="infoPanelBack">Bu kelime hakkında daha fazla bilgiye ve örneğe ihtiyacım var.</div>
+      </div>
+    </div>
+   </div>
+  </div>
+
+  <div class="dots" id="dots"></div>
+
+  <div class="action-row" id="actionRow">
+    <button class="action-btn btn-hard" onclick="answerCard(false)"><svg viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg> Zorlandım</button>
+    <button class="action-btn btn-known" onclick="answerCard(true)"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Biliyorum</button>
+  </div>
+
+  <div id="complete">
+    <div class="complete-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.6L21 9.3l-5 4.5L17.4 21 12 17.4 6.6 21 8 13.8l-5-4.5 6.4-0.7z" fill="white"/></svg></div>
+    <div class="complete-title">5 Kart Tamamlandı!</div>
+    <div class="complete-stats">
+      <div class="complete-stat"><div class="n" id="knownCount" style="color:#4ade80;">0</div><div class="l">Biliyorum</div></div>
+      <div class="complete-stat"><div class="n" id="hardCount" style="color:#f87171;">0</div><div class="l">Zorlandım</div></div>
+    </div>
+    <button class="complete-cta" onclick="alert('Aynı kelimelerle yeni bir hikâye oluşturulacak')">Aynı Kelimelerden Farklı Hikâye Oluştur</button>
+  </div>
+
+  <div class="confetti-layer" id="confettiLayer"></div>
+</div>
+
+<script>
+var cards = [
+  {word:'adventure', tr:'macera', typeTr:'isim', typeEn:'noun', theme:'✈ Travel', level:'Orta (B1/B2)',
+   sentenceEn:'"Every step felt like the start of a new <mark>adventure</mark>."',
+   sentenceTr:'"Her adım yeni bir <mark>macera</mark>nın başlangıcı gibi hissettiriyordu."'},
+  {word:'journey', tr:'yolculuk', typeTr:'isim', typeEn:'noun', theme:'✈ Travel', level:'Basit (A1/A2)',
+   sentenceEn:'"It was going to be a long <mark>journey</mark>."',
+   sentenceTr:'"Bu, uzun bir <mark>yolculuk</mark> olacaktı."'},
+  {word:'luggage', tr:'bavul / bagaj', typeTr:'isim', typeEn:'noun', theme:'✈ Travel', level:'Basit (A1/A2)',
+   sentenceEn:'"Carrying her <mark>luggage</mark> became harder every hour."',
+   sentenceTr:'"<mark>Bavulunu</mark> taşımak her saat daha da zorlaşıyordu."'},
+  {word:'passport', tr:'pasaport', typeTr:'isim', typeEn:'noun', theme:'✈ Travel', level:'Basit (A1/A2)',
+   sentenceEn:'"She had to show her <mark>passport</mark> at the counter."',
+   sentenceTr:'"Gişede <mark>pasaportunu</mark> göstermesi gerekiyordu."'},
+  {word:'gate', tr:'uçuş kapısı', typeTr:'isim', typeEn:'noun', theme:'✈ Travel', level:'Orta (B1/B2)',
+   sentenceEn:'"He checked the <mark>gate</mark> number one more time."',
+   sentenceTr:'"<mark>Kapı</mark> numarasını bir kez daha kontrol etti."'}
+];
+
+var current = 0, isFlipped = false, results = [];
+
+function renderMetaChips(elId, c){
+  document.getElementById(elId).innerHTML =
+    '<div class="meta-chip meta-theme">'+c.theme+'</div>'+
+    '<div class="meta-chip meta-level">'+c.level+'</div>';
+}
+
+function renderDots(){
+  var dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = cards.map(function(c, i){
+    var cls = 'dot';
+    if(i === current) cls += ' current';
+    else if(results[i] === true) cls += ' known';
+    else if(results[i] === false) cls += ' hard';
+    return '<div class="'+cls+'"></div>';
+  }).join('');
+}
+
+function toggleInfo(panelId){
+  document.getElementById(panelId).classList.toggle('show');
+}
+
+function renderCard(){
+  var c = cards[current];
+  document.getElementById('wordEn').textContent = c.word;
+  document.getElementById('wordSentenceEn').innerHTML = c.sentenceEn;
+  document.getElementById('wordTypeEn').textContent = c.typeEn;
+  document.getElementById('wordTr').textContent = c.tr;
+  document.getElementById('wordSentenceTr').innerHTML = c.sentenceTr;
+  document.getElementById('wordType').textContent = c.typeTr;
+  renderMetaChips('metaRowFront', c);
+  renderMetaChips('metaRowBack', c);
+  document.getElementById('progressFill').style.width = (current/cards.length*100)+'%';
+  document.getElementById('counter').textContent = (current+1)+'/'+cards.length;
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped','exit-left','exit-right');
+  document.getElementById('infoPanelFront').classList.remove('show');
+  document.getElementById('infoPanelBack').classList.remove('show');
+  renderDots();
+}
+renderCard();
+
+function flipCard(){
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped', isFlipped);
+}
+
+function answerCard(known){
+  results[current] = known;
+  renderDots();
+  var card = document.getElementById('card');
+  card.classList.add(known ? 'exit-right' : 'exit-left');
+
+  setTimeout(function(){
+    current++;
+    if(current >= cards.length){
+      showComplete();
+    } else {
+      card.style.transition = 'none';
+      renderCard();
+      void card.offsetWidth;
+      card.style.transition = '';
+    }
+  }, 380);
+}
+
+function showComplete(){
+  document.getElementById('topbar').style.display = 'none';
+  document.getElementById('stage').style.display = 'none';
+  document.getElementById('dots').style.display = 'none';
+  document.getElementById('actionRow').style.display = 'none';
+  document.getElementById('complete').classList.add('show');
+
+  var known = results.filter(function(r){ return r === true; }).length;
+  var hard = results.filter(function(r){ return r === false; }).length;
+  document.getElementById('knownCount').textContent = known;
+  document.getElementById('hardCount').textContent = hard;
+
+  burstConfetti();
+}
+
+function burstConfetti(){
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#8b5cf6','#4ade80','#fbbf24','#60a5fa','#f87171'];
+  for(var i=0;i<28;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (5 + Math.random()*90) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1.3 + Math.random()*0.9) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 2400); })(p);
+  }
+}
+</script>
+
+</body>
+</html>

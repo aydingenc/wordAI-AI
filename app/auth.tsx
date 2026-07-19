@@ -17,6 +17,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { Logo } from '@/components/Logo';
 import { useColors } from '@/hooks/useColors';
+import { useProgress } from '@/context/ProgressContext';
 import { APP_NAME } from '@/constants/app';
 
 type Mode = 'login' | 'register';
@@ -25,6 +26,7 @@ export default function AuthScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { completeOnboarding } = useProgress();
   const [mode, setMode] = useState<Mode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -42,8 +44,20 @@ export default function AuthScreen() {
       (name.trim().length > 1 && confirm.length >= 4 && passwordsMatch));
 
   const submit = () => {
-    // Frontend-only prototype: no real auth, just enter the app.
+    // Frontend-only prototype: no real auth. This creates/confirms the local
+    // device profile (see CLAUDE.md local-first model) and enters the app.
+    completeOnboarding(isRegister && name.trim().length > 0 ? name.trim() : null);
     router.replace('/home');
+  };
+
+  const submitGoogle = () => {
+    // Google Sign-In is not implemented (no real OAuth) — do not silently
+    // treat this as a working login method (WL-002). Same demo-Alert
+    // pattern already used for "Şifreni mi unuttun?" on this screen.
+    Alert.alert(
+      'Google ile Giriş',
+      'Google ile giriş bu sürümde henüz aktif değil. E-posta ile devam edebilirsin.',
+    );
   };
 
   const switchMode = (m: Mode) => {
@@ -78,6 +92,9 @@ export default function AuthScreen() {
               <Pressable
                 key={m}
                 onPress={() => switchMode(m)}
+                accessibilityRole="tab"
+                accessibilityLabel={m === 'login' ? 'Giriş Yap' : 'Kayıt Ol'}
+                accessibilityState={{ selected: active }}
                 style={[
                   styles.switchBtn,
                   {
@@ -155,6 +172,8 @@ export default function AuthScreen() {
                   'Bu bir demo — şifre sıfırlama e-postası gönderildiğini varsayabilirsin.',
                 )
               }
+              accessibilityRole="button"
+              accessibilityLabel="Şifreni mi unuttun?"
             >
               <Text style={[styles.forgotText, { color: colors.accent }]}>
                 Şifreni mi unuttun?
@@ -181,8 +200,10 @@ export default function AuthScreen() {
         </View>
 
         <Pressable
-          onPress={submit}
+          onPress={submitGoogle}
           testID="auth-google"
+          accessibilityRole="button"
+          accessibilityLabel={isRegister ? 'Google ile kayıt ol' : 'Google ile giriş yap'}
           style={({ pressed }) => [
             styles.googleBtn,
             {
@@ -220,7 +241,12 @@ export default function AuthScreen() {
           </Text>
         ) : null}
 
-        <Pressable style={styles.skip} onPress={submit}>
+        <Pressable
+          style={styles.skip}
+          onPress={submit}
+          accessibilityRole="button"
+          accessibilityLabel="Şimdilik geç"
+        >
           <Text style={[styles.skipText, { color: colors.mutedForeground }]}>
             Şimdilik geç
           </Text>
@@ -259,10 +285,16 @@ function Field({
         style={[fieldStyles.input, { color: colors.foreground }]}
         autoCapitalize="none"
         secureTextEntry={secure && hidden}
+        accessibilityLabel={typeof props.placeholder === 'string' ? props.placeholder : undefined}
         {...props}
       />
       {secure ? (
-        <Pressable onPress={() => setHidden((h) => !h)} hitSlop={8}>
+        <Pressable
+          onPress={() => setHidden((h) => !h)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={hidden ? 'Şifreyi göster' : 'Şifreyi gizle'}
+        >
           <Feather
             name={hidden ? 'eye-off' : 'eye'}
             size={18}

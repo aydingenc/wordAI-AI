@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Kelime Eşleştir — Canlı Demo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,600&display=swap');
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{ width:100%; height:100%; overflow:hidden; background:#050409; }
+  body{ font-family:'Inter',sans-serif; display:flex; justify-content:center; align-items:center; }
+  :root{
+    --violet-400:#a78bfa; --violet-500:#8b5cf6; --violet-600:#7c3aed;
+    --green-fg:#4ade80; --red-fg:#f87171; --text-hi:#f5f3ff; --text-mid:#b9b3d1; --text-low:#6f6a8a;
+  }
+  .device{
+    width:390px; height:844px; position:relative; overflow:hidden;
+    background:radial-gradient(120% 50% at 50% 0%, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0) 55%), #08070d;
+    border-radius:36px; box-shadow:0 40px 100px rgba(0,0,0,0.6);
+    display:flex; flex-direction:column; padding:30px 20px 26px;
+  }
+  .topbar{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+  .back-btn{ width:36px; height:36px; border-radius:11px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.25); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; }
+  .back-btn svg{ width:16px; height:16px; }
+  .progress-track{ flex:1; height:6px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden; }
+  .progress-fill{ height:100%; background:linear-gradient(90deg, var(--violet-400), var(--violet-500)); border-radius:3px; transition:width 0.4s ease; }
+  .counter{ font-size:12px; font-weight:700; color:var(--text-mid); flex:0 0 auto; }
+
+  .title-block{ text-align:center; margin:20px 0 26px; }
+  .title-block h1{ font-family:'Fraunces',serif; font-size:19px; font-weight:600; color:var(--text-hi); margin-bottom:4px; }
+  .title-block p{ font-size:12px; color:var(--text-low); }
+
+  .board{ flex:1; display:flex; gap:14px; }
+  .col{ flex:1; display:flex; flex-direction:column; gap:10px; }
+  .tile{
+    height:64px; padding:0 10px; border-radius:16px; text-align:center; font-size:13.5px; font-weight:700;
+    background:rgba(255,255,255,0.03); border:1.5px solid rgba(255,255,255,0.09); color:var(--text-hi);
+    cursor:pointer; transition:all 0.2s ease; user-select:none;
+    display:flex; align-items:center; justify-content:center; line-height:1.2;
+  }
+  .tile.en{ font-family:'Fraunces',serif; font-size:16px; }
+  .tile:active{ transform:scale(0.96); }
+  .tile.selected{ border-color:var(--violet-400); background:rgba(139,92,246,0.16); box-shadow:0 0 14px -2px rgba(167,139,250,0.6); }
+  .tile.matched{ background:rgba(34,197,94,0.14); border-color:rgba(74,222,128,0.4); color:var(--green-fg); opacity:0.55; cursor:default; }
+  .tile.wrong{ background:rgba(248,113,113,0.18); border-color:#f87171; animation:shake 0.4s ease; }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+
+  #complete{ display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; flex:1; }
+  #complete.show{ display:flex; }
+  .complete-badge{ width:76px; height:76px; border-radius:24px; margin-bottom:16px; background:linear-gradient(155deg, var(--violet-400), var(--violet-600)); display:flex; align-items:center; justify-content:center; box-shadow:0 16px 34px -10px rgba(124,58,237,0.85); animation:popIn 0.5s cubic-bezier(.34,1.56,.64,1); }
+  .complete-badge svg{ width:34px; height:34px; }
+  @keyframes popIn{ 0%{ transform:scale(0); opacity:0;} 60%{ transform:scale(1.15);} 100%{ transform:scale(1); opacity:1;} }
+  .complete-title{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; color:var(--text-hi); margin-bottom:8px; }
+  .complete-stats{ display:flex; gap:10px; margin:18px 0 26px; }
+  .complete-stat{ padding:12px 18px; border-radius:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); }
+  .complete-stat .n{ font-size:20px; font-weight:900; }
+  .complete-stat .l{ font-size:10px; color:var(--text-low); margin-top:2px; }
+  .complete-cta{ width:100%; max-width:280px; padding:15px; border-radius:15px; border:none; font-size:14.5px; font-weight:800; color:#fff; cursor:pointer; background:linear-gradient(135deg, var(--violet-400), var(--violet-600)); box-shadow:0 14px 30px -10px rgba(124,58,237,0.8); }
+
+  .confetti-layer{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:50; }
+  .confetti-piece{ position:absolute; top:-10px; width:7px; height:11px; opacity:0.9; animation:confettiFall linear forwards; }
+  @keyframes confettiFall{ 0%{ transform:translateY(0) rotate(0deg); opacity:1; } 100%{ transform:translateY(760px) rotate(540deg); opacity:0; } }
+
+  .close-btn{ width:36px; height:36px; border-radius:11px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto; }
+  .close-btn svg{ width:15px; height:15px; }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topbar" id="topbar">
+    <div class="back-btn" onclick="alert('Geri dönülecek')"><svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#c4b5fd" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="counter" id="counter">0/5</div>
+    <div class="close-btn" onclick="alert('Ana ekrana dönülecek')"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#a3a0b8" stroke-width="2" stroke-linecap="round"/></svg></div>
+  </div>
+
+  <div id="gameArea">
+    <div class="title-block">
+      <h1>Kelime Eşleştir</h1>
+      <p>İngilizce kelimeyi doğru Türkçe karşılığıyla eşleştir</p>
+    </div>
+    <div class="board">
+      <div class="col" id="colEn"></div>
+      <div class="col" id="colTr"></div>
+    </div>
+  </div>
+
+  <div id="complete">
+    <div class="complete-badge"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 6.6L21 9.3l-5 4.5L17.4 21 12 17.4 6.6 21 8 13.8l-5-4.5 6.4-0.7z" fill="white"/></svg></div>
+    <div class="complete-title">Tüm Kelimeler Eşleşti!</div>
+    <div class="complete-stats">
+      <div class="complete-stat"><div class="n" style="color:#4ade80;" id="correctCount">0</div><div class="l">İlk Denemede</div></div>
+      <div class="complete-stat"><div class="n" style="color:#f87171;" id="mistakeCount">0</div><div class="l">Yanlış Deneme</div></div>
+    </div>
+    <button class="complete-cta" onclick="alert('Aynı kelimelerle yeni bir hikâye oluşturulacak')">Aynı Kelimelerden Farklı Hikâye Oluştur</button>
+  </div>
+
+  <div class="confetti-layer" id="confettiLayer"></div>
+</div>
+
+<script>
+var words = [
+  {en:'adventure', tr:'macera'},
+  {en:'journey', tr:'yolculuk'},
+  {en:'luggage', tr:'bavul'},
+  {en:'passport', tr:'pasaport'},
+  {en:'gate', tr:'uçuş kapısı'}
+];
+
+var selectedEn = null, selectedTr = null, matchedCount = 0, mistakes = 0, firstTryCorrect = 0, attemptedPairs = {};
+
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+function initBoard(){
+  var enOrder = shuffle(words);
+  var trOrder = shuffle(words);
+  document.getElementById('colEn').innerHTML = enOrder.map(function(w){
+    return '<div class="tile en" data-side="en" data-word="'+w.en+'">'+w.en+'</div>';
+  }).join('');
+  document.getElementById('colTr').innerHTML = trOrder.map(function(w){
+    return '<div class="tile tr" data-side="tr" data-word="'+w.en+'">'+w.tr+'</div>';
+  }).join('');
+  document.querySelectorAll('.tile').forEach(function(el){
+    el.addEventListener('click', function(){ selectTile(el, el.dataset.side, el.dataset.word); });
+  });
+}
+initBoard();
+
+function selectTile(el, side, wordKey){
+  if(el.classList.contains('matched')) return;
+  if(side === 'en'){
+    if(selectedEn) selectedEn.classList.remove('selected');
+    selectedEn = el; el.classList.add('selected');
+  } else {
+    if(selectedTr) selectedTr.classList.remove('selected');
+    selectedTr = el; el.classList.add('selected');
+  }
+  el.dataset.key = wordKey;
+
+  if(selectedEn && selectedTr){
+    var enKey = selectedEn.dataset.key, trKey = selectedTr.dataset.key;
+    var pairId = enKey; // both should equal the same word.en if correct
+    if(enKey === trKey){
+      selectedEn.classList.remove('selected'); selectedTr.classList.remove('selected');
+      selectedEn.classList.add('matched'); selectedTr.classList.add('matched');
+      matchedCount++;
+      if(!attemptedPairs[pairId]) firstTryCorrect++;
+      document.getElementById('progressFill').style.width = (matchedCount/words.length*100)+'%';
+      document.getElementById('counter').textContent = matchedCount+'/'+words.length;
+      burstConfettiSmall();
+      selectedEn = null; selectedTr = null;
+      if(matchedCount === words.length){
+        setTimeout(showComplete, 500);
+      }
+    } else {
+      attemptedPairs[enKey] = true;
+      mistakes++;
+      var a=selectedEn, b=selectedTr;
+      a.classList.add('wrong'); b.classList.add('wrong');
+      setTimeout(function(){
+        a.classList.remove('selected','wrong');
+        b.classList.remove('selected','wrong');
+      }, 420);
+      selectedEn = null; selectedTr = null;
+    }
+  }
+}
+
+function burstConfettiSmall(){
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#8b5cf6','#4ade80','#fbbf24'];
+  for(var i=0;i<10;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (20 + Math.random()*60) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1 + Math.random()*0.6) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 1800); })(p);
+  }
+}
+
+function showComplete(){
+  document.getElementById('gameArea').style.display = 'none';
+  document.getElementById('complete').classList.add('show');
+  document.getElementById('correctCount').textContent = firstTryCorrect;
+  document.getElementById('mistakeCount').textContent = mistakes;
+  var layer = document.getElementById('confettiLayer');
+  var colors = ['#8b5cf6','#4ade80','#fbbf24','#60a5fa','#f87171'];
+  for(var i=0;i<28;i++){
+    var p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (5 + Math.random()*90) + '%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1.3 + Math.random()*0.9) + 's';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    layer.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 2400); })(p);
+  }
+}
+</script>
+</body>
+</html>

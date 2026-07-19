@@ -253,8 +253,8 @@ const styles = StyleSheet.create({
   },
   story: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 10.5,
-    lineHeight: 15.5,
+    fontSize: 8,
+    lineHeight: 11.5,
     textAlign: 'left',
   },
   hl: {
