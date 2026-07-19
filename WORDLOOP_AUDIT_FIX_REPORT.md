@@ -1090,3 +1090,67 @@ Yok.
 ### Sonuç
 
 1 commit, 1 dosya değişti (`components/WordListTable.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Kelime/Anlamı/Status/DNA sütunlarına dokunulmadı. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1l` branch'i lokal kaldı.
+
+## Aşama 1M
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1l
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        PROMPT_1B.md
+        PROMPT_1D.md
+        PROMPT_1E.md
+        PROMPT_1E_devam.md
+        PROMPT_1F.md
+        PROMPT_1G.md
+        PROMPT_1H.md
+        PROMPT_1I.md
+        PROMPT_1K.md
+        PROMPT_1L.md
+        PROMPT_1M.md
+        wordloop-1b.zip
+        wordloop-1c.zip
+        wordloop-1d.zip
+        wordloop-1e-v2.zip
+        wordloop-1e.zip
+        wordloop-1f.zip
+        wordloop-1g.zip
+        wordloop-1h.zip
+        wordloop-1i.zip
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -3
+bca52e2 Asama 1L: Ornek Cumle sutunu satirin altina, tam genislikte taşındı
+053b1cb Asama 1K: TextMarquee animasyon tetiklemesi artik onLayout'a tek basina bagimli degil
+f81f962 Asama 1I rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1I" bolumu eklendi
+```
+
+`audit-phase-1l` temiz, `bca52e2` HEAD'de doğrulandı. `git checkout -b audit-phase-1m` ile buradan dallandı.
+
+Not: Prompt, `COL` objesinde hâlâ bir `ex` alanı bulunduğunu varsayarak "artık kullanılmıyor, tanım kalabilir, dokunma" diyordu; ancak `ex` alanı zaten Aşama 1L'de (kullanılmayan kod temizliği olarak) kaldırılmıştı. Talimat zaten "dokunma" yönünde olduğundan bu bir çelişki yaratmadı — geri eklenmedi, yalnızca gerçekten var olan `word`/`mean` alanları değiştirildi.
+
+### Ne yapıldı
+
+`components/WordListTable.tsx`'teki paylaşılan `COL` objesinde `word.flexBasis` 40'tan 96'ya, `mean.flexBasis` 56'dan 96'ya çıkarıldı. `status` (74) ve `dna` (40) değişmedi. Bu obje hem başlık satırı hem veri satırları tarafından paylaşıldığı için tek değişiklik ikisine de otomatik yansıdı. `dataRowTop`/satır `gap` değerine dokunulmadı.
+
+`TextMarquee.tsx`'in kendisine dokunulmadı — Kelime sütunu artık 96px olduğu için çoğu kelimede (ör. "beautiful", "journey", "sculpture") kayma mekanizması devreye girmiyor, sadece gerçekten sığmayan nadir uzun kelimelerde devreye girecek; bu beklenen sonuç.
+
+**Doğrulama:** `npx expo start --web` ile headless Chromium (Playwright) üzerinden `recent-words` ekranı gerçek veriyle render edilip ekran görüntüsüyle doğrulandı: "beautiful", "journey", "coffee" artık kesilmeden/kaymadan tam görünüyor; sağda önceden boşta kalan alan kapandı; Status pill ve DNA butonu görsel olarak eskisiyle birebir aynı.
+
+Değişen dosya: `components/WordListTable.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+**Cihazda doğrulanmalı:** Kelime/Anlamı sütunlarının artık kelimelerin çoğunu kesmeden gösterdiği, sağda boşta kalan alanın kapandığı, Status/DNA'nın eskisiyle birebir aynı göründüğü — gerçek cihazda son doğrulama önerilir.
+
+### Yeni blocker / ürün kararı
+
+Yok.
+
+### Sonuç
+
+1 commit, 1 dosya değişti (`components/WordListTable.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Renk/font/ikon/Status pill/DNA butonu tasarımına dokunulmadı, sadece `word`/`mean` sütun genişlikleri değişti. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1m` branch'i lokal kaldı.
