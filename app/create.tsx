@@ -31,6 +31,10 @@ const GLASS_BORDER = 'rgba(139, 92, 246, 0.30)';
 // Target-word colors — shared with the flow cards.
 const GREEN = '#34D399';
 const ORANGE = '#FB923C';
+// Single source of truth for the KelimelerFlow/GorsellerFlow card height —
+// both cards MUST read this same constant so they can never drift apart
+// and render at different sizes again.
+const FLOW_CARD_HEIGHT = 168;
 
 function withAlpha(hex: string, alpha: string) {
   return hex + alpha;
@@ -141,7 +145,7 @@ export default function CreateScreen() {
               <Text style={[st.flowTitle, { color: colors.foreground }]} numberOfLines={1}>
                 Kelimelerden
               </Text>
-              <KelimelerFlow height={168} textColor={colors.foreground} />
+              <KelimelerFlow height={FLOW_CARD_HEIGHT} textColor={colors.foreground} />
             </View>
           </View>
 
@@ -208,7 +212,7 @@ export default function CreateScreen() {
               <Text style={[st.flowTitle, { color: colors.foreground }]} numberOfLines={1}>
                 Görsellerden
               </Text>
-              <GorsellerFlow height={168} textColor={colors.foreground} />
+              <GorsellerFlow height={FLOW_CARD_HEIGHT} textColor={colors.foreground} />
             </View>
           </View>
         </View>
