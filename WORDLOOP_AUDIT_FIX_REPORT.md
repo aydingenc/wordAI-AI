@@ -1222,3 +1222,85 @@ Yok. 1M'nin hatası bu prompt ile kullanıcıya gösterilip onaylanan yaklaşım
 ### Sonuç
 
 1 commit, 1 dosya değişti (`components/WordListTable.tsx`). `npx tsc -p tsconfig.json --noEmit`: 0 hata. Yeni paket kurulmadı. Renk/font/ikon/pill tasarımına dokunulmadı, sadece genişlik hesaplama yöntemi (sabit px → oransal flex) değişti. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1n` branch'i lokal kaldı.
+
+## Aşama 1O
+
+### Başlangıç doğrulaması
+
+```
+$ pwd
+/c/Users/ASUS/wordAI-AI
+
+$ git status
+On branch audit-phase-1j
+Untracked files: (PROMPT_*.md, wordloop-*.zip — proje dışı, ilgisiz)
+nothing added to commit but untracked files present (use "git add" to track)
+
+$ git log --oneline -5
+8f8e764 Asama 1J rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1J" bolumu eklendi
+8562c5c Gorev 2: Kelime/Gorsel kartlarindaki ornek paragraf artik tasmiyor
+bd7df2d Gorev 1: Kart basliklari artik kesilmeden 2 satira sariyor
+f81f962 Asama 1I rapor: WORDLOOP_AUDIT_FIX_REPORT.md'ye "## Asama 1I" bolumu eklendi
+af23c7c Gorev 2: Marquee kaymasi artik 1200ms yerine 400ms sonra basliyor
+
+$ git log -p --follow -- app/create.tsx | grep -A3 -B3 "height={1"
+# (1J'nin diff'i):
+-              <KelimelerFlow height={168} textColor={colors.foreground} />
++              <KelimelerFlow height={280} textColor={colors.foreground} />
+...
+-              <GorsellerFlow height={168} textColor={colors.foreground} />
++              <GorsellerFlow height={220} textColor={colors.foreground} />
+```
+
+`audit-phase-1j` temiz, `8f8e764` HEAD'de doğrulandı (en son tamamlanan branch — 1J'nin devamı, aynı ekranla ilgili). Git geçmişinden 1J'nin `KelimelerFlow`'u `168→280`, `GorsellerFlow`'u `168→220` yaptığı, orijinal (1J öncesi) değerin ikisi için de **168** olduğu doğrulandı. `git checkout -b audit-phase-1o` ile buradan dallandı.
+
+### Görev 1 — Kart yüksekliği 168'e geri alındı, tek paylaşılan sabitten okunuyor
+
+`app/create.tsx`'e `const FLOW_CARD_HEIGHT = 168;` eklendi. `<KelimelerFlow height={280}>` ve `<GorsellerFlow height={220}>` her ikisi de `height={FLOW_CARD_HEIGHT}` olarak değiştirildi — artık aynı değişkeni okuyorlar, bir daha birbirinden bağımsız iki farklı sayı olamaz; kartların farklı boyda görünmesi yapısal olarak imkansız hale geldi.
+
+Değişen dosya: `app/create.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+### Görev 2 — Örnek paragraf/hikaye metni, kart büyümeden 168px'e sığdırıldı
+
+**Ölçüm yöntemi:** Tahmine dayanmak yerine, headless Chromium (Playwright) ile `components/KelimelerFlow.tsx`/`GorsellerFlow.tsx`'teki `paragraph`/`story` stillerinin gerçek (kesilmemiş) render yüksekliği `getBoundingClientRect()` ile ölçüldü, 300–402px genişlik aralığında birkaç iterasyonla:
+
+1. İlk tahmin (`fontSize:9/lineHeight:13.5` Kelimeler, `fontSize:8/lineHeight:11.5` Görseller) karesel ölçekleme yaklaşımıyla (metin sarma satır sayısı ≈ fontSize ile orantılı, satır yüksekliği de fontSize ile orantılı olduğundan toplam yükseklik ≈ fontSize² ile ölçekleniyor) hesaplandı, orijinal `fontSize:12/lineHeight:18.5` (Kelimeler) ve `fontSize:10.5/lineHeight:15.5` (Görseller) değerlerinin 300px'deki gerçek ölçümünden yola çıkılarak.
+2. Bu tahmin doğrudan uygulanıp ölçüldü — **ilk seferde** 300–402px aralığının tamamında taşmasız çıktı, ikinci bir iterasyon gerekmedi.
+
+**Sonuç ölçümleri (168px sınırına karşı):**
+
+| Genişlik | KelimelerFlow paragrafı | Marj | GorsellerFlow (hero+gap+story) | Marj |
+|---|---|---|---|---|
+| 300px | 148.5px | 19.5px | 155.5px | 12.5px |
+| 320px | 121.5px | 46.5px | 144px | 24px |
+| 340px | 121.5px | 46.5px | 132.5px | 35.5px |
+| 360px | 108px | 60px | 132.5px | 35.5px |
+| 390-402px | 81px | 87px | 121px | 47px |
+
+En dar test edilen genişlikte (300px, gerçekçi bir hedef olmasa da "cömert pay" için dahil edildi) bile hiç taşma yok; 1M'nin aksine bu sefer küçük tarafta hata yapıldı (talimatın istediği gibi).
+
+**Düzeltme:** `components/KelimelerFlow.tsx`'teki `paragraph` stili `fontSize:12→9, lineHeight:18.5→13.5`; `components/GorsellerFlow.tsx`'teki `story` stili `fontSize:10.5→8, lineHeight:15.5→11.5` yapıldı. Kart boyutuna (`height`, `width`, `padding`) dokunulmadı — talimat gereği sadece içerik küçültüldü.
+
+Değişen dosyalar: `components/KelimelerFlow.tsx`, `components/GorsellerFlow.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+### Görev 3 — Başlık kırılması (numberOfLines=2'nin çirkin sonucu) düzeltildi
+
+**Ölçüm:** `flowTitle` stilinin orijinal `fontSize:15`'inde, "Kelimelerden"/"Görsellerden" metinlerinin gerçek (kesilmemiş, `white-space:nowrap` ile zorlanmış) genişliği (`scrollWidth`) ile kartın gerçekte sağladığı genişlik (`clientWidth`) karşılaştırıldı: 320px cihaz genişliğinde kart yalnızca 77px veriyordu, metin 96px istiyordu (19px açık) — bu yüzden 1J'de `numberOfLines={1}` kesiliyordu.
+
+**Düzeltme:** `numberOfLines` tekrar `{1}`'e döndürüldü, `flowTitle.fontSize` `15→11` küçültüldü (prompt'un önerdiği "1-1.5pt" çok yetersiz kalıyordu — ölçüm gerçek ihtiyacın ~4pt küçültme olduğunu gösterdi). Düzeltme sonrası 320–402px aralığının TAMAMINDA `naturalWidth <= availableWidth` (hiç kesilme yok) doğrulandı — en dar noktada (320px) 77px mevcut, metin artık yalnızca ~70px istiyor.
+
+`app/create.tsx`'teki `ctaLabelWide` ("Hazır Temalardan Öğren") talimat gereği bu görevin kapsamı dışında bırakıldı, dokunulmadı. **Gözlem (kapsam dışı, düzeltilmedi):** Ekran görüntüsü doğrulamasında, 320px gibi çok dar genişliklerde bu başlığın kendi `numberOfLines={2}`'siyle ("Hazır" / "Temalardan ...") kesilebildiği görüldü — bu 1J'den kalma, bu prompt'un kapsamına girmeyen ayrı bir potansiyel sorun, kullanıcı isterse ayrı bir görev olarak ele alınabilir.
+
+Değişen dosya: `app/create.tsx`. `npx tsc -p tsconfig.json --noEmit`: 0 hata.
+
+**Ek doğrulama:** Üç görev birlikte, headless Chromium ile 320px genişlikte ekran görüntüsüyle doğrulandı: "Kelimelerden" ve "Görsellerden" kartları artık birebir aynı yükseklikte (tek sabitten okundukları için); başlıklar tek satırda, kırılmadan görünüyor; paragraf/hikaye metinleri kart büyümeden tam sığıyor, okunabilir kalıyor (küçük ama net).
+
+**Cihazda doğrulanmalı:** İki kartın artık kesinlikle aynı boyda olduğu (yapısal garanti — tek sabitten okunuyorlar); paragrafların kart büyümeden tam sığdığı; başlıkların tek satırda kırılmadan göründüğü — bu ortamda yalnızca web viewport genişlikleri (300-402px) simüle edilebildi, gerçek cihazda (özellikle font render farkları için) son doğrulama önerilir.
+
+### Yeni blocker / ürün kararı
+
+Kapsam dışı gözlem: "Hazır Temalardan Öğren" başlığı çok dar genişliklerde (320px) kendi `numberOfLines={2}`'siyle kesilebiliyor (yukarıda not edildi) — bu prompt'un kapsamına girmediği için düzeltilmedi, kullanıcı onayı ile ayrı bir görev olarak ele alınabilir.
+
+### Sonuç
+
+3 commit (`ddd66d4`, `0f20937`, `003ec15`), 3 dosya değişti (`app/create.tsx`, `components/KelimelerFlow.tsx`, `components/GorsellerFlow.tsx`). Her adımdan sonra `npx tsc -p tsconfig.json --noEmit` çalıştırıldı, hepsi 0 hata. Yeni paket kurulmadı. Kart boyutu (yükseklik/genişlik/padding) hiç değişmedi — yalnızca içerik (fontSize/lineHeight) ve `numberOfLines` değişti. Listelenenin dışında hiçbir şey değişmedi. Push/PR yapılmadı. `audit-phase-1o` branch'i lokal kaldı.
