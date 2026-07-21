@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-WordLoop (`app.json` name; package name `@workspace/mobile`) is an Expo/React Native prototype for learning English vocabulary through themed stories, quizzes, and flashcards. It runs on iOS, Android, and web via `react-native-web`. All content is Turkish-UI with English learning material; there is no real backend — everything is mock/local data and in-memory context state.
+WordLoop (`app.json` name; package name `@workspace/mobile`) is an Expo/React Native prototype for learning English vocabulary through themed stories, quizzes, and flashcards. It runs on iOS, Android, and web via `react-native-web`. All content is Turkish-UI with English learning material. Through Aşama 1, there was no real backend — everything was mock/local data and in-memory context state. As of Aşama 2 (Phase 2A onward), a real Supabase backend is being introduced for specific features (WordDNA/SentenceLab/word-story translation) — see **Backend (Aşama 2+)** below for what that does and does not permit.
 
 This app was originally scaffolded/iterated on in Replit; some scripts (`scripts/build.js`, `dev` script in `package.json`) reference Replit-specific env vars (`REPLIT_DEV_DOMAIN`, `REPL_ID`, etc.) and are not required for local development outside that environment.
 
@@ -62,11 +62,15 @@ There is no test suite in this repo.
 
 **Scope discipline.** Do exactly the screen/task given — no whole-app refactors, no inventing extra screens, no touching working navigation beyond wiring the one new route/button needed. If a screen comes out wrong, prefer a clean replacement over messy incremental commits.
 
-**Forbidden regardless of task:** adding a backend, API, database, Supabase/Firebase, real OpenAI/AI integration, real auth, payments, analytics, or deploy/publish actions; unnecessary `npm`/`pnpm install`s or new heavy dependencies; project-wide refactors; unnecessary changes to the existing navigation structure; edits to protected screens.
+**Forbidden regardless of task:** adding a backend, API, database, Supabase/Firebase, real OpenAI/AI integration, real auth, payments, analytics, or deploy/publish actions; unnecessary `npm`/`pnpm install`s or new heavy dependencies; project-wide refactors; unnecessary changes to the existing navigation structure; edits to protected screens. **Exception:** the Supabase backend work explicitly scoped under **Backend (Aşama 2+)** below is permitted — that section's own constraints (no production deploy, no real Google Translation calls, no secrets in repo/mobile code, no merge to `main`) apply instead of this line for that work.
 
-**Data rule.** Everything is local/mock — no real user data, real uploads, real AI analysis, or real database. Buttons that need a backend can open a frontend-only placeholder or mock flow instead.
+**Data rule.** For the mobile app's UI/screens outside the Aşama 2+ backend scope, everything is local/mock — no real user data, real uploads, real AI analysis, or real database. Buttons that need a backend can open a frontend-only placeholder or mock flow instead, unless the task is explicitly the Aşama 2+ backend work itself.
 
 **Language rule.** All visible UI text is Turkish. English is only for the vocabulary content itself (learned words, example sentences) since that's the subject matter. Technical/file names stay English.
+
+## Backend (Aşama 2+)
+
+Proje artık Supabase backend kullanıyor. Supabase migration'ları, RLS/grant politikaları, Edge Functions ve anonim/gerçek auth bu kapsamda İZİNLİDİR. Ancak: hiçbir şey production'a deploy edilmez, gerçek Google Translation çağrısı yapılmaz (mock zorunlu), service_role/veritabanı parolası/API anahtarları asla repoya veya mobil koda yazılmaz, main'e merge edilmez. Bu kısıtlar hâlâ geçerli.
 
 ## Assets
 
