@@ -17,7 +17,7 @@ Package manager is `pnpm` (see `dev`/`build` scripts), though `npm` lockfiles ar
 - `node scripts/build.js` — produces a static Expo Go deployment bundle (starts Metro, downloads iOS/Android bundles+manifests, rewrites asset URLs); requires a reachable deployment domain env var (`REPLIT_INTERNAL_APP_DOMAIN`, `REPLIT_DEV_DOMAIN`, or `EXPO_PUBLIC_DOMAIN`)
 - `node server/serve.js` — zero-dependency Node HTTP server that serves the `static-build/` output produced by `build.js`, plus an Expo manifest endpoint (routes on the `expo-platform` header) and a landing page
 
-There is no test suite in this repo.
+There is no test suite for the mobile app itself. As of Phase 2A, the Supabase backend (`supabase/`) has its own suite: `npm run phase2a:test` (Node's built-in test runner over `supabase/functions/tests/policy.test.ts` and `supabase/tests/phase2a_*.test.mjs`), `npm run phase2a:preflight`/`phase2a:seed` (catalog validation/seed generation against the Phase 2A CSV catalog), and pgTAP SQL suites under `supabase/tests/*.sql` that require a linked/local Postgres to actually run (`supabase test db` or a linked staging project — not runnable from a plain Node sandbox).
 
 ## Architecture
 
