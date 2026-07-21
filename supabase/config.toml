@@ -1,0 +1,13 @@
+project_id = "wordloop"
+
+# JWT validation is performed explicitly with auth.getUser() inside each
+# function so current Supabase asymmetric signing keys are supported. No
+# endpoint trusts decoded client claims by themselves.
+[functions.get-word-lab]
+verify_jwt = false
+
+[functions.open-word-story]
+verify_jwt = false
+
+[functions.get-word-story-translation]
+verify_jwt = false
