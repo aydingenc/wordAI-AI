@@ -8,6 +8,7 @@ const result = spawnSync(
     '--experimental-strip-types',
     '--test',
     'supabase/functions/tests/policy.test.ts',
+    'supabase/tests/phase2a_deployment.test.mjs',
     'supabase/tests/phase2a_static.test.mjs',
   ],
   { cwd: new URL('../', import.meta.url), stdio: 'inherit' },

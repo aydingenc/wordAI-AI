@@ -26,4 +26,10 @@ static-build/
 *.pem
 
 # env
+.env
 .env*.local
+supabase/functions/.env
+
+# generated Supabase deployment artifacts
+supabase/seed.sql
+supabase/.temp/

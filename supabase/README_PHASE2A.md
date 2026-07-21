@@ -66,6 +66,8 @@ Fonksiyon; staging satır sayısını, boş/tekrarlı kimlikleri, nihai 8.000 ke
 
 Bütün endpoint'ler `POST`, `Content-Type: application/json` ve `Authorization: Bearer <user JWT>` ister. JWT, istemci claim'ine güvenilmeden `auth.getUser()` ile doğrulanır.
 
+Mobil istemci `EXPO_PUBLIC_SUPABASE_URL` ve `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` ile açılır. Oturum yoksa Supabase Anonymous Auth üzerinden kalıcı bir anonim kullanıcı oluşturur; aynı cihazdaki oturum güvenli depolamada saklanır. `service_role`, Google service-account veya başka bir sunucu sırrı hiçbir zaman `EXPO_PUBLIC_*` değişkenine yazılmaz. Premium satın alma devreye alınmadan önce anonim kimliğin Apple/Google/e-posta kimliğine bağlanması gerekir.
+
 ### `get-word-lab`
 
 Girdi:
@@ -157,11 +159,12 @@ TRANSLATION_PROVIDER=mock
 
 Google yalnız üretimde bilinçli olarak `TRANSLATION_PROVIDER=google` seçildiğinde ve aşağıdaki Edge Function secret'ları tanımlandığında kullanılabilir:
 
-- `GOOGLE_TRANSLATE_API_KEY`
+- `TRANSLATION_LIVE_ENABLED=true`
+- `GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON_BASE64`
 - `GOOGLE_CLOUD_PROJECT_ID`
 - `GOOGLE_CLOUD_LOCATION`
 
-Anahtar mobil uygulamaya, SQL'e, loglara veya repository'ye yazılmaz. Sağlayıcı `general/translation-llm` model yolunu kullanır. Bu uygulama sırasında gerçek anahtar tanımlanmadı ve gerçek API çağrısı yapılmadı.
+Service-account JSON değeri base64 olarak yalnız Edge Function secret'ında tutulur. Sağlayıcı OAuth 2.0 ile Google Cloud Translation v3 `general/translation-llm` modelini çağırır; uzun metinleri paragraf sınırlarını koruyan güvenli parçalara böler. `TRANSLATION_LIVE_ENABLED` ayrı bir kill-switch'tir. Kimlik bilgisi mobil uygulamaya, SQL'e, loglara veya repository'ye yazılmaz. Bu uygulama sırasında gerçek kimlik bilgisi tanımlanmadı ve gerçek API çağrısı yapılmadı.
 
 ## RLS ve grant özeti
 
@@ -193,6 +196,7 @@ Yerel Supabase veritabanında kota/RLS kabul testi:
 
 ```text
 psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/phase2a_access_control.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/phase2a_premium_scenarios.sql
 ```
 
 7.999 satırlık katalog import edildikten sonra veri kabul testi ayrıca çalıştırılır:
@@ -208,6 +212,49 @@ DATABASE_URL='postgresql://...' scripts/test-phase2a-concurrency.sh
 ```
 
 Bu test dört eşzamanlı kelime claim'inde tam erişimi en fazla üçte tutar ve dört eşzamanlı story job claim'inde yalnız bir cache/job satırı ile `attempt_count = 1` bekler. Translation provider çağrılmaz.
+
+## Mock staging kurulumu
+
+Supabase CLI geliştirme bağımlılığı olarak `2.109.1` sürümüne sabitlenmiştir. Kurulum aracı gerçek Google sağlayıcısını hiçbir zaman açmaz; uzak secret değerlerini zorla `TRANSLATION_PROVIDER=mock` ve `TRANSLATION_LIVE_ENABLED=false` yapar. Google service-account bilgisi bu akışta gerekmez.
+
+Önce kaynak katalog doğrulanır:
+
+```text
+npm run phase2a:preflight -- --catalog /tam/yol/words_import.csv
+npm run phase2a:seed -- /tam/yol/words_import.csv
+```
+
+Hiçbir uzak değişiklik yapmayan plan:
+
+```text
+npm run phase2a:staging:plan -- --project-ref abcdefghijklmnopqrst --catalog /tam/yol/words_import.csv
+```
+
+Deploy yalnız kendi bilgisayarınızda `supabase login` tamamlandıktan ve proje referansına özgü onay değişkeni tanımlandıktan sonra çalışır. Access token, veritabanı parolası ve service-role key repository'ye yazılmaz.
+
+macOS/Linux:
+
+```text
+export PHASE2A_DEPLOY_CONFIRM=mock-staging:abcdefghijklmnopqrst
+npm run phase2a:staging:deploy -- --project-ref abcdefghijklmnopqrst --catalog /tam/yol/words_import.csv
+```
+
+PowerShell:
+
+```text
+$env:PHASE2A_DEPLOY_CONFIRM = "mock-staging:abcdefghijklmnopqrst"
+npm run phase2a:staging:deploy -- --project-ref abcdefghijklmnopqrst --catalog "C:\\tam\\yol\\words_import.csv"
+```
+
+Araç yerel test/preflight sonrasında migration dry-run, migration + seed, anonim auth config, mock Edge secret'ları, üç Edge Function ve linked pgTAP testlerini uygular. Gerçek Translation LLM kapalı kalır.
+
+Deploy sonrasında yalnız public URL ve publishable key ile:
+
+```text
+npm run phase2a:staging:smoke
+```
+
+Smoke testi yeni bir anonim kullanıcıyla üç tam + bir preview kelimeyi, kilitli alanların fiziksel yokluğunu, ayrı hikâye kotasını, mock arka plan çevirisini ve ikinci hikâyedeki paywall'u doğrular. Gerçek Translation LLM gecikme/kalite testi ayrı maliyet onayına tabidir.
 
 ## Geçiş ve geri dönüş notu
 

@@ -7,7 +7,13 @@
     "dev": "EXPO_PACKAGER_PROXY_URL=https://$REPLIT_EXPO_DEV_DOMAIN EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN EXPO_PUBLIC_REPL_ID=$REPL_ID REACT_NATIVE_PACKAGER_HOSTNAME=$REPLIT_DEV_DOMAIN pnpm exec expo start --localhost --port $PORT",
     "build": "node scripts/build.js",
     "serve": "node server/serve.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
+    "phase2a:test": "node scripts/test-phase2a.mjs",
+    "phase2a:preflight": "node scripts/phase2a-preflight.mjs",
+    "phase2a:seed": "node scripts/build-phase2a-seed.mjs",
+    "phase2a:staging:plan": "node scripts/deploy-phase2a-staging.mjs",
+    "phase2a:staging:deploy": "node scripts/deploy-phase2a-staging.mjs --execute",
+    "phase2a:staging:smoke": "node scripts/smoke-phase2a-staging.mjs"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -52,11 +58,14 @@
     "react-native-svg": "15.12.1",
     "react-native-web": "^0.21.0",
     "react-native-worklets": "0.5.1",
+    "supabase": "2.109.1",
     "typescript": "~5.9.2",
     "zod": "^3.24.1",
     "zod-validation-error": "^3.4.0"
   },
   "dependencies": {
-    "expo-speech": "~14.0.8"
+    "@supabase/supabase-js": "2.100.0",
+    "expo-speech": "~14.0.8",
+    "react-native-url-polyfill": "2.0.0"
   }
 }

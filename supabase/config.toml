@@ -1,5 +1,12 @@
 project_id = "wordloop"
 
+[auth]
+enable_anonymous_sign_ins = true
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
 # JWT validation is performed explicitly with auth.getUser() inside each
 # function so current Supabase asymmetric signing keys are supported. No
 # endpoint trusts decoded client claims by themselves.

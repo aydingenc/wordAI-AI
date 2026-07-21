@@ -7,7 +7,11 @@ import {
   sha256Hex,
   validateTranslation,
 } from '../_shared/policy.ts';
-import { MockTranslationProvider } from '../_shared/translation-provider.ts';
+import {
+  chunkTranslationText,
+  MockTranslationProvider,
+  TRANSLATION_LLM_MAX_CODE_POINTS,
+} from '../_shared/translation-provider.ts';
 
 const payload = {
   word: { id: 'science-null', text: 'null', category: 'Science' },
@@ -111,4 +115,16 @@ test('mock provider is deterministic and never calls fetch', async () => {
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('Translation LLM request chunks stay within v3 limits and preserve paragraphs', () => {
+  const paragraphs = [
+    'First *warm* paragraph. '.repeat(180),
+    'Second paragraph keeps its own context. '.repeat(170),
+    'Final paragraph.',
+  ];
+  const chunks = chunkTranslationText(paragraphs.join('\n\n'));
+  assert.ok(chunks.length > 1);
+  assert.ok(chunks.every((chunk) => [...chunk].length <= TRANSLATION_LLM_MAX_CODE_POINTS));
+  assert.equal(chunks.join('\n\n').replace(/\s+/g, ' ').trim(), paragraphs.join(' ').replace(/\s+/g, ' ').trim());
 });

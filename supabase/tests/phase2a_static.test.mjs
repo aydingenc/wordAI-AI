@@ -50,7 +50,11 @@ test('Google provider remains opt-in while local example defaults to mock', asyn
   const provider = await readFile(new URL('functions/_shared/translation-provider.ts', root), 'utf8');
   const envExample = await readFile(new URL('functions/.env.example', root), 'utf8');
   assert.match(envExample, /^TRANSLATION_PROVIDER=mock$/m);
+  assert.match(envExample, /^TRANSLATION_LIVE_ENABLED=false$/m);
   assert.match(provider, /configured === 'google'/);
+  assert.match(provider, /TRANSLATION_LIVE_DISABLED/);
+  assert.match(provider, /translation\.googleapis\.com\/v3/);
   assert.match(provider, /TRANSLATION_PROVIDER_NOT_CONFIGURED/);
+  assert.doesNotMatch(envExample, /GOOGLE_TRANSLATE_API_KEY=/);
   assert.doesNotMatch(provider, /AIza[0-9A-Za-z_-]{20,}/);
 });

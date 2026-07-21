@@ -17,6 +17,7 @@ import {
 import { Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { ensureAnonymousSession, isSupabaseConfigured } from '@/lib/supabase';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -87,6 +88,15 @@ export default function RootLayout() {
     Fraunces_600SemiBold,
     Fraunces_700Bold,
   });
+
+  useEffect(() => {
+    if (isSupabaseConfigured) {
+      void ensureAnonymousSession().catch(() => {
+        // Screens may retry through the API client; never log tokens or provider details.
+        console.warn('Anonymous session could not be initialized.');
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (Platform.OS === 'web') {

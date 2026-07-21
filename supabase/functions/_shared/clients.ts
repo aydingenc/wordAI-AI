@@ -1,5 +1,5 @@
 // @ts-nocheck -- This directory is type-checked by Deno, not the Expo tsconfig.
-import { createClient } from 'npm:@supabase/supabase-js@2.110.7';
+import { createClient } from 'npm:@supabase/supabase-js@2.100.0';
 import { ApiError } from './http.ts';
 
 function requiredEnv(name: string): string {
