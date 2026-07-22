@@ -6,6 +6,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { DialogProvider } from '@/context/DialogContext';
 import { ProgressProvider, useProgress } from '@/context/ProgressContext';
 import {
   Inter_400Regular,
@@ -121,9 +122,11 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <ProgressProvider>
-                <SplashGate fontsReady={fontsLoaded || !!fontError} />
-                <StatusBar style="light" />
-                <RootLayoutNav />
+                <DialogProvider>
+                  <SplashGate fontsReady={fontsLoaded || !!fontError} />
+                  <StatusBar style="light" />
+                  <RootLayoutNav />
+                </DialogProvider>
               </ProgressProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
