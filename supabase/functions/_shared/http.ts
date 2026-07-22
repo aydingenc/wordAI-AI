@@ -69,17 +69,22 @@ export async function readJsonObject(request: Request): Promise<Record<string, u
   return value as Record<string, unknown>;
 }
 
-const SAFE_CODES = new Set([
-  'AUTH_REQUIRED',
-  'INVALID_REQUEST',
-  'INVALID_WORD_ID',
-  'INVALID_SOURCE_HASH',
-  'WORD_NOT_IN_LIBRARY',
-  'CONTENT_NOT_FOUND',
-  'PAYWALL_REQUIRED',
-  'STALE_SOURCE_HASH',
-  'RATE_LIMITED',
-]);
+const SAFE_CODE_STATUS: Record<string, number> = {
+  AUTH_REQUIRED: 401,
+  INVALID_REQUEST: 400,
+  INVALID_WORD_ID: 400,
+  INVALID_SOURCE_HASH: 400,
+  INVALID_CANONICAL_WORD_ID: 400,
+  INVALID_STORY_VARIANT_ID: 400,
+  WORD_NOT_IN_LIBRARY: 403,
+  CONTENT_NOT_FOUND: 404,
+  PAYWALL_REQUIRED: 403,
+  STALE_SOURCE_HASH: 409,
+  RATE_LIMITED: 429,
+  STORY_NOT_FINISHED: 403,
+  CONTENT_BUILD_PENDING: 409,
+  LEGACY_WORD_ID_NOT_FOUND: 404,
+};
 
 export function errorResponse(request: Request, error: unknown): Response {
   if (error instanceof ApiError) {
@@ -91,14 +96,8 @@ export function errorResponse(request: Request, error: unknown): Response {
   }
 
   const rawMessage = error instanceof Error ? error.message : '';
-  if (SAFE_CODES.has(rawMessage)) {
-    const status = rawMessage === 'AUTH_REQUIRED'
-      ? 401
-      : rawMessage === 'WORD_NOT_IN_LIBRARY'
-      ? 403
-      : rawMessage === 'STALE_SOURCE_HASH'
-      ? 409
-      : 400;
+  if (rawMessage in SAFE_CODE_STATUS) {
+    const status = SAFE_CODE_STATUS[rawMessage];
     return jsonResponse(request, { error: { code: rawMessage, message: rawMessage } }, status);
   }
 

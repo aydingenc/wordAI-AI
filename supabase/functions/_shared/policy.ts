@@ -36,6 +36,27 @@ export function assertWordId(value: unknown): string {
   return value;
 }
 
+// Canonical 12.000: cw-{slug}-{8 hex}, e.g. cw-experience-53e5e7c5.
+export function assertCanonicalWordId(value: unknown): string {
+  if (typeof value !== 'string' || !/^cw-[a-z0-9](?:[a-z0-9-]{0,60})?-[0-9a-f]{8}$/.test(value)) {
+    throw new Error('INVALID_CANONICAL_WORD_ID');
+  }
+  return value;
+}
+
+// stv-{slug}-{10 hex}, e.g. stv-experience-1a2b3c4d5e.
+export function assertStoryVariantId(value: unknown): string {
+  if (typeof value !== 'string' || !/^stv-[a-z0-9](?:[a-z0-9-]{0,60})?-[0-9a-f]{10}$/.test(value)) {
+    throw new Error('INVALID_STORY_VARIANT_ID');
+  }
+  return value;
+}
+
+export function assertOptionalStoryVariantId(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  return assertStoryVariantId(value);
+}
+
 export function assertSourceHash(value: unknown): string {
   if (typeof value !== 'string' || !/^[0-9a-f]{64}$/.test(value)) {
     throw new Error('INVALID_SOURCE_HASH');

@@ -47,6 +47,7 @@ export function throwRpcError(error: { message?: string } | null): void {
     'INVALID_SOURCE_HASH',
     'WORD_NOT_IN_LIBRARY',
     'STALE_SOURCE_HASH',
+    'INVALID_CANONICAL_WORD_ID',
   ].find((code) => error.message?.includes(code));
   if (knownCode) throw new Error(knownCode);
   throw new Error('DATABASE_OPERATION_FAILED');

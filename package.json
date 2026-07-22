@@ -13,7 +13,11 @@
     "phase2a:seed": "node scripts/build-phase2a-seed.mjs",
     "phase2a:staging:plan": "node scripts/deploy-phase2a-staging.mjs",
     "phase2a:staging:deploy": "node scripts/deploy-phase2a-staging.mjs --execute",
-    "phase2a:staging:smoke": "node scripts/smoke-phase2a-staging.mjs"
+    "phase2a:staging:smoke": "node scripts/smoke-phase2a-staging.mjs",
+    "canonical:test": "node scripts/test-canonical-12k.mjs",
+    "canonical:preflight": "node scripts/canonical-preflight.mjs",
+    "canonical:seed": "node scripts/build-canonical-seed.mjs",
+    "canonical:queue:seed": "node scripts/build-canonical-queue-seed.mjs"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

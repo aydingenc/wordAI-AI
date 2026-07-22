@@ -32,4 +32,6 @@ supabase/functions/.env
 
 # generated Supabase deployment artifacts
 supabase/seed.sql
+supabase/seed_canonical_backfill.sql
+supabase/seed_canonical_queue.sql
 supabase/.temp/
