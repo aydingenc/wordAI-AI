@@ -11,6 +11,7 @@ import { isSupabaseConfigured } from '@/lib/supabase';
 import { phase2aApi, Phase2ARequestError } from '@/lib/phase2a-api';
 import { ensurePhase2aWordMembership, resolvePhase2aWordId } from '@/lib/phase2a-word-access';
 import type { BilingualExample, WordLabResponse } from '@/types/phase2a-api';
+import { WordStoryTray } from '@/components/WordStoryTray';
 
 export const TOKENS = {
   bg: '#08070f',
@@ -663,6 +664,14 @@ export default function WordDnaScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      <WordStoryTray
+        visible={storyTrayOpen}
+        wordId={typeof wordId === 'string' ? wordId : null}
+        wordEn={word.en}
+        onClose={() => setStoryTrayOpen(false)}
+        onGoPremium={goToPremium}
+      />
     </View>
   );
 }
