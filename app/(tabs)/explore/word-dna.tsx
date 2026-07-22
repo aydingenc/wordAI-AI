@@ -42,10 +42,10 @@ const LEVELS: { key: LevelKey; label: string; color: string }[] = [
 ];
 
 const TENSES: { key: TenseKey; label: string }[] = [
-  { key: 'present', label: 'Present' },
-  { key: 'presentContinuous', label: 'Continuous' },
-  { key: 'past', label: 'Past' },
+  { key: 'present', label: 'Simple Present' },
+  { key: 'presentContinuous', label: 'Present Continuous' },
   { key: 'future', label: 'Future' },
+  { key: 'past', label: 'Simple Past' },
   { key: 'presentPerfect', label: 'Present Perfect' },
 ];
 
@@ -277,6 +277,30 @@ export default function WordDnaScreen() {
       return;
     }
     setTense(key);
+  };
+
+  const renderTenseChip = (t: { key: TenseKey; label: string }) => {
+    const active = tense === t.key;
+    const locked = isTabLocked(labAccess, 'tense', t.key);
+    return (
+      <Pressable
+        key={t.key}
+        onPress={() => handleTensePress(t.key)}
+        style={[styles.tenseChip, active && !locked && styles.tenseChipActive]}
+      >
+        {locked ? <Feather name="lock" size={9} color={TOKENS.textFaint} style={styles.tenseChipLockIcon} /> : null}
+        <Text
+          style={[
+            styles.tenseChipText,
+            active && !locked && styles.tenseChipTextActive,
+            locked && { color: TOKENS.textFaint },
+          ]}
+          numberOfLines={2}
+        >
+          {t.label}
+        </Text>
+      </Pressable>
+    );
   };
 
   const openStoryTray = () => {
@@ -522,30 +546,9 @@ export default function WordDnaScreen() {
           </View>
 
           <Text style={styles.labLabel}>Zaman Seç</Text>
-          <View style={styles.tenseRow}>
-            {TENSES.map((t) => {
-              const active = tense === t.key;
-              const locked = isTabLocked(labAccess, 'tense', t.key);
-              return (
-                <Pressable
-                  key={t.key}
-                  onPress={() => handleTensePress(t.key)}
-                  style={[styles.tenseChip, active && !locked && styles.tenseChipActive]}
-                >
-                  {locked ? <Feather name="lock" size={9} color={TOKENS.textFaint} style={styles.tenseChipLockIcon} /> : null}
-                  <Text
-                    style={[
-                      styles.tenseChipText,
-                      active && !locked && styles.tenseChipTextActive,
-                      locked && { color: TOKENS.textFaint },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {t.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+          <View style={styles.tenseRows}>
+            <View style={styles.tenseRowLine}>{TENSES.slice(0, 2).map(renderTenseChip)}</View>
+            <View style={styles.tenseRowLine}>{TENSES.slice(2).map(renderTenseChip)}</View>
           </View>
 
           <View style={styles.labLabelRow}>
@@ -1076,14 +1079,15 @@ const styles = StyleSheet.create({
   trToggleBtnText: { fontFamily: 'Inter_700Bold', fontSize: 9.5, color: TOKENS.violetLight },
   trToggleBtnTextActive: { color: '#fff' },
 
-  tenseRow: { flexDirection: 'row', gap: 6, marginBottom: 14, flexWrap: 'wrap' },
+  tenseRows: { gap: 6, marginBottom: 14 },
+  tenseRowLine: { flexDirection: 'row', alignItems: 'stretch', gap: 6 },
   tenseChip: {
-    flexGrow: 1, flexBasis: '22%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 9, paddingHorizontal: 4,
+    flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 8, paddingHorizontal: 3,
     borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
   },
   tenseChipActive: { backgroundColor: 'rgba(139,92,246,0.22)', borderColor: 'rgba(139,92,246,0.55)' },
-  tenseChipLockIcon: { marginRight: 3 },
-  tenseChipText: { fontFamily: 'Inter_700Bold', fontSize: 10.5, color: TOKENS.textDim, textAlign: 'center' },
+  tenseChipLockIcon: { marginRight: 2, flexShrink: 0 },
+  tenseChipText: { flexShrink: 1, fontFamily: 'Inter_700Bold', fontSize: 9.5, color: TOKENS.textDim, textAlign: 'center' },
   tenseChipTextActive: { color: '#fff' },
 
   labExampleBox: {
