@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,17 +10,19 @@ import { GlowCard } from '@/components/GlowCard';
 import { BotIcon, FlashcardStackIcon, FlaskIcon, GamesIcon, LearningDonutChart } from '@/components/ExploreIcons';
 import { BookIcon, ClearIcon, DnaIcon, LockIcon, PersonIcon, SparkleIcon } from '@/components/WordStatusIcons';
 import { useColors } from '@/hooks/useColors';
+import { useDialog } from '@/context/DialogContext';
 import { useProgress } from '@/context/ProgressContext';
-
-function showSoon(label: string) {
-  Alert.alert(label, 'Bu özellik demo sürümünde yakında eklenecek.');
-}
 
 export default function ExploreScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { showDialog } = useDialog();
   const { recentWords } = useProgress();
+
+  const showSoon = (label: string) => {
+    showDialog({ title: label, message: 'Bu özellik demo sürümünde yakında eklenecek.' });
+  };
 
   return (
     <GradientBackground>

@@ -1,16 +1,18 @@
 import React from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlowCard } from '@/components/GlowCard';
 import { BlendIcon, FunnelIcon, PlayIcon } from '@/components/WordStatusIcons';
 import { useColors } from '@/hooks/useColors';
+import { useDialog } from '@/context/DialogContext';
 import { ActiveFilter } from '@/components/WordFilterSheet';
 
 export function PracticeSuggestionsPanel({ activeFilters }: { activeFilters: ActiveFilter[] }) {
   const colors = useColors();
+  const { showDialog } = useDialog();
 
   const runPractice = (label: string) => {
-    Alert.alert(label, 'Bu özellik demo sürümünde yakında eklenecek.');
+    showDialog({ title: label, message: 'Bu özellik demo sürümünde yakında eklenecek.' });
   };
 
   return (

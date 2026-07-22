@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -15,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StoryGenerationCooldown } from '@/components/StoryGenerationCooldown';
 import { buildSessionFromWords, LEVEL_NAMES, makeWord, SAMPLE_WORDS } from '@/data/mock';
+import { useDialog } from '@/context/DialogContext';
 import { useProgress } from '@/context/ProgressContext';
 
 const COOLDOWN_MOCK_READY_DELAY = 9000;
@@ -43,6 +43,7 @@ const flow = [
 export default function ImagesInfoScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { showDialog } = useDialog();
   const { startSession } = useProgress();
 
   const [overlayStage, setOverlayStage] = useState<'cooldown' | null>(null);
@@ -56,10 +57,10 @@ export default function ImagesInfoScreen() {
   }, []);
 
   const showDemoAlert = () => {
-    Alert.alert(
-      'Görsel Yükle',
-      'Bu sürümde gerçek görsel analizi henüz yok. Devam edersen örnek kelimelerle bir ders hazırlanır.',
-    );
+    showDialog({
+      title: 'Görsel Yükle',
+      message: 'Bu sürümde gerçek görsel analizi henüz yok. Devam edersen örnek kelimelerle bir ders hazırlanır.',
+    });
   };
 
   const startCooldown = () => {

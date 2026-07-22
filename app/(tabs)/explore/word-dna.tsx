@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { useProgress } from '@/context/ProgressContext';
+import { useDialog, type ShowDialogOptions } from '@/context/DialogContext';
 import { getWordDetail, WordStatus } from '@/data/mock';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { phase2aApi, Phase2ARequestError } from '@/lib/phase2a-api';
@@ -78,15 +79,15 @@ function friendlyPhase2aErrorMessage(err: Phase2ARequestError): string {
   }
 }
 
-function promptPremiumUpgrade(goToProfile: () => void) {
-  Alert.alert(
-    'Kilitli içerik',
-    'Bu içeriği görmek için Premium’a geçebilirsin.',
-    [
-      { text: 'Vazgeç', style: 'cancel' },
-      { text: 'Premium’a Git', onPress: goToProfile },
-    ],
-  );
+function promptPremiumUpgrade(showDialog: (options: ShowDialogOptions) => void, goToProfile: () => void) {
+  showDialog({
+    variant: 'confirm',
+    title: 'Kilitli içerik',
+    message: 'Bu içeriği görmek için Premium’a geçebilirsin.',
+    cancelText: 'Vazgeç',
+    confirmText: 'Premium’a Git',
+    onConfirm: goToProfile,
+  });
 }
 
 /** Renders inline text with every `*word*`-marked span highlighted — used for
@@ -176,6 +177,7 @@ export default function WordDnaScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { recentWords } = useProgress();
+  const { showDialog } = useDialog();
   const params = useLocalSearchParams<{ word?: string; returnTo?: string; returnWords?: string }>();
 
   const word = useMemo(
@@ -265,7 +267,7 @@ export default function WordDnaScreen() {
 
   const handleLevelPress = (key: LevelKey) => {
     if (isTabLocked(labAccess, 'level', key)) {
-      promptPremiumUpgrade(goToPremium);
+      promptPremiumUpgrade(showDialog, goToPremium);
       return;
     }
     setLevel(key);
@@ -273,7 +275,7 @@ export default function WordDnaScreen() {
 
   const handleTensePress = (key: TenseKey) => {
     if (isTabLocked(labAccess, 'tense', key)) {
-      promptPremiumUpgrade(goToPremium);
+      promptPremiumUpgrade(showDialog, goToPremium);
       return;
     }
     setTense(key);
@@ -305,12 +307,14 @@ export default function WordDnaScreen() {
 
   const openStoryTray = () => {
     if (typeof wordId !== 'string') {
-      Alert.alert(
-        wordId === 'loading' ? 'Bir saniye…' : 'Hikâye mevcut değil',
-        wordId === 'loading'
-          ? 'Kelime bilgileri yükleniyor, lütfen tekrar dene.'
-          : 'Bu kelime için hikâye içeriği şu an mevcut değil.',
-      );
+      showDialog({
+        variant: 'info',
+        title: wordId === 'loading' ? 'Bir saniye…' : 'Hikâye mevcut değil',
+        message:
+          wordId === 'loading'
+            ? 'Kelime bilgileri yükleniyor, lütfen tekrar dene.'
+            : 'Bu kelime için hikâye içeriği şu an mevcut değil.',
+      });
       return;
     }
     setStoryTrayOpen(true);

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   Pressable,
   StyleSheet,
   Text,
@@ -17,6 +16,7 @@ import { PrimaryButton } from '@/components/PrimaryButton';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { Logo } from '@/components/Logo';
 import { useColors } from '@/hooks/useColors';
+import { useDialog } from '@/context/DialogContext';
 import { useProgress } from '@/context/ProgressContext';
 import { APP_NAME } from '@/constants/app';
 
@@ -26,6 +26,7 @@ export default function AuthScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { showDialog } = useDialog();
   const { completeOnboarding } = useProgress();
   const [mode, setMode] = useState<Mode>('login');
   const [name, setName] = useState('');
@@ -52,12 +53,12 @@ export default function AuthScreen() {
 
   const submitGoogle = () => {
     // Google Sign-In is not implemented (no real OAuth) — do not silently
-    // treat this as a working login method (WL-002). Same demo-Alert
+    // treat this as a working login method (WL-002). Same demo-dialog
     // pattern already used for "Şifreni mi unuttun?" on this screen.
-    Alert.alert(
-      'Google ile Giriş',
-      'Google ile giriş bu sürümde henüz aktif değil. E-posta ile devam edebilirsin.',
-    );
+    showDialog({
+      title: 'Google ile Giriş',
+      message: 'Google ile giriş bu sürümde henüz aktif değil. E-posta ile devam edebilirsin.',
+    });
   };
 
   const switchMode = (m: Mode) => {
@@ -167,10 +168,10 @@ export default function AuthScreen() {
             <Pressable
               style={styles.forgot}
               onPress={() =>
-                Alert.alert(
-                  'Şifre Sıfırlama',
-                  'Bu bir demo — şifre sıfırlama e-postası gönderildiğini varsayabilirsin.',
-                )
+                showDialog({
+                  title: 'Şifre Sıfırlama',
+                  message: 'Bu bir demo — şifre sıfırlama e-postası gönderildiğini varsayabilirsin.',
+                })
               }
               accessibilityRole="button"
               accessibilityLabel="Şifreni mi unuttun?"

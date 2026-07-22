@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GradientBackground } from '@/components/GradientBackground';
 import { GlowCard } from '@/components/GlowCard';
 import { useColors } from '@/hooks/useColors';
+import { useDialog } from '@/context/DialogContext';
 import { useProgress } from '@/context/ProgressContext';
 
 // Words-per-milestone used for the "next milestone" progress card below —
@@ -23,6 +23,7 @@ export default function ProfileScreen() {
   const colors = useColors();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { showDialog } = useDialog();
   const { recentWords, customStories, streak, profileName, resetAllData } = useProgress();
 
   const stats = [
@@ -36,21 +37,16 @@ export default function ProfileScreen() {
   const wordsToMilestone = WORDS_PER_MILESTONE - progressInStep;
 
   const handleResetData = () => {
-    Alert.alert(
-      'Verileri Sıfırla',
-      'Bu cihazda kayıtlı tüm ilerleme (öğrenilen kelimeler, hikayeler, seviyeler) silinecek. Bu işlem geri alınamaz.',
-      [
-        { text: 'Vazgeç', style: 'cancel' },
-        {
-          text: 'Sıfırla',
-          style: 'destructive',
-          onPress: async () => {
-            await resetAllData();
-            router.replace('/');
-          },
-        },
-      ],
-    );
+    showDialog({
+      variant: 'destructive',
+      title: 'Verileri Sıfırla',
+      message: 'Bu cihazda kayıtlı tüm ilerleme (öğrenilen kelimeler, hikayeler, seviyeler) silinecek. Bu işlem geri alınamaz.',
+      confirmText: 'Sıfırla',
+      onConfirm: async () => {
+        await resetAllData();
+        router.replace('/');
+      },
+    });
   };
 
   const menu: {
@@ -135,7 +131,7 @@ export default function ProfileScreen() {
               onPress={() =>
                 m.route
                   ? router.push(m.route as never)
-                  : Alert.alert(m.label, 'Bu bölüm demo sürümünde yakında eklenecek.')
+                  : showDialog({ title: m.label, message: 'Bu bölüm demo sürümünde yakında eklenecek.' })
               }
               style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]}
               accessibilityRole="button"
