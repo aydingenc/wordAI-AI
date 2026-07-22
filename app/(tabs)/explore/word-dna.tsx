@@ -212,6 +212,7 @@ export default function WordDnaScreen() {
   const [wordId, setWordId] = useState<string | null | 'loading'>('loading');
   const [labAccess, setLabAccess] = useState<WordLabAccess>({ status: 'loading' });
   const [labReloadKey, setLabReloadKey] = useState(0);
+  const [storyTrayOpen, setStoryTrayOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -275,6 +276,19 @@ export default function WordDnaScreen() {
       return;
     }
     setTense(key);
+  };
+
+  const openStoryTray = () => {
+    if (typeof wordId !== 'string') {
+      Alert.alert(
+        wordId === 'loading' ? 'Bir saniye…' : 'Hikâye mevcut değil',
+        wordId === 'loading'
+          ? 'Kelime bilgileri yükleniyor, lütfen tekrar dene.'
+          : 'Bu kelime için hikâye içeriği şu an mevcut değil.',
+      );
+      return;
+    }
+    setStoryTrayOpen(true);
   };
 
   const wordDnaContent: Partial<Record<LevelKey, BilingualExample>> =
@@ -429,6 +443,29 @@ export default function WordDnaScreen() {
               <LabStatusMessage access={labAccess} onRetry={() => setLabReloadKey((k) => k + 1)} />
             )}
           </View>
+        </Panel>
+
+        <Panel>
+          <View style={styles.storyPromoRow}>
+            <Text style={styles.storyPromoIcon}>💡</Text>
+            <Text style={styles.storyPromoText}>
+              Biliyor muydunuz? Her kelimenin ilginç bir bilgisi ve bir hikayesi var!
+            </Text>
+          </View>
+          <Pressable
+            onPress={openStoryTray}
+            style={({ pressed }) => [{ opacity: pressed ? 0.9 : typeof wordId === 'string' ? 1 : 0.5 }]}
+          >
+            <LinearGradient
+              colors={['#a78bfa', '#7c3aed']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.storyPromoBtn}
+            >
+              <Feather name="book-open" size={13} color="#fff" />
+              <Text style={styles.storyPromoBtnText}>Kelimenin Hikayesi &amp; İlginç Bilgisi</Text>
+            </LinearGradient>
+          </Pressable>
         </Panel>
 
         <Panel>
@@ -986,6 +1023,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(139,92,246,0.16)', borderWidth: 1, borderColor: 'rgba(139,92,246,0.4)',
   },
   labRetryBtnText: { fontFamily: 'Inter_700Bold', fontSize: 10.5, color: TOKENS.violetLight },
+
+  storyPromoRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 12 },
+  storyPromoIcon: { fontSize: 20, lineHeight: 22 },
+  storyPromoText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 12.5, lineHeight: 18, color: TOKENS.text },
+  storyPromoBtn: {
+    width: '100%', paddingVertical: 12, borderRadius: 13, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
+    shadowColor: '#7c3aed', shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 6 },
+  },
+  storyPromoBtnText: { fontFamily: 'Inter_700Bold', fontSize: 12.5, color: '#fff' },
 
   kbTitle: { fontFamily: 'Inter_700Bold', fontSize: 12, color: TOKENS.text, marginBottom: 16 },
   kbRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
