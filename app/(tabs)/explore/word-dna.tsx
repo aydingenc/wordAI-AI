@@ -1,19 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, LinearGradient as SvgLinearGradient, Path, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { useProgress } from '@/context/ProgressContext';
-import {
-  getWordDetail,
-  levelExamplesForWord,
-  tenseExamplesForWord,
-  WordStatus,
-} from '@/data/mock';
+import { getWordDetail, WordStatus } from '@/data/mock';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { phase2aApi, Phase2ARequestError } from '@/lib/phase2a-api';
+import { ensurePhase2aWordMembership, resolvePhase2aWordId } from '@/lib/phase2a-word-access';
+import type { BilingualExample, WordLabResponse } from '@/types/phase2a-api';
 
-const TOKENS = {
+export const TOKENS = {
   bg: '#08070f',
   panel: 'rgba(19,17,32,0.72)',
   border: 'rgba(139,92,246,0.16)',
@@ -32,18 +31,86 @@ const STATUS_META: Record<WordStatus, { label: string; color: string; bg: string
   mastered: { label: 'Mastered', color: '#4ade80', bg: 'rgba(74,222,128,0.14)', border: 'rgba(74,222,128,0.35)' },
 };
 
-const LEVELS: { key: 'basit' | 'orta' | 'ileri'; label: string; color: string }[] = [
-  { key: 'basit', label: 'Basit', color: '#c4b5fd' },
-  { key: 'orta', label: 'Orta', color: '#facc15' },
-  { key: 'ileri', label: 'İleri', color: '#4ade80' },
+type LevelKey = 'basic' | 'mid' | 'advanced';
+type TenseKey = 'present' | 'presentContinuous' | 'past' | 'future' | 'presentPerfect';
+
+const LEVELS: { key: LevelKey; label: string; color: string }[] = [
+  { key: 'basic', label: 'Basit', color: '#c4b5fd' },
+  { key: 'mid', label: 'Orta', color: '#facc15' },
+  { key: 'advanced', label: 'İleri', color: '#4ade80' },
 ];
 
-const TENSES: { key: 'present' | 'past' | 'future' | 'perfect'; label: string }[] = [
+const TENSES: { key: TenseKey; label: string }[] = [
   { key: 'present', label: 'Present' },
+  { key: 'presentContinuous', label: 'Continuous' },
   { key: 'past', label: 'Past' },
   { key: 'future', label: 'Future' },
-  { key: 'perfect', label: 'Present Perfect' },
+  { key: 'presentPerfect', label: 'Present Perfect' },
 ];
+
+/** Only 'basic'/'present' are unlocked in preview mode (free daily limit reached). */
+function isTabLocked(access: WordLabAccess | null, kind: 'level', key: LevelKey): boolean;
+function isTabLocked(access: WordLabAccess | null, kind: 'tense', key: TenseKey): boolean;
+function isTabLocked(access: WordLabAccess | null, _kind: 'level' | 'tense', key: LevelKey | TenseKey): boolean {
+  if (!access || access.status !== 'ready' || access.data.accessMode !== 'preview') return false;
+  return key !== 'basic' && key !== 'present';
+}
+
+/** The backend sends raw/English error codes as `message` for most codes
+ * (e.g. message === 'WORD_NOT_IN_LIBRARY', or the English rate-limit copy)
+ * — only PAYWALL_REQUIRED already carries a hand-written Turkish message.
+ * Never show `err.message` to the user directly; map by `code` instead. */
+function friendlyPhase2aErrorMessage(err: Phase2ARequestError): string {
+  switch (err.code) {
+    case 'WORD_NOT_IN_LIBRARY':
+      return 'Bu kelime kütüphanende yok.';
+    case 'RATE_LIMITED':
+      return err.retryAfterSeconds
+        ? `Çok sık istek gönderildi, ${err.retryAfterSeconds} sn sonra tekrar dene.`
+        : 'Çok sık istek gönderildi, biraz sonra tekrar dene.';
+    case 'CONTENT_NOT_FOUND':
+      return 'Bu kelime için içerik bulunamadı.';
+    case 'PAYWALL_REQUIRED':
+      return err.message || 'Bugünkü ücretsiz hakkını kullandın.';
+    default:
+      return 'İçerik şu an yüklenemedi.';
+  }
+}
+
+function promptPremiumUpgrade(goToProfile: () => void) {
+  Alert.alert(
+    'Kilitli içerik',
+    'Bu içeriği görmek için Premium’a geçebilirsin.',
+    [
+      { text: 'Vazgeç', style: 'cancel' },
+      { text: 'Premium’a Git', onPress: goToProfile },
+    ],
+  );
+}
+
+/** Renders inline text with every `*word*`-marked span highlighted — used for
+ * WordDNA/SentenceLab example sentences straight from the backend, which
+ * mark the target word the same way the story text does. */
+function renderMarkedText(text: string, color: string) {
+  const parts = text.split(/(\*[^*]+\*)/g);
+  return parts.map((part, i) => {
+    if (part.length > 2 && part.startsWith('*') && part.endsWith('*')) {
+      return (
+        <Text key={i} style={{ color, fontWeight: '700' }}>
+          {part.slice(1, -1)}
+        </Text>
+      );
+    }
+    return <Text key={i}>{part}</Text>;
+  });
+}
+
+type WordLabAccess =
+  | { status: 'loading' }
+  | { status: 'not-configured' }
+  | { status: 'not-in-catalog' }
+  | { status: 'error'; code: string; message: string; retryAfterSeconds?: number }
+  | { status: 'ready'; data: WordLabResponse };
 
 interface ContextTheme {
   name: string;
@@ -132,17 +199,90 @@ export default function WordDnaScreen() {
     router.back();
   };
 
-  const [level, setLevel] = useState<'basit' | 'orta' | 'ileri'>('basit');
-  const [tense, setTense] = useState<'present' | 'past' | 'future' | 'perfect'>('present');
+  const [level, setLevel] = useState<LevelKey>('basic');
+  const [tense, setTense] = useState<TenseKey>('present');
   const [labTrOpen, setLabTrOpen] = useState(false);
   const [selectedThemes, setSelectedThemes] = useState<number[]>([0]);
   const [generated, setGenerated] = useState<GeneratedItem[] | null>(null);
   const [openGenTr, setOpenGenTr] = useState<Set<number>>(new Set());
 
-  const levelExamples = useMemo(() => levelExamplesForWord(word), [word]);
-  const tenseExamples = useMemo(() => tenseExamplesForWord(word), [word]);
-  const activeLevel = levelExamples[level];
-  const activeTense = tenseExamples[tense];
+  // Phase 2A: real WordDNA/SentenceLab content + the word_id it lives under
+  // (resolved once per word — see lib/phase2a-word-access.ts for why a
+  // lookup is needed instead of a route param).
+  const [wordId, setWordId] = useState<string | null | 'loading'>('loading');
+  const [labAccess, setLabAccess] = useState<WordLabAccess>({ status: 'loading' });
+  const [labReloadKey, setLabReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setWordId('loading');
+    setLabAccess({ status: 'loading' });
+    setLevel('basic');
+    setTense('present');
+
+    (async () => {
+      if (!isSupabaseConfigured) {
+        if (!cancelled) {
+          setWordId(null);
+          setLabAccess({ status: 'not-configured' });
+        }
+        return;
+      }
+      const resolvedId = await resolvePhase2aWordId(word.en);
+      if (cancelled) return;
+      setWordId(resolvedId);
+      if (!resolvedId) {
+        setLabAccess({ status: 'not-in-catalog' });
+        return;
+      }
+      try {
+        await ensurePhase2aWordMembership(resolvedId);
+        const data = await phase2aApi.getWordLab(resolvedId);
+        if (!cancelled) setLabAccess({ status: 'ready', data });
+      } catch (err) {
+        if (cancelled) return;
+        if (err instanceof Phase2ARequestError) {
+          setLabAccess({
+            status: 'error',
+            code: err.code,
+            message: friendlyPhase2aErrorMessage(err),
+            retryAfterSeconds: err.retryAfterSeconds,
+          });
+        } else {
+          setLabAccess({ status: 'error', code: 'UNKNOWN', message: 'İçerik şu an yüklenemedi.' });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [word.en, labReloadKey]);
+
+  const goToPremium = () => router.push('/profile');
+
+  const handleLevelPress = (key: LevelKey) => {
+    if (isTabLocked(labAccess, 'level', key)) {
+      promptPremiumUpgrade(goToPremium);
+      return;
+    }
+    setLevel(key);
+  };
+
+  const handleTensePress = (key: TenseKey) => {
+    if (isTabLocked(labAccess, 'tense', key)) {
+      promptPremiumUpgrade(goToPremium);
+      return;
+    }
+    setTense(key);
+  };
+
+  const wordDnaContent: Partial<Record<LevelKey, BilingualExample>> =
+    labAccess.status === 'ready' ? labAccess.data.content.wordDna : {};
+  const sentenceLabContent: Partial<Record<TenseKey, BilingualExample>> =
+    labAccess.status === 'ready' ? labAccess.data.content.sentenceLab : {};
+  const activeLevelExample = wordDnaContent[level];
+  const activeTenseExample = sentenceLabContent[tense];
   const statusMeta = STATUS_META[word.status];
   const wordTrShort = word.tr.split(' / ')[0].split(' ')[0];
 
@@ -239,13 +379,14 @@ export default function WordDnaScreen() {
             <View style={styles.levelSelect}>
               {LEVELS.map((l) => {
                 const active = level === l.key;
+                const locked = isTabLocked(labAccess, 'level', l.key);
                 return (
                   <Pressable
                     key={l.key}
-                    onPress={() => setLevel(l.key)}
+                    onPress={() => handleLevelPress(l.key)}
                     style={[
                       styles.levelSeg,
-                      active && {
+                      active && !locked && {
                         backgroundColor: 'rgba(255,255,255,0.06)',
                         shadowColor: l.color,
                         shadowOpacity: 0.5,
@@ -254,8 +395,14 @@ export default function WordDnaScreen() {
                       },
                     ]}
                   >
-                    <LevelSegIcon segKey={l.key} color={active ? l.color : TOKENS.textDim} />
-                    <Text style={[styles.levelSegText, { color: active ? l.color : TOKENS.textDim }]}>{l.label}</Text>
+                    {locked ? (
+                      <Feather name="lock" size={11} color={TOKENS.textFaint} />
+                    ) : (
+                      <LevelSegIcon segKey={l.key} color={active ? l.color : TOKENS.textDim} />
+                    )}
+                    <Text style={[styles.levelSegText, { color: locked ? TOKENS.textFaint : active ? l.color : TOKENS.textDim }]}>
+                      {l.label}
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -264,12 +411,23 @@ export default function WordDnaScreen() {
             <View style={styles.exampleLabelRow}>
               <Feather name="target" size={11} color={TOKENS.violetLight} />
               <Text style={styles.exampleLabel}>Örnek Cümle</Text>
+              {labAccess.status === 'ready' ? (
+                <Text style={styles.dailyUsageText} numberOfLines={1}>
+                  Bugün {labAccess.data.dailyUsage.used}/{labAccess.data.dailyUsage.limit} kelime
+                </Text>
+              ) : null}
             </View>
-            <Text style={styles.exampleEn}>
-              <HighlightedSentence text={activeLevel.en} word={word.en} color={LEVELS.find((l) => l.key === level)!.color} />
-            </Text>
-            <Text style={styles.exampleTrLabel}>Türkçesi</Text>
-            <Text style={styles.exampleTr}>{activeLevel.tr}</Text>
+            {labAccess.status === 'ready' && activeLevelExample?.en ? (
+              <>
+                <Text style={styles.exampleEn}>
+                  {renderMarkedText(activeLevelExample.en, LEVELS.find((l) => l.key === level)!.color)}
+                </Text>
+                <Text style={styles.exampleTrLabel}>Türkçesi</Text>
+                <Text style={styles.exampleTr}>{activeLevelExample.tr ?? ''}</Text>
+              </>
+            ) : (
+              <LabStatusMessage access={labAccess} onRetry={() => setLabReloadKey((k) => k + 1)} />
+            )}
           </View>
         </Panel>
 
@@ -329,13 +487,22 @@ export default function WordDnaScreen() {
           <View style={styles.tenseRow}>
             {TENSES.map((t) => {
               const active = tense === t.key;
+              const locked = isTabLocked(labAccess, 'tense', t.key);
               return (
                 <Pressable
                   key={t.key}
-                  onPress={() => setTense(t.key)}
-                  style={[styles.tenseChip, active && styles.tenseChipActive]}
+                  onPress={() => handleTensePress(t.key)}
+                  style={[styles.tenseChip, active && !locked && styles.tenseChipActive]}
                 >
-                  <Text style={[styles.tenseChipText, active && styles.tenseChipTextActive]} numberOfLines={1}>
+                  {locked ? <Feather name="lock" size={9} color={TOKENS.textFaint} style={styles.tenseChipLockIcon} /> : null}
+                  <Text
+                    style={[
+                      styles.tenseChipText,
+                      active && !locked && styles.tenseChipTextActive,
+                      locked && { color: TOKENS.textFaint },
+                    ]}
+                    numberOfLines={1}
+                  >
                     {t.label}
                   </Text>
                 </Pressable>
@@ -353,10 +520,14 @@ export default function WordDnaScreen() {
             </Pressable>
           </View>
           <View style={styles.labExampleBox}>
-            <Text style={styles.labExampleText}>
-              <HighlightedSentence text={activeTense.en} word={word.en} color={TOKENS.violetLight} />
-            </Text>
-            {labTrOpen ? <Text style={styles.labExampleTr}>{activeTense.tr}</Text> : null}
+            {labAccess.status === 'ready' && activeTenseExample?.en ? (
+              <>
+                <Text style={styles.labExampleText}>{renderMarkedText(activeTenseExample.en, TOKENS.violetLight)}</Text>
+                {labTrOpen ? <Text style={styles.labExampleTr}>{activeTenseExample.tr ?? ''}</Text> : null}
+              </>
+            ) : (
+              <LabStatusMessage access={labAccess} onRetry={() => setLabReloadKey((k) => k + 1)} />
+            )}
           </View>
 
           <Text style={styles.labLabel}>Bağlam Seç</Text>
@@ -493,6 +664,40 @@ function HighlightedSentence({ text, word, color }: { text: string; word: string
   );
 }
 
+/** Shared loading/unconfigured/not-in-catalog/error states for the two
+ * backend-driven panels (WordDNA level box + SentenceLab tense box). */
+function LabStatusMessage({ access, onRetry }: { access: WordLabAccess; onRetry: () => void }) {
+  if (access.status === 'loading') {
+    return <Text style={styles.labStatusText}>Yükleniyor…</Text>;
+  }
+  if (access.status === 'not-configured' || access.status === 'not-in-catalog') {
+    return (
+      <Text style={styles.labStatusText}>
+        {access.status === 'not-configured'
+          ? 'İçerik şu an yüklenemedi.'
+          : 'Bu kelime için WordDNA/SentenceLab içeriği henüz eklenmedi.'}
+      </Text>
+    );
+  }
+  if (access.status === 'error') {
+    // access.message is already a friendly, fully-formed Turkish sentence
+    // (see friendlyPhase2aErrorMessage) — including retryAfterSeconds for
+    // RATE_LIMITED — so it's shown as-is, no extra suffix needed.
+    return (
+      <View>
+        <Text style={styles.labStatusText}>{access.message || 'İçerik şu an yüklenemedi.'}</Text>
+        <Pressable onPress={onRetry} style={styles.labRetryBtn}>
+          <Text style={styles.labRetryBtnText}>Tekrar dene</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  // access.status === 'ready' but this specific level/tense has no example
+  // filled in yet (every content column is nullable) — never a crash, just
+  // an honest "not written yet" note instead of a silently blank box.
+  return <Text style={styles.labStatusText}>Bu seçim için örnek cümle henüz eklenmedi.</Text>;
+}
+
 function KbStat({ icon, val, lbl }: { icon: keyof typeof Feather.glyphMap; val: string; lbl: string }) {
   return (
     <View style={styles.kbStat}>
@@ -577,15 +782,15 @@ function BrainIcon({ size = 60, noPulse = false }: { size?: number; noPulse?: bo
   );
 }
 
-function LevelSegIcon({ segKey, color }: { segKey: 'basit' | 'orta' | 'ileri'; color: string }) {
-  if (segKey === 'basit') {
+function LevelSegIcon({ segKey, color }: { segKey: 'basic' | 'mid' | 'advanced'; color: string }) {
+  if (segKey === 'basic') {
     return (
       <Svg width={13} height={13} viewBox="0 0 16 16">
         <Path d="M8 1.8l1.1 3.9 3.9 1.1-3.9 1.1L8 11.8l-1.1-3.9-3.9-1.1 3.9-1.1L8 1.8z" fill={color} stroke="none" />
       </Svg>
     );
   }
-  if (segKey === 'orta') {
+  if (segKey === 'mid') {
     return (
       <Svg width={13} height={13} viewBox="0 0 16 16">
         <Circle cx={8} cy={8} r={5.5} fill="none" stroke={color} strokeWidth={1.4} strokeLinecap="round" strokeDasharray="2 2" />
@@ -771,9 +976,16 @@ const styles = StyleSheet.create({
   levelSegText: { fontFamily: 'Inter_700Bold', fontSize: 11 },
   exampleLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 6 },
   exampleLabel: { fontFamily: 'Inter_700Bold', fontSize: 10, color: TOKENS.violetLight },
+  dailyUsageText: { marginLeft: 'auto', fontFamily: 'Inter_600SemiBold', fontSize: 9.5, color: TOKENS.textFaint },
   exampleEn: { fontFamily: 'Inter_400Regular', fontSize: 13, color: '#fff', lineHeight: 18, marginBottom: 8 },
   exampleTrLabel: { fontFamily: 'Inter_700Bold', fontSize: 10, color: TOKENS.pink, marginBottom: 3 },
   exampleTr: { fontFamily: 'Inter_400Regular', fontSize: 12.5, color: TOKENS.textDim, lineHeight: 17 },
+  labStatusText: { fontFamily: 'Inter_400Regular', fontSize: 12, color: TOKENS.textDim, lineHeight: 17 },
+  labRetryBtn: {
+    alignSelf: 'flex-start', marginTop: 8, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+    backgroundColor: 'rgba(139,92,246,0.16)', borderWidth: 1, borderColor: 'rgba(139,92,246,0.4)',
+  },
+  labRetryBtnText: { fontFamily: 'Inter_700Bold', fontSize: 10.5, color: TOKENS.violetLight },
 
   kbTitle: { fontFamily: 'Inter_700Bold', fontSize: 12, color: TOKENS.text, marginBottom: 16 },
   kbRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
@@ -810,10 +1022,11 @@ const styles = StyleSheet.create({
 
   tenseRow: { flexDirection: 'row', gap: 6, marginBottom: 14, flexWrap: 'wrap' },
   tenseChip: {
-    flexGrow: 1, flexBasis: '22%', alignItems: 'center', justifyContent: 'center', paddingVertical: 9, paddingHorizontal: 4,
+    flexGrow: 1, flexBasis: '22%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 9, paddingHorizontal: 4,
     borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.03)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
   },
   tenseChipActive: { backgroundColor: 'rgba(139,92,246,0.22)', borderColor: 'rgba(139,92,246,0.55)' },
+  tenseChipLockIcon: { marginRight: 3 },
   tenseChipText: { fontFamily: 'Inter_700Bold', fontSize: 10.5, color: TOKENS.textDim, textAlign: 'center' },
   tenseChipTextActive: { color: '#fff' },
 
